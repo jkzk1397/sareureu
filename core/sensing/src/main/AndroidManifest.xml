@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 감지 모듈 권한·가시성(03 문서 5절). QUERY_ALL_PACKAGES는 쓰지 않는다. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools">
+
+  <!-- 사용 기록 접근(특별 접근): 사용자가 설정 화면에서 켠다. 켜기 전 앱 안 고지 화면 필수. -->
+  <uses-permission
+    android:name="android.permission.PACKAGE_USAGE_STATS"
+    tools:ignore="ProtectedPermissions" />
+
+  <!-- 추적 앱 7개(core:data TrackedApps.DEFAULT와 같게 유지) + 앱 이름·종류 표시용 런처 앱 -->
+  <queries>
+    <package android:name="com.google.android.youtube" />
+    <package android:name="com.instagram.android" />
+    <package android:name="com.instagram.lite" />
+    <package android:name="com.ss.android.ugc.trill" />
+    <package android:name="com.zhiliaoapp.musically" />
+    <package android:name="com.zhiliaoapp.musically.go" />
+    <package android:name="com.ss.android.ugc.tiktok.lite" />
+    <intent>
+      <action android:name="android.intent.action.MAIN" />
+      <category android:name="android.intent.category.LAUNCHER" />
+    </intent>
+  </queries>
+
+</manifest>
