@@ -1,6 +1,8 @@
 package com.capstone.pause.feature.settings
 
+import android.content.Intent
 import android.content.res.Configuration
+import android.provider.Settings
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,13 +37,51 @@ import com.capstone.pause.core.designsystem.theme.PauseTheme
 @Composable
 fun SettingsRoute(viewModel: SettingsViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    SettingsScreen(uiState = uiState, onAction = viewModel::onAction)
+    val context = LocalContext.current
+    SettingsScreen(
+        uiState = uiState,
+        onAction = viewModel::onAction,
+        onOpenUsageAccess = {
+            viewModel.onAction(SettingsAction.UsageAccessHandled)
+            context.startActivity(
+                Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+            )
+        },
+    )
 }
 
 /** 설정 탭(상태 없음). TODO(BUILD_REPORT#2): 5단계에서 추적 앱·감지 방식·AI·개인정보 항목을 더한다. */
 @Composable
-fun SettingsScreen(uiState: SettingsUiState, onAction: (SettingsAction) -> Unit, modifier: Modifier = Modifier) {
+fun SettingsScreen(
+    uiState: SettingsUiState,
+    onAction: (SettingsAction) -> Unit,
+    modifier: Modifier = Modifier,
+    onOpenUsageAccess: () -> Unit = {},
+) {
     PauseScreenColumn(title = stringResource(R.string.settings_title), modifier = modifier) {
+        SettingsSection(title = stringResource(R.string.settings_section_monitoring)) {
+            SwitchRow(
+                label = stringResource(R.string.settings_monitoring),
+                description = stringResource(R.string.settings_monitoring_desc),
+                checked = uiState.monitoring,
+                onCheckedChange = { onAction(SettingsAction.SetMonitoring(it)) },
+            )
+            if (uiState.needsUsageAccess) {
+                UsageAccessNotice(
+                    onAgree = onOpenUsageAccess,
+                    onCancel = { onAction(SettingsAction.UsageAccessHandled) },
+                )
+            }
+        }
+        SettingsSection(title = stringResource(R.string.settings_section_reminder)) {
+            ReminderRows(
+                reminders = uiState.reminders,
+                max = MAX_REMINDERS,
+                onShift = { i, m -> onAction(SettingsAction.ShiftReminder(i, m)) },
+                onRemove = { onAction(SettingsAction.RemoveReminder(it)) },
+                onAdd = { onAction(SettingsAction.AddReminder) },
+            )
+        }
         SettingsSection(title = stringResource(R.string.settings_section_demo)) {
             SwitchRow(
                 label = stringResource(R.string.settings_demo_mode),
@@ -95,6 +136,8 @@ fun SettingsScreen(uiState: SettingsUiState, onAction: (SettingsAction) -> Unit,
         }
     }
 }
+
+private const val MAX_REMINDERS = 3
 
 private fun DemoPattern.labelRes(): Int = when (this) {
     DemoPattern.NIGHT_OWL -> R.string.settings_demo_pattern_night_owl

@@ -36,4 +36,8 @@
   <string name="today_plan_title">내 계획</string>
   <string name="today_plan_body">%1$s %2$s</string>
   <string name="today_demo_hint">설정에서 시연 모드를 켜면 가상 기록으로 모든 화면을 볼 수 있어요.</string>
+  <string name="today_demo_start">시연: 숏폼 보기 시작</string>
+  <string name="today_demo_stop">시연 멈추기</string>
+  <string name="today_monitoring_off_title">감지가 꺼져 있어</string>
+  <string name="today_monitoring_off_body">감지가 멈춰서 지금은 숏폼 시간을 세지 못해. 설정 › 감지 켜기에서 다시 켤 수 있어.</string>
 </resources>
