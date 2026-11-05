@@ -123,8 +123,10 @@ private fun DrawScope.drawBuddy(
             }
         }
         drawImage(image = body, srcOffset = IntOffset.Zero, srcSize = IntSize(body.width, body.height), dstSize = dst)
-        drawFace(BuddyFaceGeometry.shapes(expression, side, density), PauseColors.BuddyInk)
     }
+    // 얼굴은 눌린 몸을 따라 내려가되 납작해지지 않게 scale 밖에서 그린다.
+    val face = BuddyFaceGeometry.shapes(expression, side, density)
+    drawFace(BuddyFaceGeometry.squashed(face, side, bodyScaleY), PauseColors.BuddyInk)
 }
 
 private const val SHADOW_ALPHA = 0.2f

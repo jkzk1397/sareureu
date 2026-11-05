@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="friends_title">친구</string>
-  <string name="friends_empty_body">친구와 함께 줄여 봐요.</string>
   <string name="friends_invite">+ 초대</string>
   <string name="friends_invite_title">친구 초대는 곧 열려요</string>
   <string name="friends_invite_body">초대 코드로 서로 동의한 친구끼리 연결하는 기능은 친구 서버가 열리면 쓸 수 있어. 지금은 시연용 가상 친구로 미리 볼 수 있어.</string>

@@ -75,7 +75,9 @@ internal fun AiModeRows(state: AiSettingsUiState, onAction: (AiSettingsAction) -
             })
             TextButton(
                 onClick = { onAction(AiSettingsAction.CancelCloud) },
-                modifier = Modifier.heightIn(min = PauseTheme.spacing.minTouch),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = PauseTheme.spacing.minTouch),
             ) { Text(stringResource(R.string.settings_ai_cloud_cancel), color = colors.ink2) }
         }
     }

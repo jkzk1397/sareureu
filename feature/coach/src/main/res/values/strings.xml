@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="coach_title">코치</string>
-  <string name="coach_empty_body">AI 친구와 이야기하는 곳이에요.</string>
   <string name="coach_header_sub">내 기록으로만 답해</string>
   <string name="coach_mock_badge">모의 AI · 규칙으로 만든 답</string>
   <string name="coach_alert_caption">%1$s · 메시지 알림</string>
@@ -27,7 +25,6 @@
   <string name="coach_crisis_body">혼자 견디지 않아도 돼. 지금 바로 이야기할 수 있는 곳이 있어. 대화는 여기서 잠시 멈출게.</string>
   <string name="coach_crisis_suicide">자살예방 상담전화 109 (24시간)</string>
   <string name="coach_crisis_mental">정신건강 위기상담 1577-0199 (24시간)</string>
-  <string name="coach_crisis_call">전화 걸기</string>
   <string name="coach_crisis_close">닫기</string>
   <string name="coach_ev_session">%1$s %2$d:%3$02d · %4$s %5$s</string>
   <string name="coach_ev_summary">하루 평균 %1$s</string>
@@ -59,5 +56,4 @@
   <string name="coach_period_afternoon">오후</string>
   <string name="coach_period_evening">저녁</string>
   <string name="coach_period_night">밤</string>
-  <string name="coach_avatar_desc">%1$s 프로필</string>
 </resources>

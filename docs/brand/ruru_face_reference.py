@@ -1,7 +1,7 @@
 """르르 얼굴: 각설탕 몸(사진 한 장) 위에 코드로 그리는 얼굴.
 좌표계: 몸 이미지와 같은 정사각형 viewBox 0 0 100 100.
 기준점(눈 사이 가운데) = (39.7, 78.0), 기본 눈 간격 g0 = 11.3 (몸 700px 기준 79px).
-작은 크기에서는 얼굴을 키운다: 눈 간격 >= 10px, 눈 높이 >= 2.6px, 선 굵기 >= 1.1px.
+작은 크기에서는 얼굴을 키운다: 눈 간격 >= 14px, 눈 높이 >= 4px, 선 굵기 >= 1.6px (2026-11 상향).
 """
 INK = "#141416"
 AX, AY, G0 = 39.7, 78.0, 11.3
@@ -12,10 +12,10 @@ KO_EXPR = {v: k for k, v in EXPR_KO.items()}
 
 def face_svg(expr: str, size_px: float, ink: str = INK) -> str:
     u = 100.0 / size_px                      # 1px in viewBox units
-    g = min(max(G0, 10 * u), 32.0)           # eye gap
-    ry = max(0.095 * g, 1.3 * u)             # eye half-height
+    g = min(max(G0, 14 * u), 32.0)           # eye gap
+    ry = max(0.095 * g, 2.0 * u)             # eye half-height
     rx = ry * 0.62
-    sw = max(0.06 * g, 1.1 * u)              # stroke width
+    sw = max(0.06 * g, 1.6 * u)              # stroke width
 
     def P(x, y):
         return f"{AX + x * g:.2f} {AY + y * g:.2f}"
@@ -48,7 +48,7 @@ def face_svg(expr: str, size_px: float, ink: str = INK) -> str:
         return (eyes(k=1.1)
                 + stroke(f"M{P(-0.62, -0.34)} Q{P(-0.5, -0.44)} {P(-0.38, -0.34)}")
                 + stroke(f"M{P(0.38, -0.34)} Q{P(0.5, -0.44)} {P(0.62, -0.34)}")
-                + f'<ellipse cx="{AX:.2f}" cy="{AY + 0.24 * g:.2f}" rx="{max(0.075 * g, 1.3 * u):.2f}" ry="{max(0.09 * g, 1.5 * u):.2f}" fill="{ink}"/>')
+                + f'<ellipse cx="{AX:.2f}" cy="{AY + 0.24 * g:.2f}" rx="{max(0.075 * g, 1.5 * u):.2f}" ry="{max(0.09 * g, 1.7 * u):.2f}" fill="{ink}"/>')
     if expr == "worried":    # 걱정: 안쪽 눈썹이 올라감, 입꼬리 내려감
         return (eyes()
                 + stroke(f"M{P(-0.66, -0.22)} L{P(-0.36, -0.33)}")
@@ -61,7 +61,7 @@ def face_svg(expr: str, size_px: float, ink: str = INK) -> str:
     if expr == "sleepy":     # 졸림: 감은 눈, 작은 입, z
         z = 0.22
         return (arc_eye(up=False)
-                + f'<circle cx="{AX:.2f}" cy="{AY + 0.24 * g:.2f}" r="{max(0.05 * g, 0.9 * u):.2f}" fill="none" stroke="{ink}" stroke-width="{sw * 0.85:.2f}"/>'
+                + f'<circle cx="{AX:.2f}" cy="{AY + 0.24 * g:.2f}" r="{max(0.05 * g, 1.3 * u):.2f}" fill="none" stroke="{ink}" stroke-width="{sw * 0.85:.2f}"/>'
                 + stroke(f"M{P(0.9, -0.72)} L{P(0.9 + z, -0.72)} L{P(0.9, -0.72 + z)} L{P(0.9 + z, -0.72 + z)}"))
     raise ValueError(expr)
 

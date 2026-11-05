@@ -138,7 +138,7 @@ object BuddyBitmap { fun render(context: Context, expression: BuddyExpression, s
 `BuddyExpression`·`MeltStage`는 `core:model`(계약), 나머지는 `core:designsystem`. `BuddyAvatar`(Compose `DrawScope`)와 `BuddyBitmap`(`android.graphics.Canvas`)은 같은 `BuddyFaceGeometry`를 그린다. 기하 계산은 한 곳에만. `contentDescription` = "르르, {표정 이름}".
 
 **좌표계**: 몸 그림 정사각형을 0~100으로 본다. 얼굴 기준점(두 눈 사이 가운데) **A = (39.7, 78.0)**, 기본 눈 간격 **g₀ = 11.3**. 모든 점은 `A + (x·g, y·g)`.
-- **작을수록 얼굴을 키운다**: `g = min(max(g₀, 10dp를 0~100 단위로 바꾼 값), 32)` (예: 56dp면 10dp = 17.9 단위라 g = 17.9). 눈 반높이 `ry = max(0.095g, 1.3dp)`, 눈 반너비 `rx = 0.62·ry`, 선 굵기 `max(0.06g, 1.1dp)`, 끝은 둥글게. 색은 라이트·다크 모두 `#141416`(각설탕이 흰색이라).
+- **작을수록 얼굴을 키운다**: `g = min(max(g₀, 14dp를 0~100 단위로 바꾼 값), 32)` (예: 56dp면 14dp = 25 단위라 g = 25). 눈 반높이 `ry = max(0.095g, 2dp)`, 눈 반너비 `rx = 0.62·ry`, 선 굵기 `max(0.06g, 1.6dp)`, 끝은 둥글게. (2026-11 리드 요청으로 작은 크기 최솟값을 10dp·1.3dp·1.1dp에서 올림 — 28~56dp에서 눈코입이 점처럼 작아 안 보였다.) 색은 라이트·다크 모두 `#141416`(각설탕이 흰색이라).
 - 곡선은 2차 베지어 `시작 → 조절점 → 끝`.
 
 | 표정 | 눈 | 눈썹 | 입 | 덧붙임 | 쓰는 곳 |
@@ -150,7 +150,7 @@ object BuddyBitmap { fun render(context: Context, expression: BuddyExpression, s
 | `CHEER` 칭찬 | 웃는 호: 눈 x = ±0.5일 때 (x−0.1, 0.03) → (x, −0.11) → (x+0.1, 0.03) | — | (−0.18, 0.15) → (0, 0.36) → (0.18, 0.15) | 네 갈래 반짝이 (1.0, −0.55) 반지름 0.17, (1.28, −0.2) 반지름 0.1 | '그만' 직후, AI 주간 분석 |
 | `SLEEPY` 졸림 | 감은 호: (x−0.1, 0) → (x, 0.08) → (x+0.1, 0) | — | 원 (0, 0.24) 반지름 0.05, 선만 | 'z' 꺾은선 (0.9, −0.72)부터 한 변 0.22 | 자기 전·한밤중, 리포트 유형 카드 |
 
-참고 구현(웹 목업에 쓴 것과 같은 값): `docs/brand/ruru_face_reference.py`. 작은 크기의 최솟값(말 걸기 입 타원 1.3·1.5dp, 졸림 입 원 0.9dp, 보는 중 눈 폭 ×1.05 등)은 표가 아니라 이 참고 구현을 따른다.
+참고 구현(웹 목업에 쓴 것과 같은 값): `docs/brand/ruru_face_reference.py`. 작은 크기의 최솟값(말 걸기 입 타원 1.5·1.7dp, 졸림 입 원 1.3dp, 보는 중 눈 폭 ×1.05 등)은 표가 아니라 이 참고 구현을 따른다. 녹을 때 몸은 바닥 기준으로 세로로 눌리지만 얼굴은 모양을 그대로 두고 위치만 몸을 따라 내려간다(`BuddyFaceGeometry.squashed`).
 
 **녹는 단계 `MeltStage`** — 오늘 숏폼 ÷ 내 기준(`Baseline`의 하루 평균, 기준선이 생기기 전 첫 7일은 `Profile.dailyGoalMinutes`, 기본 60분):
 | 단계 | 조건 | 그림 |

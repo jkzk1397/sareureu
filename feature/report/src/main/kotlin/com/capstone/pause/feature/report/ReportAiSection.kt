@@ -18,6 +18,7 @@ import com.capstone.pause.core.ai.report.GenerationStatus
 import com.capstone.pause.core.ai.report.WeeklyReportState
 import com.capstone.pause.core.designsystem.buddy.BuddyAvatar
 import com.capstone.pause.core.designsystem.component.BuddyBubble
+import com.capstone.pause.core.designsystem.component.CardFooter
 import com.capstone.pause.core.designsystem.component.ChoicePill
 import com.capstone.pause.core.designsystem.component.HypothesisCard
 import com.capstone.pause.core.designsystem.component.PauseCard
@@ -97,46 +98,26 @@ private fun AiBody(ai: AiReport, report: WeeklyReportState, local: ReportLocal, 
     }
     SectionTitle(stringResource(R.string.report_ai_hypotheses))
     ai.hypotheses.filter { it.id !in hidden }.forEach { h ->
-        Column {
-            HypothesisCard(
-                text = fill(h.text),
-                confidence = h.confidence,
-                evidence = h.evidence.map { stringResource(R.string.report_evidence_chip, it.removePrefix("o")) },
-                verdict = h.verdict,
-                onVerdict = { onAction(ReportAction.SetVerdict(h.id, it)) },
-            )
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    fill(h.confirmQuestion),
-                    style = PauseTheme.type.bodySmall,
-                    color = colors.ink2,
-                    modifier = Modifier.weight(1f),
-                )
-                ReportButton(reportAction(h.id))
-            }
-        }
+        HypothesisCard(
+            text = fill(h.text),
+            confidence = h.confidence,
+            evidence = h.evidence.map { stringResource(R.string.report_evidence_chip, it.removePrefix("o")) },
+            verdict = h.verdict,
+            onVerdict = { onAction(ReportAction.SetVerdict(h.id, it)) },
+            footer = { CardFooter(fill(h.confirmQuestion)) { ReportButton(reportAction(h.id)) } },
+        )
     }
     if (ai.strategies.isNotEmpty()) {
         SectionTitle(stringResource(R.string.report_ai_strategies))
         ai.strategies.filter { "s:${it.id}" !in hidden }.forEach { s ->
-            Column {
-                StrategyCard(
-                    context = s.context,
-                    ifText = s.ifText,
-                    thenText = fill(s.thenText),
-                    selected = s.id in local.pickedStrategies,
-                    onToggle = { onAction(ReportAction.ToggleStrategy(s.id)) },
-                )
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        fill(s.why),
-                        style = PauseTheme.type.bodySmall,
-                        color = colors.ink2,
-                        modifier = Modifier.weight(1f),
-                    )
-                    ReportButton(reportAction("s:${s.id}"))
-                }
-            }
+            StrategyCard(
+                context = s.context,
+                ifText = s.ifText,
+                thenText = fill(s.thenText),
+                selected = s.id in local.pickedStrategies,
+                onToggle = { onAction(ReportAction.ToggleStrategy(s.id)) },
+                footer = { CardFooter(fill(s.why)) { ReportButton(reportAction("s:${s.id}")) } },
+            )
         }
         PrimaryButton(
             text = stringResource(if (local.savedPlan) R.string.report_ai_saved_plan else R.string.report_ai_save_plan),
@@ -176,7 +157,9 @@ private fun AiBody(ai: AiReport, report: WeeklyReportState, local: ReportLocal, 
     if (report.status != GenerationStatus.RUNNING && report.regenerationsLeft > 0) {
         TextButton(
             onClick = { onAction(ReportAction.Generate(force = true)) },
-            modifier = Modifier.heightIn(min = PauseTheme.spacing.minTouch),
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = PauseTheme.spacing.minTouch),
         ) {
             Text(stringResource(R.string.report_ai_regenerate, report.regenerationsLeft), color = colors.ink2)
         }

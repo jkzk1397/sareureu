@@ -2,8 +2,12 @@ package com.capstone.pause.feature.report
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -22,6 +26,7 @@ import com.capstone.pause.core.designsystem.component.PauseCard
 import com.capstone.pause.core.designsystem.component.PauseScreenColumn
 import com.capstone.pause.core.designsystem.component.StatHero
 import com.capstone.pause.core.designsystem.component.durationLabel
+import com.capstone.pause.core.designsystem.theme.PauseSizes
 import com.capstone.pause.core.designsystem.theme.PauseTheme
 import com.capstone.pause.core.designsystem.theme.isLargeFont
 import kotlin.math.abs
@@ -140,7 +145,12 @@ private fun ObservationsCard(report: WeeklyReportState) {
             report.observations.forEach { o ->
                 observationText(o)?.let { text ->
                     Row(horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xs)) {
-                        Text(o.id, style = PauseTheme.type.captionTabular, color = PauseTheme.colors.ink3)
+                        Text(
+                            o.id,
+                            style = PauseTheme.type.captionTabular,
+                            color = PauseTheme.colors.ink3,
+                            modifier = Modifier.width(PauseSizes.listIdColumn),
+                        )
                         Text(text, style = PauseTheme.type.bodySmall, color = PauseTheme.colors.ink)
                     }
                 }
@@ -172,8 +182,14 @@ private fun TileGroup(content: @Composable (Modifier) -> Unit) {
     if (isLargeFont()) {
         Column(verticalArrangement = Arrangement.spacedBy(PauseTheme.spacing.sm)) { content(Modifier.fillMaxWidth()) }
     } else {
-        Row(horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.sm), modifier = Modifier.fillMaxWidth()) {
-            content(Modifier.weight(1f))
+        // 세 칸 높이를 맞춘다(변화 줄이 있는 칸만 길어지지 않게).
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.sm),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Min),
+        ) {
+            content(Modifier.weight(1f).fillMaxHeight())
         }
     }
 }

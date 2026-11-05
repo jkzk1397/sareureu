@@ -12,8 +12,8 @@ class BuddyFaceGeometryTest {
 
     @Test
     fun smallSizeEnlargesFace() {
-        // 56dp: 10dp = 17.86 단위라 눈 간격은 g0(11.3)보다 크다.
-        assertEquals(17.857f, BuddyFaceGeometry.eyeGapUnits(sizePx(56), density), 0.01f)
+        // 56dp: 14dp = 25 단위라 눈 간격은 g0(11.3)보다 크다.
+        assertEquals(25f, BuddyFaceGeometry.eyeGapUnits(sizePx(56), density), 0.01f)
     }
 
     @Test
@@ -48,17 +48,39 @@ class BuddyFaceGeometryTest {
     }
 
     @Test
-    fun allShapesStayInsideSquare() {
-        listOf(28, 46, 56, 72, 200).forEach { dp ->
+    fun allShapesStayOnTheCubeFrontFace() {
+        // 몸 그림에서 각설탕 앞면은 대략 x 4~86(반짝이는 옆면 끝까지), y 22~92(0~100 단위)다.
+        listOf(28, 40, 46, 56, 64, 72, 200).forEach { dp ->
             val size = sizePx(dp)
+            val u = size / 100f
             BuddyExpression.entries.forEach { expr ->
                 BuddyFaceGeometry.shapes(expr, size, density).forEach { shape ->
                     points(shape).forEach { (x, y) ->
-                        assertTrue(x in 0f..size && y in 0f..size, "$expr@$dp: ($x, $y) out of $size")
+                        assertTrue(x in 4 * u..86 * u && y in 22 * u..92 * u, "$expr@$dp: ($x, $y)")
                     }
                 }
             }
         }
+    }
+
+    @Test
+    fun meltedFaceMovesDownButKeepsItsShape() {
+        val size = sizePx(56)
+        val face = BuddyFaceGeometry.shapes(BuddyExpression.NEUTRAL, size, density)
+        val melted = BuddyFaceGeometry.squashed(face, size, 0.78f)
+        val eye = face.first() as FaceShape.Ellipse
+        val meltedEye = melted.first() as FaceShape.Ellipse
+        assertEquals(eye.ry, meltedEye.ry, 0.001f)
+        assertEquals(size - (size - eye.cy) * 0.78f, meltedEye.cy, 0.001f)
+        assertTrue(meltedEye.cy > eye.cy)
+    }
+
+    @Test
+    fun smallFaceIsReadable() {
+        // 28dp에서도 눈 높이 4dp(반높이 2dp) 이상.
+        val size = sizePx(28)
+        val eye = BuddyFaceGeometry.shapes(BuddyExpression.NEUTRAL, size, density).first() as FaceShape.Ellipse
+        assertTrue(eye.ry >= 2f * density - 0.01f)
     }
 
     private fun points(s: FaceShape): List<Pair<Float, Float>> = when (s) {
