@@ -1,0 +1,40 @@
+{
+  "name": "domino_sparse",
+  "expectAi": false,
+  "input": {
+    "observations": [
+      {
+        "id": "o1",
+        "kind": "WEEK_TOTAL",
+        "numbers": {
+          "avgMinPerDay": 53,
+          "totalMin": 371,
+          "sessions": 58,
+          "days": 7
+        }
+      },
+      {
+        "id": "o11",
+        "kind": "COVERAGE",
+        "numbers": {
+          "coverage": 0.4
+        }
+      }
+    ],
+    "profile": {
+      "ageBand": "AGE_18_24",
+      "occupation": "UNIVERSITY",
+      "goals": [
+        "SLEEP"
+      ],
+      "interests": [
+        "기타 연습",
+        "러닝"
+      ],
+      "tone": "PLAIN"
+    },
+    "viewerType": "DOMINO",
+    "coverage": 0.4,
+    "userNotes": ""
+  }
+}

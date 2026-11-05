@@ -1,0 +1,20 @@
+{
+  "name": "playful_age_18_24",
+  "input": {
+    "profile": {
+      "ageBand": "AGE_18_24",
+      "occupation": "UNIVERSITY",
+      "goals": [
+        "TIME_BACK"
+      ],
+      "interests": [
+        "요리"
+      ],
+      "tone": "PLAYFUL"
+    },
+    "topContexts": [
+      "PRE_SLEEP",
+      "COMMUTE"
+    ]
+  }
+}

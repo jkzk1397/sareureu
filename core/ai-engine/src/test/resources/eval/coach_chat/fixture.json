@@ -1,0 +1,112 @@
+{
+  "summaries": {
+    "THIS_WEEK": {
+      "key": "THIS_WEEK.summary",
+      "period": "THIS_WEEK",
+      "totalMinutes": 672,
+      "avgMinPerDay": 96,
+      "baselineMinPerDay": 125,
+      "reductionPercent": 23,
+      "coveragePercent": 91,
+      "sessionCount": 58,
+      "stopRatePercent": 43
+    },
+    "LAST_WEEK": {
+      "key": "LAST_WEEK.summary",
+      "period": "LAST_WEEK",
+      "totalMinutes": 872,
+      "avgMinPerDay": 125,
+      "baselineMinPerDay": 125,
+      "reductionPercent": 0,
+      "coveragePercent": 95,
+      "sessionCount": 64,
+      "stopRatePercent": 30
+    },
+    "TODAY": {
+      "key": "TODAY.summary",
+      "period": "TODAY",
+      "totalMinutes": 72,
+      "avgMinPerDay": 72,
+      "sessionCount": 6
+    },
+    "LAST_4_WEEKS": {
+      "key": "LAST_4_WEEKS.summary",
+      "period": "LAST_4_WEEKS",
+      "totalMinutes": 3088,
+      "avgMinPerDay": 110,
+      "sessionCount": 240
+    }
+  },
+  "contexts": [
+    {
+      "key": "THIS_WEEK.byContext.PRE_SLEEP",
+      "context": "PRE_SLEEP",
+      "minutes": 208,
+      "sessions": 12,
+      "medianMinutes": 9
+    },
+    {
+      "key": "THIS_WEEK.byContext.COMMUTE",
+      "context": "COMMUTE",
+      "minutes": 161,
+      "sessions": 9,
+      "medianMinutes": 12
+    },
+    {
+      "key": "THIS_WEEK.byContext.BREAK",
+      "context": "BREAK",
+      "minutes": 114,
+      "sessions": 12,
+      "medianMinutes": 7
+    }
+  ],
+  "flows": [
+    {
+      "key": "THIS_WEEK.flow.1",
+      "entry": "MESSENGER",
+      "app": "YOUTUBE",
+      "exit": "SCREEN_OFF",
+      "count": 7,
+      "medianMinutes": 18
+    }
+  ],
+  "sessions": [
+    {
+      "id": 101,
+      "dayOfWeek": "TUESDAY",
+      "startHour": 23,
+      "startMinute": 40,
+      "minutes": 32,
+      "app": "YOUTUBE",
+      "context": "PRE_SLEEP",
+      "entry": "MESSENGER",
+      "exit": "SCREEN_OFF",
+      "maxLevel": 3
+    }
+  ],
+  "risk": [
+    {
+      "key": "risk.TUESDAY.22",
+      "dayOfWeek": "TUESDAY",
+      "hour": 22,
+      "averageMinutes": 38
+    }
+  ],
+  "plans": [
+    {
+      "key": "plan.1",
+      "context": "PRE_SLEEP",
+      "ifText": "누우면",
+      "thenText": "폰은 책상 충전기에"
+    }
+  ],
+  "peer": {
+    "key": "peer.AGE_18_24.UNIVERSITY",
+    "ageBand": "AGE_18_24",
+    "occupation": "UNIVERSITY",
+    "peerMedianMinPerDay": 118,
+    "myAvgMinPerDay": 96,
+    "source": "시연용 가상 코호트",
+    "isDemo": true
+  }
+}

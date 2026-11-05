@@ -1,0 +1,133 @@
+{
+  "name": "domino_skewed",
+  "expectAi": true,
+  "input": {
+    "observations": [
+      {
+        "id": "o1",
+        "kind": "WEEK_TOTAL",
+        "numbers": {
+          "avgMinPerDay": 53,
+          "totalMin": 371,
+          "sessions": 58,
+          "days": 7
+        }
+      },
+      {
+        "id": "o2",
+        "kind": "REDUCTION",
+        "numbers": {
+          "baselineMinPerDay": 63.6,
+          "avgMinPerDay": 53,
+          "reductionRate": 0.167
+        }
+      },
+      {
+        "id": "o3",
+        "kind": "TOP_CONTEXT",
+        "numbers": {
+          "minutes": 326,
+          "share": 0.88,
+          "sessions": 12,
+          "medianMin": 14
+        },
+        "labels": {
+          "context": "BREAK"
+        }
+      },
+      {
+        "id": "o4",
+        "kind": "SECOND_CONTEXT",
+        "numbers": {
+          "minutes": 22,
+          "share": 0.06,
+          "sessions": 9,
+          "medianMin": 7
+        },
+        "labels": {
+          "context": "PRE_SLEEP"
+        }
+      },
+      {
+        "id": "o6",
+        "kind": "RISK_WINDOW",
+        "numbers": {
+          "hour": 22,
+          "avgMinutes": 38,
+          "daysSeen": 2
+        },
+        "labels": {
+          "dayOfWeek": "TUESDAY"
+        }
+      },
+      {
+        "id": "o7",
+        "kind": "TOP_ENTRY",
+        "numbers": {
+          "count": 22,
+          "share": 0.38
+        },
+        "labels": {
+          "entry": "FROM_APP:MESSENGER"
+        }
+      },
+      {
+        "id": "o8",
+        "kind": "TOP_FLOW",
+        "numbers": {
+          "count": 7,
+          "medianMin": 18
+        },
+        "labels": {
+          "entry": "FROM_APP:MESSENGER",
+          "app": "com.google.android.youtube",
+          "exit": "SCREEN_OFF"
+        }
+      },
+      {
+        "id": "o10",
+        "kind": "NUDGES",
+        "numbers": {
+          "shown": 14,
+          "stopped": 6,
+          "stopRate": 0.43,
+          "extensions": 11
+        }
+      },
+      {
+        "id": "o11",
+        "kind": "COVERAGE",
+        "numbers": {
+          "coverage": 0.91
+        }
+      },
+      {
+        "id": "o12",
+        "kind": "TOP_CONTEXT_ENTRY",
+        "numbers": {
+          "count": 7,
+          "sessions": 12
+        },
+        "labels": {
+          "context": "BREAK",
+          "entry": "FROM_APP:MESSENGER"
+        }
+      }
+    ],
+    "profile": {
+      "ageBand": "AGE_18_24",
+      "occupation": "UNIVERSITY",
+      "goals": [
+        "SLEEP"
+      ],
+      "interests": [
+        "기타 연습",
+        "러닝"
+      ],
+      "tone": "PLAIN"
+    },
+    "viewerType": "DOMINO",
+    "coverage": 0.91,
+    "userNotes": ""
+  }
+}
