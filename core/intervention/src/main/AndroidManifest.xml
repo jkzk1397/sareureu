@@ -1,11 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 개입 모듈 권한(03 문서 5절). 서비스·리시버는 3단계에서 여기에 더한다. -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools">
 
   <!-- 메시지 알림·예약 알림(13+ 런타임 요청). 거절하면 오버레이 카드만 쓴다. -->
   <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
   <!-- 플로팅 캐릭터·카드(특별 접근). 거절하면 알림으로 대체한다. -->
   <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+  <!-- 사용자가 켠 동안의 감지(포그라운드 서비스, 유형 specialUse 하나). -->
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+
+  <!-- 재부팅 후 예약 알림 복구, 감지를 켜 둔 경우만 서비스 재시작. -->
+  <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+  <application>
+    <!-- fork C: 감지·개입 서비스. 정확한 알람(SCHEDULE_EXACT_ALARM)은 쓰지 않는다. -->
+    <service
+      android:name=".service.MonitorService"
+      android:exported="false"
+      android:foregroundServiceType="specialUse">
+      <property
+        android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+        android:value="사용자가 켠 동안 숏폼 앱 사용 시간을 세고 기준 시간에 화면 위 알림을 띄움" />
+    </service>
+
+    <receiver
+      android:name=".service.BootReceiver"
+      android:exported="false">
+      <intent-filter>
+        <action android:name="android.intent.action.BOOT_COMPLETED" />
+        <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+      </intent-filter>
+    </receiver>
+
+    <!-- 오버레이 권한이 없을 때 카드를 앱 화면으로 보여 준다(fork D). -->
+    <activity
+      android:name=".preview.NudgePreviewActivity"
+      android:excludeFromRecents="true"
+      android:exported="false"
+      android:launchMode="singleTop"
+      android:taskAffinity=""
+      android:theme="@style/Theme.Intervention.Preview" />
+  </application>
 
 </manifest>
