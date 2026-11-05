@@ -6,6 +6,7 @@ import com.capstone.pause.core.database.dao.SessionDao
 import com.capstone.pause.core.model.DataSource
 import com.capstone.pause.core.model.NudgeEvent
 import com.capstone.pause.core.model.ShortformSession
+import java.time.Duration
 import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -28,7 +29,13 @@ interface SessionRepository {
 
     /** 출처별 세션·개입 기록 모두 지우기. */
     suspend fun deleteAll(source: DataSource)
+
+    /** [since] 이후 세션 중 최근 [limit]개(최신순). 설정 > 개발자 메뉴용. */
+    fun observeRecent(since: Instant, limit: Int): Flow<List<ShortformSession>> =
+        observeSessions(since, since.plus(Duration.ofDays(FAR_FUTURE_DAYS))).map { it.takeLast(limit).reversed() }
 }
+
+private const val FAR_FUTURE_DAYS = 3650L
 
 /** 설정의 시연 모드로 읽을 출처를 정한다. */
 internal fun SettingsRepository.activeSource(): Flow<DataSource> =

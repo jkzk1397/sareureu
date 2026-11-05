@@ -2,7 +2,9 @@ package com.capstone.pause.core.data.insight
 
 import com.capstone.pause.core.common.AppClock
 import com.capstone.pause.core.common.DayBoundary
+import com.capstone.pause.core.data.profile.ProfileRepository
 import com.capstone.pause.core.data.session.SessionRepository
+import com.capstone.pause.core.data.settings.AppSettings
 import com.capstone.pause.core.data.settings.SettingsRepository
 import com.capstone.pause.core.insights.Baseline
 import com.capstone.pause.core.insights.ClockBins
@@ -35,6 +37,7 @@ interface InsightRepository {
 internal class DefaultInsightRepository @Inject constructor(
     private val sessionRepository: SessionRepository,
     private val settingsRepository: SettingsRepository,
+    private val profileRepository: ProfileRepository,
     private val clock: AppClock,
 ) : InsightRepository {
 
@@ -53,8 +56,9 @@ internal class DefaultInsightRepository @Inject constructor(
             sessionRepository.observeSessions(from, to),
             sessionRepository.observeNudges(DayBoundary.startOf(today, clock.zone), to),
             settingsRepository.settings,
-        ) { sessions, nudges, settings ->
-            summarize(now, sessions, nudges, settings.demoMode)
+            profileRepository.profile,
+        ) { sessions, nudges, settings, profile ->
+            summarize(now, sessions, nudges, settings, profile?.dailyGoalMinutes?.toDouble() ?: DEFAULT_DAILY_GOAL_MIN)
         }
     }
 
@@ -62,7 +66,8 @@ internal class DefaultInsightRepository @Inject constructor(
         now: Instant,
         sessions: List<ShortformSession>,
         todayNudges: List<NudgeEvent>,
-        isDemo: Boolean,
+        settings: AppSettings,
+        dailyGoalMinutes: Double,
     ): TodaySummary {
         val zone = clock.zone
         val today = DayBoundary.logicalDate(now, zone)
@@ -73,7 +78,8 @@ internal class DefaultInsightRepository @Inject constructor(
             now,
             zone,
         )
-        // TODO(BUILD_REPORT#3): 2단계에서 실제 기록률(Coverage)로 바꾼다. 지금은 기록이 있는 날을 100%로 본다.
+        // TODO(BUILD_REPORT#3): 감지가 살아 있던 구간 기록이 쌓이면 Coverage.compute로 바꾼다.
+        // 지금은 화면 켜짐·감지 생존 구간을 저장하지 않아 기록이 있는 날을 100%로 본다.
         val pastDays = (HISTORY_DAYS downTo 1).map { back ->
             val date = today.minusDays(back)
             DayStat(date, ShortformMinutes.onDay(sessions, date, zone, now), coverage = 1.0)
@@ -104,18 +110,18 @@ internal class DefaultInsightRepository @Inject constructor(
                 packageName = s.segments.lastOrNull()?.packageName,
                 context = s.context,
                 elapsedMinutes = ShortformMinutes.lengthMinutes(s, now).toInt(),
-                thresholdMinutes = DEFAULT_THRESHOLD_MIN,
+                thresholdMinutes = settings.thresholdFor(s.context),
             )
         }
         return TodaySummary(
             now = ZonedDateTime.ofInstant(now, zone),
-            isDemo = isDemo,
+            isDemo = settings.demoMode,
             minutesByHour = bins.minutesByHour,
             totalMinutes = total,
             byContext = bins.byContext(),
             yesterdayMinutes = yesterday,
             baselineMinutes = baseline,
-            meltStage = MeltStageCalculator.compute(total, baseline ?: DEFAULT_DAILY_GOAL_MIN),
+            meltStage = MeltStageCalculator.compute(total, baseline ?: dailyGoalMinutes),
             riskHours = mergeHours(risks.map { it.hour }),
             topRisk = risks.firstOrNull()?.let {
                 RiskSummary(it.dayOfWeek, it.hour, Math.round(it.averageMinutes).toInt())
@@ -139,8 +145,5 @@ internal class DefaultInsightRepository @Inject constructor(
         const val RISK_CELLS = 24 * 7
         const val MAX_RISK_HOURS = 3
         const val DEFAULT_DAILY_GOAL_MIN = 60.0
-
-        // TODO(BUILD_REPORT#4): 3단계에서 맥락별 임계값 설정으로 바꾼다.
-        const val DEFAULT_THRESHOLD_MIN = 15
     }
 }
