@@ -48,7 +48,7 @@ object TestData {
     val strategies: List<Strategy> by lazy {
         AiJson.decodeFromString(
             ListSerializer(Strategy.serializer()),
-            File("src/test/resources/eval/strategies.json").readText(Charsets.UTF_8),
+            File("../data/src/main/assets/strategies.json").readText(Charsets.UTF_8),
         )
     }
 

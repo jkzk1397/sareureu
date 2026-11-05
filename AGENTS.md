@@ -54,7 +54,6 @@
 | `build-logic` | R1 | Gradle 컨벤션 플러그인 | — |
 | `core:model` | R1 | 순수 Kotlin 도메인 타입 (계약) | 없음 |
 | `core:common` | R1 | Clock, 디스패처, Result, 로그 인터페이스 (순수 JVM) | model |
-| `core:testing` | R1 | 테스트용 Fake, 고정 시나리오 | 모든 core |
 | `core:database` | R2 | Room DB, DAO, 마이그레이션 | model, common |
 | `core:data` | R2 | 저장소 인터페이스와 구현, DataStore(설정·프로필), 기본 문구 팩·전략 자산, `DemoController` 인터페이스 | database, insights, model, common |
 | `core:sensing` | R2 | 사용 기록 수집, 세션 만들기, 맥락·경로 분류, 접근성 감지, 시연 이벤트 | data, model, common |
@@ -72,6 +71,7 @@
 | `feature:settings` | R1 | 알림·임계값·추적 앱, 감지 방식, AI 선택·감사 로그, 개인정보, 테마, 시연 | designsystem, data, intervention, ai, social |
 
 - feature 모듈끼리는 서로 의존하지 않는다. 다른 모듈의 `internal`은 쓰지 않는다.
+- 테스트용 Fake·고정 데이터는 그 모듈의 `src/test`에 둔다. 여러 모듈이 같이 써야 할 때 공용 테스트 모듈을 새로 만든다(계약 PR).
 - **순수 JVM 모듈**(안드로이드 의존 금지, `pause.jvm.library`): `core:model`, `core:common`, `core:insights`, `core:ai-engine`. 에뮬레이터 없이 빠르게 테스트된다.
 - 각 모듈 루트에 `AGENTS.md`(10줄 이내: 역할, 하는 일, 공개 API, 의존 가능, 금지)를 둔다.
 

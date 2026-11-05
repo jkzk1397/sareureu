@@ -10,7 +10,6 @@
 # /settings.gradle.kts      @R1-github-id
 # /core/model/              @R1-github-id
 # /core/common/             @R1-github-id
-# /core/testing/            @R1-github-id
 # /feature/settings/        @R1-github-id
 # /AGENTS.md                @R1-github-id
 # /docs/decisions/          @R1-github-id

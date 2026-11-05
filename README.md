@@ -4,6 +4,7 @@
 언제(맥락)·어디서 넘어와(경로)·얼마나 보는지 기기 안에서 세고, 그 패턴에 맞는 순간에 캐릭터·메신저형 알림·채팅으로 말을 건다.
 
 - 규칙: [`AGENTS.md`](AGENTS.md) · 기능: [`docs/01_PRD.md`](docs/01_PRD.md) · 구조: [`docs/03_ARCHITECTURE.md`](docs/03_ARCHITECTURE.md) · 데이터: [`docs/04_DATA_PRIVACY.md`](docs/04_DATA_PRIVACY.md) · AI: [`docs/05_AI_SPEC.md`](docs/05_AI_SPEC.md) · 디자인: [`docs/06_DESIGN_SYSTEM.md`](docs/06_DESIGN_SYSTEM.md)
+- **팀원 첫날 가이드(설치·첫 실행·PR 방법·Android Studio 없이 확인하기): [`docs/TEAM_SETUP.md`](docs/TEAM_SETUP.md)**
 - 빌드 결과·가정·남은 일·사람이 할 확인: [`docs/BUILD_REPORT.md`](docs/BUILD_REPORT.md) · 진행: [`docs/PROGRESS.md`](docs/PROGRESS.md) · Play 제출 문안: [`docs/PLAY_SUBMISSION.md`](docs/PLAY_SUBMISSION.md)
 
 ## 빌드와 실행
@@ -49,7 +50,7 @@
 | 7 | 설정 › AI가 한 일 | 호출마다 시각·기능·제공자·검증 결과·지연, 펼치면 입력 해시·통과본 | — |
 
 ## 모듈
-`app` · `build-logic` · `core:{model, common, testing, database, data, sensing, insights, intervention, ai-engine, ai, social, designsystem}` · `feature:{onboarding, today, report, coach, friends, settings}`. 각 모듈의 역할·공개 API·금지 사항은 그 폴더의 `AGENTS.md`.
+`app` · `build-logic` · `core:{model, common, database, data, sensing, insights, intervention, ai-engine, ai, social, designsystem}` · `feature:{onboarding, today, report, coach, friends, settings}`. 각 모듈의 역할·공개 API·금지 사항은 그 폴더의 `AGENTS.md`.
 
 ## 라이선스
 글꼴 Pretendard(서브셋, 내부 이름 "Pause Sans") — SIL Open Font License 1.1, [`licenses/Pretendard-OFL.txt`](licenses/Pretendard-OFL.txt).
