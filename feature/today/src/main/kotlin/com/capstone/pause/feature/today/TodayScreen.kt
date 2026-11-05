@@ -37,6 +37,7 @@ import com.capstone.pause.core.designsystem.component.Wordmark
 import com.capstone.pause.core.designsystem.component.durationLabel
 import com.capstone.pause.core.designsystem.theme.PauseSizes
 import com.capstone.pause.core.designsystem.theme.PauseTheme
+import com.capstone.pause.core.designsystem.theme.isLargeFont
 import com.capstone.pause.core.model.BuddyExpression
 import com.capstone.pause.core.model.MeltStage
 
@@ -101,12 +102,20 @@ fun TodayScreen(uiState: TodayUiState, onAction: (TodayAction) -> Unit, modifier
         ClockCard(ready)
         summary.topRisk?.let { RiskCard(it) }
         if (ready.poke != null || ready.plan != null) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.sm),
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                ready.poke?.let { PokeCard(it, Modifier.weight(1f)) }
-                ready.plan?.let { PlanCard(it, Modifier.weight(1f)) }
+            if (isLargeFont()) {
+                // 큰 글자에서는 두 카드를 세로로 쌓는다(좁은 칸에서 한 글자씩 줄바꿈되지 않게).
+                Column(verticalArrangement = Arrangement.spacedBy(PauseTheme.spacing.sm)) {
+                    ready.poke?.let { PokeCard(it, Modifier.fillMaxWidth()) }
+                    ready.plan?.let { PlanCard(it, Modifier.fillMaxWidth()) }
+                }
+            } else {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.sm),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    ready.poke?.let { PokeCard(it, Modifier.weight(1f)) }
+                    ready.plan?.let { PlanCard(it, Modifier.weight(1f)) }
+                }
             }
         }
         if (!summary.isDemo && summary.totalMinutes == 0) {
@@ -195,7 +204,7 @@ private fun ClockCard(ready: TodayUiState.Ready) {
             )
         }
         val entries = summary.byContext.entries.toList()
-        entries.chunked(2).forEach { pair ->
+        entries.chunked(if (isLargeFont()) 1 else 2).forEach { pair ->
             Row(
                 horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.md),
                 modifier = Modifier.fillMaxWidth(),
@@ -203,7 +212,7 @@ private fun ClockCard(ready: TodayUiState.Ready) {
                 pair.forEach { (slot, minutes) ->
                     ContextLegendRow(slot = slot, value = durationLabel(minutes), modifier = Modifier.weight(1f))
                 }
-                if (pair.size == 1) Box(Modifier.weight(1f))
+                if (pair.size == 1 && !isLargeFont()) Box(Modifier.weight(1f))
             }
         }
         ClockLegend()

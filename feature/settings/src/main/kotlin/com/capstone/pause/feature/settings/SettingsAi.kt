@@ -5,9 +5,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
@@ -42,6 +44,7 @@ internal fun AiModeRows(state: AiSettingsUiState, onAction: (AiSettingsAction) -
                 },
         ) {
             RadioButton(selected = state.mode == mode, onClick = null)
+            Spacer(Modifier.width(PauseTheme.spacing.xs))
             Column {
                 Text(stringResource(mode.labelRes()), style = PauseTheme.type.body, color = colors.ink)
                 Text(stringResource(mode.descRes()), style = PauseTheme.type.bodySmall, color = colors.ink2)

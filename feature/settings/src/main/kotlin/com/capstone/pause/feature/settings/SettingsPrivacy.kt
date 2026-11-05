@@ -4,8 +4,10 @@ import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.AlertDialog
@@ -59,6 +61,7 @@ private fun ModeRow(label: String, desc: String, selected: Boolean, enabled: Boo
             .selectable(selected = selected, enabled = enabled, role = Role.RadioButton, onClick = {}),
     ) {
         RadioButton(selected = selected, onClick = null, enabled = enabled)
+        Spacer(Modifier.width(PauseTheme.spacing.xs))
         Column {
             Text(label, style = PauseTheme.type.body, color = if (enabled) colors.ink else colors.ink3)
             Text(desc, style = PauseTheme.type.bodySmall, color = colors.ink2)

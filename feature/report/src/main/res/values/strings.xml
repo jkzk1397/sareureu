@@ -112,4 +112,7 @@
   <string name="report_peer_baseline">내 기준선</string>
   <string name="report_peer_a11y">하루 평균 나 %1$s, 또래 %2$s</string>
   <string name="report_type_fact">자기 전과 한밤중이 %1$d%%였어</string>
+  <string name="report_flow_col_entry">들어온 곳</string>
+  <string name="report_flow_col_app">본 앱</string>
+  <string name="report_flow_col_exit">나간 곳</string>
 </resources>

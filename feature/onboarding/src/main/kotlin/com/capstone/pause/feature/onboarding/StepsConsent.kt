@@ -2,8 +2,10 @@ package com.capstone.pause.feature.onboarding
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
@@ -158,6 +160,7 @@ private fun AiOption(mode: AiMode, title: Int, desc: Int, selected: AiMode, onAc
             }),
     ) {
         RadioButton(selected = mode == selected, onClick = null)
+        Spacer(Modifier.width(PauseTheme.spacing.xs))
         Column {
             Text(stringResource(title), style = PauseTheme.type.body, color = PauseTheme.colors.ink)
             Text(stringResource(desc), style = PauseTheme.type.bodySmall, color = PauseTheme.colors.ink2)

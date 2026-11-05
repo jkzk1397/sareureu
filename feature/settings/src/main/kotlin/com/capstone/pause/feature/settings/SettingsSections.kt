@@ -14,6 +14,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import com.capstone.pause.core.data.settings.DefaultThresholds
+import com.capstone.pause.core.data.trackedapp.TrackedApps
 import com.capstone.pause.core.designsystem.component.ContextChip
 import com.capstone.pause.core.designsystem.component.labelRes
 import com.capstone.pause.core.designsystem.theme.PauseTheme
@@ -89,7 +90,7 @@ internal fun RecentSessions(sessions: List<ShortformSession>, zone: ZoneId = Zon
                     start.dayOfMonth,
                     start.hour,
                     start.minute,
-                    s.segments.joinToString(SEPARATOR) { it.packageName.substringAfterLast('.') },
+                    s.segments.joinToString(SEPARATOR) { appLabel(it.packageName) },
                 ),
                 style = PauseTheme.type.label,
                 color = PauseTheme.colors.ink,
@@ -147,3 +148,7 @@ private fun kindLabel(kind: AppKind): String = stringResource(
 private const val MINUS = "−"
 private const val PLUS = "+"
 private const val SEPARATOR = "→"
+
+/** 개발자 메뉴용 앱 이름: 추적 앱 목록의 이름, 없으면 패키지 이름 그대로(`com.instagram.android`가 "android"로 보이지 않게). */
+private fun appLabel(packageName: String): String =
+    TrackedApps.DEFAULT.firstOrNull { it.packageName == packageName }?.label ?: packageName

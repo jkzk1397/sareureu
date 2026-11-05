@@ -9,9 +9,11 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.RadioButton
@@ -255,6 +257,7 @@ private fun RadioRow(label: String, selected: Boolean, onClick: () -> Unit) {
             .selectable(selected = selected, role = Role.RadioButton, onClick = onClick),
     ) {
         RadioButton(selected = selected, onClick = null)
+        Spacer(Modifier.width(PauseTheme.spacing.xs))
         Text(text = label, style = PauseTheme.type.body, color = PauseTheme.colors.ink)
     }
 }

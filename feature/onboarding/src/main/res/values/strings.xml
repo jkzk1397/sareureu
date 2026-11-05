@@ -146,4 +146,6 @@
   <string name="onboarding_done_body">이제 숏폼을 볼 때 옆에서 말 걸게. 사용 기록 권한이 없으면 설정 › 시연 모드로 먼저 둘러봐.</string>
   <string name="onboarding_done_start">시작하기</string>
   <string name="onboarding_done_permissions">권한 %2$d개 중 %1$d개 허용됨 (나중에 설정에서 바꿀 수 있어)</string>
+  <string name="onboarding_range_start_short">시작</string>
+  <string name="onboarding_range_end_short">끝</string>
 </resources>

@@ -116,12 +116,20 @@ private fun TimeRow(label: Int, time: LocalTime, onShift: (Int) -> Unit) {
 private fun RangeRow(label: Int, field: RhythmField, range: TimeRange?, onAction: (OnboardingAction) -> Unit) {
     val name = stringResource(label)
     HorizontalDivider(color = PauseTheme.colors.line)
+    // 줄 전체를 스위치로 묶어 화면 읽기가 이름과 켜짐 상태를 함께 읽는다.
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth().heightIn(min = PauseTheme.spacing.minTouch),
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = PauseTheme.spacing.minTouch)
+            .toggleable(
+                value = range != null,
+                role = Role.Switch,
+                onValueChange = { onAction(OnboardingAction.ToggleRange(field, it)) },
+            ),
     ) {
         Text(text = name, style = PauseTheme.type.body, color = PauseTheme.colors.ink, modifier = Modifier.weight(1f))
-        Switch(checked = range != null, onCheckedChange = { onAction(OnboardingAction.ToggleRange(field, it)) })
+        Switch(checked = range != null, onCheckedChange = null)
     }
     if (range == null) {
         Text(
@@ -132,11 +140,13 @@ private fun RangeRow(label: Int, field: RhythmField, range: TimeRange?, onAction
     } else {
         Column {
             TimeStepper(
+                caption = stringResource(R.string.onboarding_range_start_short),
                 label = stringResource(R.string.onboarding_range_start, name),
                 time = range.start,
                 onShift = { onAction(OnboardingAction.ShiftTime(field, false, it)) },
             )
             TimeStepper(
+                caption = stringResource(R.string.onboarding_range_end_short),
                 label = stringResource(R.string.onboarding_range_end, name),
                 time = range.end,
                 onShift = { onAction(OnboardingAction.ShiftTime(field, true, it)) },

@@ -23,6 +23,7 @@ import com.capstone.pause.core.designsystem.component.PauseScreenColumn
 import com.capstone.pause.core.designsystem.component.StatHero
 import com.capstone.pause.core.designsystem.component.durationLabel
 import com.capstone.pause.core.designsystem.theme.PauseTheme
+import com.capstone.pause.core.designsystem.theme.isLargeFont
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -86,15 +87,15 @@ private fun WeekHeader(report: WeeklyReportState) {
 
 @Composable
 private fun StatRow(report: WeeklyReportState) {
-    Row(horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.sm), modifier = Modifier.fillMaxWidth()) {
-        PauseCard(modifier = Modifier.weight(1f)) {
+    TileGroup { tile ->
+        PauseCard(modifier = tile) {
             StatHero(
                 value = durationLabel(report.avgMinPerDay.roundToInt()),
                 caption = stringResource(R.string.report_stat_avg),
                 valueStyle = TileValueStyle,
             )
         }
-        PauseCard(modifier = Modifier.weight(1f)) {
+        PauseCard(modifier = tile) {
             val rate = report.reductionRate
             if (rate == null) {
                 StatHero(
@@ -112,7 +113,7 @@ private fun StatRow(report: WeeklyReportState) {
                 )
             }
         }
-        PauseCard(modifier = Modifier.weight(1f)) {
+        PauseCard(modifier = tile) {
             val stop = report.stopRate
             StatHero(
                 value = if (stop == null) {
@@ -164,3 +165,15 @@ internal const val PERCENT = 100
 /** 세 칸 요약 숫자: 좁은 칸에서도 "1시간 36분"이 한 줄에 들어가게 본문 크기 + 굵게. */
 private val TileValueStyle: TextStyle
     @Composable get() = PauseTheme.type.body.copy(fontWeight = FontWeight.Bold)
+
+/** 통계 칸 묶음: 보통은 세 칸 가로, 큰 글자에서는 세로로 쌓는다. [content]는 칸마다 받은 Modifier를 쓴다. */
+@Composable
+private fun TileGroup(content: @Composable (Modifier) -> Unit) {
+    if (isLargeFont()) {
+        Column(verticalArrangement = Arrangement.spacedBy(PauseTheme.spacing.sm)) { content(Modifier.fillMaxWidth()) }
+    } else {
+        Row(horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.sm), modifier = Modifier.fillMaxWidth()) {
+            content(Modifier.weight(1f))
+        }
+    }
+}
