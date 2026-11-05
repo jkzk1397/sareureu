@@ -100,7 +100,7 @@ fun PauseAppShell(needsOnboarding: Boolean) {
                 .padding(padding)
                 .consumeWindowInsets(padding),
         ) {
-            todayEntries()
+            todayEntries(onOpenMessages = { selectedIndex = TopTab.COACH.ordinal })
             reportEntries()
             coachEntries()
             friendsEntries()

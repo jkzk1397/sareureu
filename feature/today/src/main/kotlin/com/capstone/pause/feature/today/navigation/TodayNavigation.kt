@@ -9,7 +9,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data object TodayKey : NavKey
 
-/** 오늘 탭 화면을 entry provider에 붙인다. */
-fun EntryProviderScope<NavKey>.todayEntries() {
-    entry<TodayKey> { TodayRoute() }
+/** 오늘 탭 화면을 entry provider에 붙인다. 종 버튼은 [onOpenMessages](코치 탭의 르르 메시지). */
+fun EntryProviderScope<NavKey>.todayEntries(onOpenMessages: () -> Unit) {
+    entry<TodayKey> { TodayRoute(onOpenMessages = onOpenMessages) }
 }

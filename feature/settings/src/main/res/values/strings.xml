@@ -10,4 +10,10 @@
   <string name="settings_theme_system">시스템 설정 따르기</string>
   <string name="settings_theme_light">라이트</string>
   <string name="settings_theme_dark">다크</string>
+  <string name="settings_demo_pattern_night_owl">밤형 (기본)</string>
+  <string name="settings_demo_pattern_commuter">출퇴근형</string>
+  <string name="settings_demo_pattern_domino">알림 도미노형</string>
+  <string name="settings_demo_reseed">2주치 가상 기록 넣기</string>
+  <string name="settings_demo_seeding">가상 기록 넣는 중…</string>
+  <string name="settings_demo_clear">가상 기록 지우기</string>
 </resources>

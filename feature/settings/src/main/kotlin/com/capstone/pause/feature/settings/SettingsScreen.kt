@@ -14,6 +14,7 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -23,8 +24,10 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.capstone.pause.core.data.demo.DemoPattern
 import com.capstone.pause.core.data.settings.ThemeMode
 import com.capstone.pause.core.designsystem.component.PauseScreenColumn
+import com.capstone.pause.core.designsystem.component.PrimaryButton
 import com.capstone.pause.core.designsystem.theme.PauseTheme
 
 /** 설정 탭 진입점. */
@@ -45,6 +48,29 @@ fun SettingsScreen(uiState: SettingsUiState, onAction: (SettingsAction) -> Unit,
                 checked = uiState.demoMode,
                 onCheckedChange = { onAction(SettingsAction.SetDemoMode(it)) },
             )
+            if (uiState.demoMode) {
+                DemoPattern.entries.forEach { pattern ->
+                    RadioRow(
+                        label = stringResource(pattern.labelRes()),
+                        selected = uiState.demoPattern == pattern,
+                        onClick = { onAction(SettingsAction.SetDemoPattern(pattern)) },
+                    )
+                }
+                PrimaryButton(
+                    text = stringResource(
+                        if (uiState.seeding) R.string.settings_demo_seeding else R.string.settings_demo_reseed,
+                    ),
+                    onClick = { onAction(SettingsAction.ReseedDemo) },
+                    enabled = !uiState.seeding,
+                )
+                TextButton(
+                    onClick = { onAction(SettingsAction.ClearDemo) },
+                    enabled = !uiState.seeding,
+                    modifier = Modifier.heightIn(min = PauseTheme.spacing.minTouch),
+                ) {
+                    Text(text = stringResource(R.string.settings_demo_clear), color = PauseTheme.colors.ink2)
+                }
+            }
         }
         SettingsSection(title = stringResource(R.string.settings_section_display)) {
             SwitchRow(
@@ -62,6 +88,12 @@ fun SettingsScreen(uiState: SettingsUiState, onAction: (SettingsAction) -> Unit,
             }
         }
     }
+}
+
+private fun DemoPattern.labelRes(): Int = when (this) {
+    DemoPattern.NIGHT_OWL -> R.string.settings_demo_pattern_night_owl
+    DemoPattern.COMMUTER -> R.string.settings_demo_pattern_commuter
+    DemoPattern.DOMINO -> R.string.settings_demo_pattern_domino
 }
 
 private fun ThemeMode.labelRes(): Int = when (this) {
