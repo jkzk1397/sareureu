@@ -54,6 +54,9 @@ interface WeeklyReportRepository {
 
     /** 지금 출처(시연 모드면 DEMO). */
     suspend fun currentSource(): DataSource
+
+    /** 출처별 리포트·가설 모두 지우기(시연 데이터를 다시 넣을 때 옛 리포트가 남지 않게). */
+    suspend fun deleteAll(source: DataSource)
 }
 
 /** AI가 만든 문구 팩을 활성 팩으로 저장한다(Room `copy_pack`). 읽기는 `CopyPackRepository`. */
@@ -91,6 +94,11 @@ internal class RoomWeeklyReportRepository @Inject constructor(
         reportDao.setVerdict(hypothesisId, verdict)
 
     override suspend fun currentSource(): DataSource = settingsRepository.activeSource().first()
+
+    override suspend fun deleteAll(source: DataSource) {
+        reportDao.deleteHypothesesBySource(source)
+        reportDao.deleteReportsBySource(source)
+    }
 }
 
 @Singleton

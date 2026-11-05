@@ -141,7 +141,9 @@ fun DayClock(
                 .widthIn(max = diameter * Dial.CENTER * 2f)
                 .padding(PauseTheme.spacing.xxs),
         ) {
-            Text(data.totalLabel, style = PauseTheme.type.title, color = colors.ink, textAlign = TextAlign.Center)
+            // 일주일 합계("11시간 12분")는 가운데 원에 비해 길어서 한 단계 작은 글자로 한 줄에 둔다.
+            val totalStyle = if (data.scale == DayClockScale.Week) PauseTheme.type.label else PauseTheme.type.title
+            Text(data.totalLabel, style = totalStyle, color = colors.ink, textAlign = TextAlign.Center, maxLines = 1)
             Text(data.caption, style = PauseTheme.type.caption, color = colors.ink2, textAlign = TextAlign.Center)
         }
     }

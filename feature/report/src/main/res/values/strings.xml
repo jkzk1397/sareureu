@@ -77,4 +77,39 @@
   <string name="report_type_gap_filler">틈새 채움형</string>
   <string name="report_type_morning">기상 루틴형</string>
   <string name="report_type_balanced">균형형</string>
+
+  <!-- 5단계 차트 -->
+  <string name="report_clock_title">언제 봤어? · 일주일 시계</string>
+  <string name="report_clock_caption">꽃잎 길이 = 그 시간에 본 분 · 위 반은 밤</string>
+  <string name="report_clock_center">일주일</string>
+  <string name="report_peak">%1$s부터 %2$s까지 제일 길어. 일주일에 %3$s</string>
+  <string name="report_hour">%1$s %2$d시</string>
+  <string name="report_midnight">자정</string>
+  <string name="report_noon">정오</string>
+  <string name="report_period_dawn">새벽</string>
+  <string name="report_period_morning">오전</string>
+  <string name="report_period_afternoon">오후</string>
+  <string name="report_period_evening">저녁</string>
+  <string name="report_period_night">밤</string>
+  <string name="report_context_title">맥락별 합계</string>
+  <string name="report_context_caption">일주일 합계 %1$s</string>
+  <string name="report_context_value">%1$s · %2$d%%</string>
+  <string name="report_flow_title">어디서 와서 어디로? · 경로</string>
+  <string name="report_flow_caption">세션 %1$d개 · 진입 → 숏폼 앱 → 이탈</string>
+  <string name="report_flow_node">%1$s %2$d%%</string>
+  <string name="report_flow_insight">%1$s에서 넘어온 세션이 제일 길어. 중앙값 %2$s</string>
+  <string name="report_length_title">한 번 보면 얼마나? · 세션 길이</string>
+  <string name="report_length_0_5">5분 미만</string>
+  <string name="report_length_5_10">5–10분</string>
+  <string name="report_length_10_20">10–20분</string>
+  <string name="report_length_20_40">20–40분</string>
+  <string name="report_length_40_plus">40분+</string>
+  <string name="report_peer_title">또래랑 비교</string>
+  <string name="report_peer_caption">같은 연령대·신분의 하루 평균</string>
+  <string name="report_peer_caption_demo">같은 연령대·신분의 하루 평균 · 시연용 가상 데이터</string>
+  <string name="report_peer_me">나</string>
+  <string name="report_peer_peer">또래</string>
+  <string name="report_peer_baseline">내 기준선</string>
+  <string name="report_peer_a11y">하루 평균 나 %1$s, 또래 %2$s</string>
+  <string name="report_type_fact">자기 전과 한밤중이 %1$d%%였어</string>
 </resources>

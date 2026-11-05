@@ -7,4 +7,6 @@ dependencies {
     implementation(project(":core:ai"))
     implementation(project(":core:ai-engine"))
     implementation(project(":core:social"))
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.work.runtime)
 }

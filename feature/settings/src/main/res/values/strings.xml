@@ -93,4 +93,37 @@
   <string name="settings_ai_outcome_mock">모의 결과로 대신</string>
   <string name="settings_ai_outcome_safety">안전 때문에 멈춤</string>
   <string name="settings_ai_outcome_skipped">부르지 않음</string>
+  <!-- 5단계: 감지 방식·추적 앱·개인정보·정보 -->
+  <string name="settings_detection_title">감지 방식</string>
+  <string name="settings_detection_app">앱 단위 (기본)</string>
+  <string name="settings_detection_app_desc">추적 앱이 열린 시간을 세. 앱 안에서 쇼츠인지 홈인지는 구분하지 않아(앱 전체 시간).</string>
+  <string name="settings_detection_precise">정밀 모드 · 곧</string>
+  <string name="settings_detection_precise_desc">접근성 권한으로 쇼츠·릴스 화면과 넘김 횟수를 세. 켜기 전에 따로 고지 화면을 보여 줄 거야. 아직 준비 중이야.</string>
+  <string name="settings_section_tracked">추적 앱</string>
+  <string name="settings_tracked_desc">끈 앱은 세지 않아. 앱 안 화면 내용은 보지 않아.</string>
+  <string name="settings_section_privacy">개인정보</string>
+  <string name="settings_privacy_device_title">이 폰 안에만 남는 것</string>
+  <string name="settings_privacy_device_body">앱을 연 시각과 순서(사용 기록), 숏폼 세션, 알림에 대한 내 답, 채팅, 프로필. 세션은 90일, 원시 기록은 7일 뒤 지워져.</string>
+  <string name="settings_privacy_cloud_title">동의하면 밖으로 나가는 것</string>
+  <string name="settings_privacy_cloud_body">AI를 켜면: 코드가 계산한 요약(맥락별 시간, 감소율 등)과 연령대·신분·관심사. 친구 기능을 켜면: 하루 감소율과 기록률만.</string>
+  <string name="settings_privacy_never_title">절대 하지 않는 것</string>
+  <string name="settings_privacy_never_body">화면 글자·영상 제목·메시지를 저장하지 않아. 다른 앱을 대신 누르거나 닫지 않아. 설치 앱 목록·연락처·위치를 보내지 않아.</string>
+  <string name="settings_export">내 기록 내보내기 (JSON)</string>
+  <string name="settings_export_desc">세션·알림 응답·메시지·계획·가설·프로필·동의·설정을 파일 하나로 저장해. 저장할 곳은 네가 골라.</string>
+  <string name="settings_export_running">내보내는 중…</string>
+  <string name="settings_export_done">파일로 저장했어.</string>
+  <string name="settings_export_failed">저장하지 못했어. 다른 위치로 다시 해 줘.</string>
+  <string name="settings_erase">모든 기록 삭제</string>
+  <string name="settings_erase_desc">이 폰의 기록·설정·프로필을 모두 지우고 처음 화면으로 돌아가. 되돌릴 수 없어.</string>
+  <string name="settings_erase_confirm_title">정말 모두 지울까?</string>
+  <string name="settings_erase_confirm_body">세션·알림 기록·메시지·계획·AI 기록·프로필·동의·설정이 모두 지워지고 감지도 꺼져. 친구 서버에 올린 기록은 없어(친구 기능 꺼짐).</string>
+  <string name="settings_erase_confirm_yes">모두 지우기</string>
+  <string name="settings_erase_confirm_no">취소</string>
+  <string name="settings_erase_running">지우는 중…</string>
+  <string name="settings_erase_failed">일부를 지우지 못했어: %1$s. 다시 해 줘.</string>
+  <string name="settings_section_about">정보</string>
+  <string name="settings_about_version">%1$s · 버전 %2$s</string>
+  <string name="settings_about_font">글꼴: Pretendard (SIL Open Font License 1.1)</string>
+  <string name="settings_about_ai">AI 문장은 코드가 센 숫자를 근거로 만들고, 검증을 통과한 것만 보여 줘.</string>
+  <string name="settings_export_file_name" translatable="false">pause_export.json</string>
 </resources>

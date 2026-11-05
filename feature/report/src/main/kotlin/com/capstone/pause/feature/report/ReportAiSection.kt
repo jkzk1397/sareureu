@@ -95,27 +95,6 @@ private fun AiBody(ai: AiReport, report: WeeklyReportState, local: ReportLocal, 
             )
         }
     }
-    PauseCard(title = stringResource(R.string.report_type_title)) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.md),
-        ) {
-            BuddyAvatar(BuddyExpression.SLEEPY, PauseSizes.bubbleBuddy)
-            Column {
-                Text(
-                    stringResource(viewerTypeRes(report.viewerType)),
-                    style = PauseTheme.type.title,
-                    color = colors.ink,
-                )
-                if ("type" !in
-                    hidden
-                ) {
-                    Text(fill(ai.viewerTypeLine), style = PauseTheme.type.bodySmall, color = colors.ink2)
-                }
-            }
-        }
-        if ("type" !in hidden) ReportButton(reportAction("type"))
-    }
     SectionTitle(stringResource(R.string.report_ai_hypotheses))
     ai.hypotheses.filter { it.id !in hidden }.forEach { h ->
         Column {
@@ -215,7 +194,7 @@ private fun AiLine(onReport: () -> Unit, content: @Composable () -> Unit) {
 
 /** 앱을 나가지 않고 누르는 '신고'(Play AI 생성 콘텐츠 정책). */
 @Composable
-private fun ReportButton(onClick: () -> Unit) {
+internal fun ReportButton(onClick: () -> Unit) {
     val description = stringResource(R.string.report_ai_report_cd)
     TextButton(
         onClick = onClick,

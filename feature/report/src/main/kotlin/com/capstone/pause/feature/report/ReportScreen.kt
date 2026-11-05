@@ -11,6 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.capstone.pause.core.ai.report.WeeklyReportState
@@ -32,7 +34,8 @@ fun ReportRoute(viewModel: ReportViewModel = hiltViewModel()) {
 }
 
 /**
- * 리포트 탭(상태 없음). 위에서부터: 기간·요약 숫자 → (5단계 차트 자리) → 관찰(코드) → AI 주간 분석(추측).
+ * 리포트 탭(상태 없음). 위에서부터(목업 05): 기간·요약 숫자 → 유형 → 일주일 시계 → 맥락별 합계 → 경로 → 세션 길이 →
+ * 또래 비교 → 관찰(코드) → AI 주간 분석(추측).
  * 관찰과 추측은 다른 카드·다른 제목으로 나눈다(AGENTS: 관찰(코드)과 가설(AI)을 화면에서 분리).
  */
 @Composable
@@ -56,7 +59,8 @@ fun ReportScreen(uiState: ReportUiState, onAction: (ReportAction) -> Unit, modif
             return@PauseScreenColumn
         }
         StatRow(report)
-        // TODO(BUILD_REPORT#5단계): 일주일 시계·맥락별 합계·흐름도·히트맵·세션 길이·또래 비교 차트가 여기에 들어간다.
+        ViewerTypeCard(report = report, local = ready.local, onAction = onAction)
+        ready.charts?.let { ReportCharts(it) }
         ObservationsCard(report)
         AiSection(report = report, local = ready.local, onAction = onAction)
     }
@@ -87,7 +91,7 @@ private fun StatRow(report: WeeklyReportState) {
             StatHero(
                 value = durationLabel(report.avgMinPerDay.roundToInt()),
                 caption = stringResource(R.string.report_stat_avg),
-                valueStyle = PauseTheme.type.title,
+                valueStyle = TileValueStyle,
             )
         }
         PauseCard(modifier = Modifier.weight(1f)) {
@@ -96,13 +100,13 @@ private fun StatRow(report: WeeklyReportState) {
                 StatHero(
                     value = stringResource(R.string.report_stat_reduction_measuring),
                     caption = stringResource(R.string.report_stat_reduction),
-                    valueStyle = PauseTheme.type.title,
+                    valueStyle = TileValueStyle,
                 )
             } else {
                 StatHero(
                     value = stringResource(R.string.report_percent, (abs(rate) * PERCENT).roundToInt()),
                     caption = stringResource(R.string.report_stat_reduction),
-                    valueStyle = PauseTheme.type.title,
+                    valueStyle = TileValueStyle,
                     direction = if (rate >= 0) ChangeDirection.DOWN else ChangeDirection.UP,
                     change = stringResource(if (rate >= 0) R.string.report_stat_less else R.string.report_stat_more),
                 )
@@ -117,7 +121,7 @@ private fun StatRow(report: WeeklyReportState) {
                     stringResource(R.string.report_percent, (stop * PERCENT).roundToInt())
                 },
                 caption = stringResource(R.string.report_stat_stop),
-                valueStyle = PauseTheme.type.title,
+                valueStyle = TileValueStyle,
             )
         }
     }
@@ -156,3 +160,7 @@ internal fun SectionTitle(text: String) {
 }
 
 internal const val PERCENT = 100
+
+/** 세 칸 요약 숫자: 좁은 칸에서도 "1시간 36분"이 한 줄에 들어가게 본문 크기 + 굵게. */
+private val TileValueStyle: TextStyle
+    @Composable get() = PauseTheme.type.body.copy(fontWeight = FontWeight.Bold)

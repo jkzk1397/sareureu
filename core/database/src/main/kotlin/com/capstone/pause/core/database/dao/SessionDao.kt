@@ -51,6 +51,11 @@ interface SessionDao {
         return id
     }
 
+    /** 모든 세션(내보내기용, 출처 모두). */
+    @Transaction
+    @Query("SELECT * FROM sessions ORDER BY start")
+    suspend fun getAll(): List<SessionWithSegments>
+
     /** 출처별 세션 수. */
     @Query("SELECT COUNT(*) FROM sessions WHERE source = :source")
     suspend fun count(source: DataSource): Int

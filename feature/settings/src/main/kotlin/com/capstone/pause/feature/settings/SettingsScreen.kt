@@ -3,6 +3,8 @@ package com.capstone.pause.feature.settings
 import android.content.Intent
 import android.content.res.Configuration
 import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -35,15 +38,32 @@ import com.capstone.pause.core.designsystem.theme.PauseTheme
 
 /** 설정 탭 진입점. */
 @Composable
-fun SettingsRoute(viewModel: SettingsViewModel = hiltViewModel(), aiViewModel: AiSettingsViewModel = hiltViewModel()) {
+fun SettingsRoute(
+    viewModel: SettingsViewModel = hiltViewModel(),
+    aiViewModel: AiSettingsViewModel = hiltViewModel(),
+    privacyViewModel: PrivacySettingsViewModel = hiltViewModel(),
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val aiState by aiViewModel.uiState.collectAsStateWithLifecycle()
+    val privacyState by privacyViewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    // 저장 위치는 사용자가 고른다(SAF). 저장소 권한이 필요 없다.
+    val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(EXPORT_MIME)) {
+        privacyViewModel.onAction(PrivacyAction.ExportTo(it))
+    }
+    val exportName = stringResource(R.string.settings_export_file_name)
+    val versionName = remember {
+        runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull().orEmpty()
+    }
     SettingsScreen(
         uiState = uiState,
         onAction = viewModel::onAction,
         aiState = aiState,
         onAiAction = aiViewModel::onAction,
+        privacyState = privacyState,
+        onPrivacyAction = privacyViewModel::onAction,
+        onExport = { exportLauncher.launch(exportName) },
+        versionName = versionName,
         onOpenUsageAccess = {
             viewModel.onAction(SettingsAction.UsageAccessHandled)
             context.startActivity(
@@ -53,7 +73,9 @@ fun SettingsRoute(viewModel: SettingsViewModel = hiltViewModel(), aiViewModel: A
     )
 }
 
-/** 설정 탭(상태 없음). TODO(BUILD_REPORT#2): 5단계에서 추적 앱·감지 방식·AI·개인정보 항목을 더한다. */
+/**
+ * 설정 탭(상태 없음). 묶음 순서: 감지 → 알림 → 맥락별 기준 → 추적 앱 → AI → 개인정보 → 화면 → 시연 → 개발자 → 정보.
+ */
 @Composable
 fun SettingsScreen(
     uiState: SettingsUiState,
@@ -62,6 +84,10 @@ fun SettingsScreen(
     onOpenUsageAccess: () -> Unit = {},
     aiState: AiSettingsUiState = AiSettingsUiState(),
     onAiAction: (AiSettingsAction) -> Unit = {},
+    privacyState: PrivacyUiState = PrivacyUiState(),
+    onPrivacyAction: (PrivacyAction) -> Unit = {},
+    onExport: () -> Unit = {},
+    versionName: String = "",
 ) {
     PauseScreenColumn(title = stringResource(R.string.settings_title), modifier = modifier) {
         SettingsSection(title = stringResource(R.string.settings_section_monitoring)) {
@@ -77,6 +103,7 @@ fun SettingsScreen(
                     onCancel = { onAction(SettingsAction.UsageAccessHandled) },
                 )
             }
+            DetectionModeRows()
         }
         SettingsSection(title = stringResource(R.string.settings_section_reminder)) {
             ReminderRows(
@@ -87,39 +114,20 @@ fun SettingsScreen(
                 onAdd = { onAction(SettingsAction.AddReminder) },
             )
         }
-        SettingsSection(title = stringResource(R.string.settings_section_demo)) {
-            SwitchRow(
-                label = stringResource(R.string.settings_demo_mode),
-                description = stringResource(R.string.settings_demo_mode_desc),
-                checked = uiState.demoMode,
-                onCheckedChange = { onAction(SettingsAction.SetDemoMode(it)) },
-            )
-            if (uiState.demoMode) {
-                DemoPattern.entries.forEach { pattern ->
-                    RadioRow(
-                        label = stringResource(pattern.labelRes()),
-                        selected = uiState.demoPattern == pattern,
-                        onClick = { onAction(SettingsAction.SetDemoPattern(pattern)) },
-                    )
-                }
-                PrimaryButton(
-                    text = stringResource(
-                        if (uiState.seeding) R.string.settings_demo_seeding else R.string.settings_demo_reseed,
-                    ),
-                    onClick = { onAction(SettingsAction.ReseedDemo) },
-                    enabled = !uiState.seeding,
-                )
-                TextButton(
-                    onClick = { onAction(SettingsAction.ClearDemo) },
-                    enabled = !uiState.seeding,
-                    modifier = Modifier.heightIn(min = PauseTheme.spacing.minTouch),
-                ) {
-                    Text(text = stringResource(R.string.settings_demo_clear), color = PauseTheme.colors.ink2)
-                }
-            }
-        }
         SettingsSection(title = stringResource(R.string.settings_section_threshold)) {
             ThresholdRows(uiState.thresholds, onSet = { slot, m -> onAction(SettingsAction.SetThreshold(slot, m)) })
+        }
+        SettingsSection(title = stringResource(R.string.settings_section_tracked)) {
+            TrackedAppRows(privacyState.trackedApps) { pkg, on -> onPrivacyAction(PrivacyAction.SetTracked(pkg, on)) }
+        }
+        SettingsSection(title = stringResource(R.string.settings_section_ai)) {
+            AiModeRows(aiState, onAiAction)
+        }
+        SettingsSection(title = stringResource(R.string.settings_section_ai_log)) {
+            AiCallList(aiState, onAiAction)
+        }
+        SettingsSection(title = stringResource(R.string.settings_section_privacy)) {
+            PrivacyRows(privacyState, onExport = onExport, onAction = onPrivacyAction)
         }
         SettingsSection(title = stringResource(R.string.settings_section_display)) {
             SwitchRow(
@@ -136,17 +144,52 @@ fun SettingsScreen(
                 )
             }
         }
-        SettingsSection(title = stringResource(R.string.settings_section_ai)) {
-            AiModeRows(aiState, onAiAction)
-        }
-        SettingsSection(title = stringResource(R.string.settings_section_ai_log)) {
-            AiCallList(aiState, onAiAction)
+        SettingsSection(title = stringResource(R.string.settings_section_demo)) {
+            DemoRows(uiState, onAction)
         }
         SettingsSection(title = stringResource(R.string.settings_section_dev)) {
             RecentSessions(uiState.recentSessions)
         }
+        SettingsSection(title = stringResource(R.string.settings_section_about)) {
+            AboutRows(versionName)
+        }
     }
 }
+
+@Composable
+private fun DemoRows(uiState: SettingsUiState, onAction: (SettingsAction) -> Unit) {
+    SwitchRow(
+        label = stringResource(R.string.settings_demo_mode),
+        description = stringResource(R.string.settings_demo_mode_desc),
+        checked = uiState.demoMode,
+        onCheckedChange = { onAction(SettingsAction.SetDemoMode(it)) },
+    )
+    if (uiState.demoMode) {
+        DemoPattern.entries.forEach { pattern ->
+            RadioRow(
+                label = stringResource(pattern.labelRes()),
+                selected = uiState.demoPattern == pattern,
+                onClick = { onAction(SettingsAction.SetDemoPattern(pattern)) },
+            )
+        }
+        PrimaryButton(
+            text = stringResource(
+                if (uiState.seeding) R.string.settings_demo_seeding else R.string.settings_demo_reseed,
+            ),
+            onClick = { onAction(SettingsAction.ReseedDemo) },
+            enabled = !uiState.seeding,
+        )
+        TextButton(
+            onClick = { onAction(SettingsAction.ClearDemo) },
+            enabled = !uiState.seeding,
+            modifier = Modifier.heightIn(min = PauseTheme.spacing.minTouch),
+        ) {
+            Text(text = stringResource(R.string.settings_demo_clear), color = PauseTheme.colors.ink2)
+        }
+    }
+}
+
+private const val EXPORT_MIME = "application/json"
 
 private const val MAX_REMINDERS = 3
 

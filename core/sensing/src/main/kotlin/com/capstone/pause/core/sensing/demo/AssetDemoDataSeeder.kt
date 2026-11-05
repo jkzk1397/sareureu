@@ -9,6 +9,7 @@ import com.capstone.pause.core.data.demo.DemoPattern
 import com.capstone.pause.core.data.plan.PlanRepository
 import com.capstone.pause.core.data.plan.PokeRepository
 import com.capstone.pause.core.data.plan.ReceivedPoke
+import com.capstone.pause.core.data.report.WeeklyReportRepository
 import com.capstone.pause.core.data.session.SessionRepository
 import com.capstone.pause.core.model.ContextSlot
 import com.capstone.pause.core.model.DataSource
@@ -55,6 +56,7 @@ internal class AssetDemoDataSeeder @Inject constructor(
     private val sessionRepository: SessionRepository,
     private val planRepository: PlanRepository,
     private val pokeRepository: PokeRepository,
+    private val weeklyReportRepository: WeeklyReportRepository,
     private val clock: AppClock,
     @Dispatcher(PauseDispatchers.IO) private val io: CoroutineDispatcher,
 ) : DemoDataSeeder {
@@ -102,6 +104,7 @@ internal class AssetDemoDataSeeder @Inject constructor(
         sessionRepository.deleteAll(DataSource.DEMO)
         planRepository.deleteAll(DataSource.DEMO)
         pokeRepository.deleteAll(DataSource.DEMO)
+        weeklyReportRepository.deleteAll(DataSource.DEMO)
     }
 
     private companion object {

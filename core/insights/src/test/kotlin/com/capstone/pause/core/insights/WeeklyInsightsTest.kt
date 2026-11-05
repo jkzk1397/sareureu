@@ -92,6 +92,16 @@ class ViewerTypeClassifierTest {
         pairs.mapIndexed { i, (slot, min) -> s("2026-11-0${i % 7 + 1}T12:00:00", min, slot, entry = entry) }
 
     @Test
+    fun sharesAreComparedAsDisplayedWholePercent() {
+        // 시연 밤형 주: 자기 전 208 + 한밤중 60 = 268 / 672 = 39.88% → 화면 40% → 밤 산책형.
+        val sessions = week(ContextSlot.PRE_SLEEP to 208, ContextSlot.LATE_NIGHT to 60, ContextSlot.COMMUTE to 404)
+        assertEquals(ViewerType.NIGHT_OWL, ViewerTypeClassifier.classify(sessions, 7, now))
+        // 39.4%는 39%로 보이므로 아니다.
+        val below = week(ContextSlot.PRE_SLEEP to 197, ContextSlot.OTHER to 303)
+        assertEquals(ViewerType.BALANCED, ViewerTypeClassifier.classify(below, 7, now))
+    }
+
+    @Test
     fun priorityOrder() {
         assertEquals(
             ViewerType.NIGHT_OWL,

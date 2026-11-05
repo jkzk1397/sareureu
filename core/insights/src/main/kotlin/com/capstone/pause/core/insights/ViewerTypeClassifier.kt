@@ -20,11 +20,19 @@ object ViewerTypeClassifier {
         val lengths = sessions.map { it to ShortformMinutes.lengthMinutes(it, now) }
         val total = lengths.sumOf { it.second }
         if (total <= 0.0 || days <= 0 || total / days <= BALANCED_MAX_DAILY_MIN) return ViewerType.BALANCED
-        fun share(vararg slots: ContextSlot) = lengths.filter { it.first.context in slots }.sumOf { it.second } / total
-        val fromChat = sessions.count { e ->
-            val entry = e.entry
-            entry is EntryPoint.FromApp && (entry.kind == AppKind.MESSENGER || entry.kind == AppKind.SOCIAL)
-        }.toDouble() / sessions.size
+        // 비율은 화면에 보이는 정수 퍼센트로 반올림해 비교한다(39.9%가 화면엔 40%인데 유형은 아니라고 하지 않게).
+        fun pct(x: Double): Double = Math.round(x * PERCENT) / PERCENT
+        fun share(vararg slots: ContextSlot) = pct(
+            lengths.filter {
+                it.first.context in slots
+            }.sumOf { it.second } / total,
+        )
+        val fromChat = pct(
+            sessions.count { e ->
+                val entry = e.entry
+                entry is EntryPoint.FromApp && (entry.kind == AppKind.MESSENGER || entry.kind == AppKind.SOCIAL)
+            }.toDouble() / sessions.size,
+        )
         val gapMedian = SessionStats.median(
             lengths.filter {
                 it.first.context == ContextSlot.CLASS_WORK || it.first.context == ContextSlot.BREAK
@@ -50,6 +58,7 @@ object ViewerTypeClassifier {
         }
     }
 
+    private const val PERCENT = 100.0
     private const val NIGHT = 0.40
     private const val COMMUTE = 0.35
     private const val MEAL = 0.30
