@@ -17,7 +17,8 @@ object TextRules {
         "topContext", "topContextMin", "stopRate", "timeRange", "friend", "buddy",
     )
 
-    private val placeholder = Regex("\\{([A-Za-z_]+)}")
+    // 닫는 중괄호도 이스케이프한다(안드로이드 ICU 정규식은 '}' 단독을 문법 오류로 본다).
+    private val placeholder = Regex("\\{([A-Za-z_]+)\\}")
     private val digits = Regex("[0-9０-９]")
 
     // 한글 수사 + 시간 단위("열 분", "스무 분", "한 시간", "삼 분"). '한 번'처럼 횟수는 문구에 흔해서 막지 않는다.

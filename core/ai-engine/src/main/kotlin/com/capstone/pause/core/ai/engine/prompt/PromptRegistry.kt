@@ -41,7 +41,9 @@ data class PromptTemplate(
 
         /** 사용자·친구가 쓴 글을 담는 변수. */
         val USER_TEXT_VARS = setOf("user_notes", "user_text")
-        private val VAR = Regex("\\{\\{\\s*([A-Za-z0-9_]+)\\s*}}")
+
+        // 닫는 중괄호도 이스케이프한다(안드로이드 ICU 정규식은 '}' 단독을 문법 오류로 본다).
+        private val VAR = Regex("\\{\\{\\s*([A-Za-z0-9_]+)\\s*\\}\\}")
         private val TAG = Regex("</?\\s*user_text\\s*>", RegexOption.IGNORE_CASE)
 
         /** 사용자 글 안의 `<user_text>` 태그를 지워 바깥으로 빠져나가지 못하게 한다. */
