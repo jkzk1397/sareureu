@@ -53,6 +53,10 @@ interface ReportDao {
     @Query("SELECT * FROM hypotheses WHERE weekStart = :weekStart AND source = :source")
     fun observeHypotheses(weekStart: String, source: DataSource): Flow<List<HypothesisEntity>>
 
+    /** 모든 가설(내보내기용). */
+    @Query("SELECT * FROM hypotheses ORDER BY weekStart")
+    suspend fun getAllHypotheses(): List<HypothesisEntity>
+
     /** 판정 저장. */
     @Query("UPDATE hypotheses SET verdict = :verdict WHERE id = :id")
     suspend fun setVerdict(id: String, verdict: Verdict?)

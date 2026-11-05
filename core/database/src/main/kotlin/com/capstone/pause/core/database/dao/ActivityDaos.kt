@@ -20,6 +20,10 @@ interface NudgeEventDao {
     @Insert
     suspend fun insert(events: List<NudgeEventEntity>)
 
+    /** 모든 개입 기록(내보내기용). */
+    @Query("SELECT * FROM nudge_events ORDER BY at")
+    suspend fun getAll(): List<NudgeEventEntity>
+
     /** 구간 안의 개입 기록. */
     @Query("SELECT * FROM nudge_events WHERE source = :source AND at >= :from AND at < :to ORDER BY at")
     fun observeRange(source: DataSource, from: Instant, to: Instant): Flow<List<NudgeEventEntity>>
@@ -36,6 +40,10 @@ interface MessageDao {
     @Insert
     suspend fun insert(message: MessageEntity): Long
 
+    /** 모든 메시지(내보내기용). */
+    @Query("SELECT * FROM messages ORDER BY at")
+    suspend fun getAll(): List<MessageEntity>
+
     /** 최근 메시지. */
     @Query("SELECT * FROM messages WHERE source = :source ORDER BY at DESC LIMIT :limit")
     fun observeRecent(source: DataSource, limit: Int): Flow<List<MessageEntity>>
@@ -51,6 +59,10 @@ interface PlanDao {
     /** 넣기. */
     @Insert
     suspend fun insert(plan: PlanEntity): Long
+
+    /** 모든 계획(내보내기용). */
+    @Query("SELECT * FROM plans ORDER BY createdAt")
+    suspend fun getAll(): List<PlanEntity>
 
     /** 켜 둔 계획(최신순). */
     @Query("SELECT * FROM plans WHERE source = :source AND active = 1 ORDER BY createdAt DESC")
