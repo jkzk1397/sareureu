@@ -25,6 +25,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import com.capstone.pause.core.designsystem.R
@@ -103,10 +104,11 @@ fun StatHero(
     modifier: Modifier = Modifier,
     change: String? = null,
     direction: ChangeDirection = ChangeDirection.NONE,
+    valueStyle: TextStyle = PauseTheme.type.display,
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xxs)) {
         Text(text = caption, style = PauseTheme.type.bodySmall, color = PauseTheme.colors.ink2)
-        Text(text = value, style = PauseTheme.type.display, color = PauseTheme.colors.ink)
+        Text(text = value, style = valueStyle, color = PauseTheme.colors.ink)
         if (change != null) ChangeText(change, direction)
     }
 }
