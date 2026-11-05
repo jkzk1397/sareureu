@@ -11,8 +11,16 @@ import com.capstone.pause.core.common.AppLog
 import com.capstone.pause.core.common.ApplicationScope
 import com.capstone.pause.core.common.Dispatcher
 import com.capstone.pause.core.common.PauseDispatchers
+import com.capstone.pause.core.data.insight.DefaultInsightRepository
+import com.capstone.pause.core.data.insight.InsightRepository
+import com.capstone.pause.core.data.plan.PlanRepository
+import com.capstone.pause.core.data.plan.PokeRepository
+import com.capstone.pause.core.data.plan.RoomPlanRepository
+import com.capstone.pause.core.data.plan.RoomPokeRepository
 import com.capstone.pause.core.data.profile.DataStoreProfileRepository
 import com.capstone.pause.core.data.profile.ProfileRepository
+import com.capstone.pause.core.data.session.RoomSessionRepository
+import com.capstone.pause.core.data.session.SessionRepository
 import com.capstone.pause.core.data.settings.DataStoreSettingsRepository
 import com.capstone.pause.core.data.settings.SettingsRepository
 import dagger.Binds
@@ -92,6 +100,18 @@ internal abstract class DataBindsModule {
 
     @Binds
     abstract fun profileRepository(impl: DataStoreProfileRepository): ProfileRepository
+
+    @Binds
+    abstract fun sessionRepository(impl: RoomSessionRepository): SessionRepository
+
+    @Binds
+    abstract fun planRepository(impl: RoomPlanRepository): PlanRepository
+
+    @Binds
+    abstract fun pokeRepository(impl: RoomPokeRepository): PokeRepository
+
+    @Binds
+    abstract fun insightRepository(impl: DefaultInsightRepository): InsightRepository
 }
 
 /** android.util.Log로 남기는 [AppLog]. 개인정보를 넣지 않는다. */

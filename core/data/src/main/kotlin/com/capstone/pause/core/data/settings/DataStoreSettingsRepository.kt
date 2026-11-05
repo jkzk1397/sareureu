@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.capstone.pause.core.data.demo.DemoPattern
 import com.capstone.pause.core.data.di.SettingsStore
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -20,6 +21,8 @@ internal class DataStoreSettingsRepository @Inject constructor(
     override val settings: Flow<AppSettings> = store.data.map { prefs ->
         AppSettings(
             demoMode = prefs[DEMO_MODE] ?: false,
+            demoPattern = prefs[DEMO_PATTERN]?.let { name -> DemoPattern.entries.firstOrNull { it.name == name } }
+                ?: DemoPattern.NIGHT_OWL,
             themeMode = prefs[THEME]?.let { name -> ThemeMode.entries.firstOrNull { it.name == name } }
                 ?: ThemeMode.SYSTEM,
             showMelt = prefs[SHOW_MELT] ?: true,
@@ -28,6 +31,10 @@ internal class DataStoreSettingsRepository @Inject constructor(
 
     override suspend fun setDemoMode(enabled: Boolean) {
         store.edit { it[DEMO_MODE] = enabled }
+    }
+
+    override suspend fun setDemoPattern(pattern: DemoPattern) {
+        store.edit { it[DEMO_PATTERN] = pattern.name }
     }
 
     override suspend fun setThemeMode(mode: ThemeMode) {
@@ -40,6 +47,7 @@ internal class DataStoreSettingsRepository @Inject constructor(
 
     private companion object {
         val DEMO_MODE = booleanPreferencesKey("demo_mode")
+        val DEMO_PATTERN = stringPreferencesKey("demo_pattern")
         val THEME = stringPreferencesKey("theme_mode")
         val SHOW_MELT = booleanPreferencesKey("show_melt")
     }
