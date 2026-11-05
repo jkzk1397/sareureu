@@ -4,10 +4,10 @@
 > 원샷 프롬프트를 실행한 에이전트는 단계를 끝낼 때마다 이 파일을 갱신하고 커밋한다.
 
 ## 0단계 · 저장소 기반 (R1)
-- [ ] Gradle wrapper, `gradle/libs.versions.toml`(03 문서의 버전 표 그대로), `build-logic` 컨벤션 플러그인
-- [ ] 20개 모듈 생성(키트의 모듈별 `AGENTS.md` 위치 그대로)
-- [ ] Spotless + ktlint, `.editorconfig`, CI(`.github/workflows/android-ci.yml`) 통과
-- [ ] 앱 실행: 하단 탭 5개(오늘·리포트·코치·친구·설정) 빈 화면, 시연 모드 스위치
+- [x] Gradle wrapper, `gradle/libs.versions.toml`(03 문서의 버전 표 그대로), `build-logic` 컨벤션 플러그인
+- [x] 20개 모듈 생성(키트의 모듈별 `AGENTS.md` 위치 그대로)
+- [x] Spotless + ktlint, `.editorconfig`, CI(`.github/workflows/android-ci.yml`) 통과 (로컬 통과, 원격 CI는 PR 후 확인)
+- [x] 앱 실행: 하단 탭 5개(오늘·리포트·코치·친구·설정) 빈 화면, 시연 모드 스위치
 
 ## 1단계 · 모델·디자인 시스템·시연 데이터
 - [ ] `core:model` 타입 전부(04 문서 2절) (R1)
