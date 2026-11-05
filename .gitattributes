@@ -1,0 +1,13 @@
+# 줄바꿈을 LF로 통일한다(WSL·맥·윈도우 팀원이 섞여도 gradlew가 깨지지 않게)
+* text=auto eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# 바이너리
+*.png binary
+*.jpg binary
+*.webp binary
+*.ttf binary
+*.pdf binary
+*.jar binary
+*.zip binary

@@ -1,0 +1,28 @@
+# Gradle / Android
+.gradle/
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.ap_
+*.dex
+local.properties
+
+# IDE
+.idea/*
+!.idea/codeStyles/
+*.iml
+.DS_Store
+
+# 비밀값 (절대 커밋 금지)
+google-services.json
+*.jks
+*.keystore
+keystore.properties
+.env
+secrets.properties
+
+# AI 평가 결과(필요하면 docs/로 복사해서 커밋)
+core/ai/build/reports/

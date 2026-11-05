@@ -1,0 +1,6 @@
+---
+description: 저장소 공통 규칙(AGENTS.md)을 항상 따른다
+alwaysApply: true
+---
+
+이 저장소의 규칙 원본은 루트의 `AGENTS.md`다. 모든 작업 전에 그 파일과 작업 중인 모듈의 `AGENTS.md`를 읽고 따른다. 이 파일에 규칙을 따로 쓰지 않는다.

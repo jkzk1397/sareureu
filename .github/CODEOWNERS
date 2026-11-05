@@ -1,0 +1,44 @@
+# 역할별 담당자. 각 줄의 GitHub 아이디를 실제 팀원으로 바꾼 뒤 맨 앞의 '#'을 지우세요.
+# 존재하지 않는 아이디를 넣으면 GitHub가 오류를 표시합니다.
+# 역할 설명은 AGENTS.md 4절.
+
+# R1 리드·기반
+# *                         @R1-github-id
+# /app/                     @R1-github-id
+# /build-logic/             @R1-github-id
+# /gradle/                  @R1-github-id
+# /settings.gradle.kts      @R1-github-id
+# /core/model/              @R1-github-id
+# /core/common/             @R1-github-id
+# /core/testing/            @R1-github-id
+# /feature/settings/        @R1-github-id
+# /AGENTS.md                @R1-github-id
+# /docs/decisions/          @R1-github-id
+
+# R2 감지·데이터
+# /core/database/           @R2-github-id
+# /core/data/               @R2-github-id
+# /core/sensing/            @R2-github-id
+
+# R3 실시간 개입
+# /core/intervention/       @R3-github-id
+# /feature/onboarding/      @R3-github-id
+
+# R4 AI·분석
+# /core/insights/           @R4-github-id
+# /core/ai-engine/          @R4-github-id
+# /core/ai/                 @R4-github-id
+# /core/data/src/main/assets/copy/        @R4-github-id   # 기본 문구 팩(내용은 R4, 위치는 core:data)
+# /core/data/src/main/assets/strategies.json @R4-github-id
+# /feature/coach/           @R4-github-id
+
+# R5 디자인·화면
+# /core/designsystem/       @R5-github-id
+# /feature/today/           @R5-github-id
+# /feature/report/          @R5-github-id
+# /docs/design/             @R5-github-id
+
+# R6 소셜·백엔드
+# /core/social/             @R6-github-id
+# /feature/friends/         @R6-github-id
+# /firebase/                @R6-github-id
