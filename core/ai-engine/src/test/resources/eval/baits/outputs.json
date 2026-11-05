@@ -1,0 +1,213 @@
+[
+  {
+    "name": "weekly_digit",
+    "feature": "weekly_report",
+    "output": {
+      "summaryLine": "이번 주 37분 줄었어!",
+      "hypotheses": [
+        {
+          "text": "자기 전이 길어",
+          "confidence": "MEDIUM",
+          "evidence": [
+            "o3",
+            "o12"
+          ],
+          "confirmQuestion": "맞아?"
+        }
+      ],
+      "strategies": [],
+      "viewerTypeLine": "밤 산책형!"
+    }
+  },
+  {
+    "name": "weekly_korean_numeral",
+    "feature": "weekly_report",
+    "output": {
+      "summaryLine": "자기 전에 한 시간 넘게 봤어",
+      "hypotheses": [
+        {
+          "text": "자기 전이 길어",
+          "confidence": "MEDIUM",
+          "evidence": [
+            "o3",
+            "o12"
+          ],
+          "confirmQuestion": "맞아?"
+        }
+      ],
+      "strategies": [],
+      "viewerTypeLine": "밤 산책형!"
+    }
+  },
+  {
+    "name": "weekly_unknown_evidence",
+    "feature": "weekly_report",
+    "output": {
+      "summaryLine": "이번 주 {topContext}이 길었어",
+      "hypotheses": [
+        {
+          "text": "자기 전이 길어",
+          "confidence": "MEDIUM",
+          "evidence": [
+            "o3",
+            "o99"
+          ],
+          "confirmQuestion": "맞아?"
+        }
+      ],
+      "strategies": [],
+      "viewerTypeLine": "밤 산책형!"
+    }
+  },
+  {
+    "name": "weekly_high_two_evidence",
+    "feature": "weekly_report",
+    "output": {
+      "summaryLine": "이번 주 {topContext}이 길었어",
+      "hypotheses": [
+        {
+          "text": "자기 전이 길어",
+          "confidence": "HIGH",
+          "evidence": [
+            "o3",
+            "o12"
+          ],
+          "confirmQuestion": "맞아?"
+        }
+      ],
+      "strategies": [],
+      "viewerTypeLine": "밤 산책형!"
+    }
+  },
+  {
+    "name": "weekly_banned",
+    "feature": "weekly_report",
+    "output": {
+      "summaryLine": "이건 거의 중독 수준이야",
+      "hypotheses": [
+        {
+          "text": "자기 전이 길어",
+          "confidence": "MEDIUM",
+          "evidence": [
+            "o3",
+            "o12"
+          ],
+          "confirmQuestion": "맞아?"
+        }
+      ],
+      "strategies": [],
+      "viewerTypeLine": "밤 산책형!"
+    }
+  },
+  {
+    "name": "weekly_bad_placeholder",
+    "feature": "weekly_report",
+    "output": {
+      "summaryLine": "{realMinutes} 봤어",
+      "hypotheses": [
+        {
+          "text": "자기 전이 길어",
+          "confidence": "MEDIUM",
+          "evidence": [
+            "o3",
+            "o12"
+          ],
+          "confirmQuestion": "맞아?"
+        }
+      ],
+      "strategies": [],
+      "viewerTypeLine": "밤 산책형!"
+    }
+  },
+  {
+    "name": "weekly_unknown_strategy",
+    "feature": "weekly_report",
+    "output": {
+      "summaryLine": "이번 주 {topContext}이 길었어",
+      "hypotheses": [
+        {
+          "text": "자기 전이 길어",
+          "confidence": "MEDIUM",
+          "evidence": [
+            "o3",
+            "o12"
+          ],
+          "confirmQuestion": "맞아?"
+        }
+      ],
+      "strategies": [
+        {
+          "strategyId": "MADE_UP_9",
+          "personalizedThen": "폰 끄기",
+          "why": "그냥"
+        }
+      ],
+      "viewerTypeLine": "밤 산책형!"
+    }
+  },
+  {
+    "name": "weekly_bad_threshold",
+    "feature": "weekly_report",
+    "output": {
+      "summaryLine": "이번 주 {topContext}이 길었어",
+      "hypotheses": [
+        {
+          "text": "자기 전이 길어",
+          "confidence": "MEDIUM",
+          "evidence": [
+            "o3",
+            "o12"
+          ],
+          "confirmQuestion": "맞아?"
+        }
+      ],
+      "strategies": [],
+      "viewerTypeLine": "밤 산책형!",
+      "thresholdSuggestions": [
+        {
+          "slot": "PRE_SLEEP",
+          "minutes": 7,
+          "why": "길어서"
+        }
+      ]
+    }
+  },
+  {
+    "name": "poke_digit",
+    "feature": "poke_draft",
+    "output": {
+      "options": [
+        "{friend} 벌써 40분째야"
+      ]
+    }
+  },
+  {
+    "name": "poke_too_long",
+    "feature": "poke_draft",
+    "output": {
+      "options": [
+        "{friend}! 이제 그만 보고 자러 가자. 내일 아침에 일찍 일어나야 하잖아 진짜로"
+      ]
+    }
+  },
+  {
+    "name": "poke_other_placeholder",
+    "feature": "poke_draft",
+    "output": {
+      "options": [
+        "{nickname} 그만 봐"
+      ]
+    }
+  },
+  {
+    "name": "context_digit",
+    "feature": "context_check",
+    "output": {
+      "question": "12시쯤 밥 먹으면서야?",
+      "options": [
+        "맞아",
+        "아니"
+      ]
+    }
+  }
+]

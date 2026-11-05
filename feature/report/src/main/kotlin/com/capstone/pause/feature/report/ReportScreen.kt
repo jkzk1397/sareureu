@@ -1,32 +1,158 @@
 package com.capstone.pause.feature.report
 
-import android.content.res.Configuration
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
-import com.capstone.pause.core.designsystem.component.PauseEmptyState
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.capstone.pause.core.ai.report.WeeklyReportState
+import com.capstone.pause.core.designsystem.component.ChangeDirection
+import com.capstone.pause.core.designsystem.component.DemoBadge
+import com.capstone.pause.core.designsystem.component.PauseCard
+import com.capstone.pause.core.designsystem.component.PauseScreenColumn
+import com.capstone.pause.core.designsystem.component.StatHero
+import com.capstone.pause.core.designsystem.component.durationLabel
 import com.capstone.pause.core.designsystem.theme.PauseTheme
+import kotlin.math.abs
+import kotlin.math.roundToInt
 
-/** 리포트 탭 진입점. TODO(BUILD_REPORT#2): 해당 단계에서 ViewModel과 실제 화면으로 채운다. */
+/** 리포트 탭 진입점. */
 @Composable
-fun ReportRoute(modifier: Modifier = Modifier) {
-    ReportScreen(modifier = modifier)
+fun ReportRoute(viewModel: ReportViewModel = hiltViewModel()) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    ReportScreen(uiState = uiState, onAction = viewModel::onAction)
 }
 
-/** 리포트 탭(상태 없음). */
+/**
+ * 리포트 탭(상태 없음). 위에서부터: 기간·요약 숫자 → (5단계 차트 자리) → 관찰(코드) → AI 주간 분석(추측).
+ * 관찰과 추측은 다른 카드·다른 제목으로 나눈다(AGENTS: 관찰(코드)과 가설(AI)을 화면에서 분리).
+ */
 @Composable
-fun ReportScreen(modifier: Modifier = Modifier) {
-    PauseEmptyState(
-        title = stringResource(R.string.report_title),
-        body = stringResource(R.string.report_empty_body),
-        modifier = modifier,
+fun ReportScreen(uiState: ReportUiState, onAction: (ReportAction) -> Unit, modifier: Modifier = Modifier) {
+    PauseScreenColumn(title = stringResource(R.string.report_title), modifier = modifier) {
+        val ready = uiState as? ReportUiState.Ready
+        if (ready == null) {
+            Text(stringResource(R.string.report_loading), style = PauseTheme.type.body, color = PauseTheme.colors.ink2)
+            return@PauseScreenColumn
+        }
+        val report = ready.report
+        WeekHeader(report)
+        if (report.sessionCount == 0) {
+            PauseCard(title = stringResource(R.string.report_no_data_title)) {
+                Text(
+                    stringResource(R.string.report_no_data_body),
+                    style = PauseTheme.type.body,
+                    color = PauseTheme.colors.ink2,
+                )
+            }
+            return@PauseScreenColumn
+        }
+        StatRow(report)
+        // TODO(BUILD_REPORT#5단계): 일주일 시계·맥락별 합계·흐름도·히트맵·세션 길이·또래 비교 차트가 여기에 들어간다.
+        ObservationsCard(report)
+        AiSection(report = report, local = ready.local, onAction = onAction)
+    }
+}
+
+@Composable
+private fun WeekHeader(report: WeeklyReportState) {
+    Row(horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.sm), modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = stringResource(
+                R.string.report_week_range,
+                report.weekStart.monthValue,
+                report.weekStart.dayOfMonth,
+                report.weekEndInclusive.monthValue,
+                report.weekEndInclusive.dayOfMonth,
+            ),
+            style = PauseTheme.type.label,
+            color = PauseTheme.colors.ink2,
+        )
+        if (report.isDemo) DemoBadge()
+    }
+}
+
+@Composable
+private fun StatRow(report: WeeklyReportState) {
+    Row(horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.sm), modifier = Modifier.fillMaxWidth()) {
+        PauseCard(modifier = Modifier.weight(1f)) {
+            StatHero(
+                value = durationLabel(report.avgMinPerDay.roundToInt()),
+                caption = stringResource(R.string.report_stat_avg),
+                valueStyle = PauseTheme.type.title,
+            )
+        }
+        PauseCard(modifier = Modifier.weight(1f)) {
+            val rate = report.reductionRate
+            if (rate == null) {
+                StatHero(
+                    value = stringResource(R.string.report_stat_reduction_measuring),
+                    caption = stringResource(R.string.report_stat_reduction),
+                    valueStyle = PauseTheme.type.title,
+                )
+            } else {
+                StatHero(
+                    value = stringResource(R.string.report_percent, (abs(rate) * PERCENT).roundToInt()),
+                    caption = stringResource(R.string.report_stat_reduction),
+                    valueStyle = PauseTheme.type.title,
+                    direction = if (rate >= 0) ChangeDirection.DOWN else ChangeDirection.UP,
+                    change = stringResource(if (rate >= 0) R.string.report_stat_less else R.string.report_stat_more),
+                )
+            }
+        }
+        PauseCard(modifier = Modifier.weight(1f)) {
+            val stop = report.stopRate
+            StatHero(
+                value = if (stop == null) {
+                    stringResource(R.string.report_stat_none)
+                } else {
+                    stringResource(R.string.report_percent, (stop * PERCENT).roundToInt())
+                },
+                caption = stringResource(R.string.report_stat_stop),
+                valueStyle = PauseTheme.type.title,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ObservationsCard(report: WeeklyReportState) {
+    PauseCard(title = stringResource(R.string.report_obs_title)) {
+        Text(
+            stringResource(R.string.report_obs_caption),
+            style = PauseTheme.type.bodySmall,
+            color = PauseTheme.colors.ink2,
+        )
+        Column(verticalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xs)) {
+            report.observations.forEach { o ->
+                observationText(o)?.let { text ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xs)) {
+                        Text(o.id, style = PauseTheme.type.captionTabular, color = PauseTheme.colors.ink3)
+                        Text(text, style = PauseTheme.type.bodySmall, color = PauseTheme.colors.ink)
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** 섹션 제목. */
+@Composable
+internal fun SectionTitle(text: String) {
+    Text(
+        text = text,
+        style = PauseTheme.type.title,
+        color = PauseTheme.colors.ink,
+        modifier = Modifier.semantics { heading() },
     )
 }
 
-@Preview(name = "light")
-@Preview(name = "dark", uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Composable
-private fun ReportScreenPreview() {
-    PauseTheme { ReportScreen() }
-}
+internal const val PERCENT = 100

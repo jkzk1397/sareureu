@@ -1,0 +1,40 @@
+{
+  "name": "commuter_sparse",
+  "expectAi": false,
+  "input": {
+    "observations": [
+      {
+        "id": "o1",
+        "kind": "WEEK_TOTAL",
+        "numbers": {
+          "avgMinPerDay": 60,
+          "totalMin": 420,
+          "sessions": 58,
+          "days": 7
+        }
+      },
+      {
+        "id": "o11",
+        "kind": "COVERAGE",
+        "numbers": {
+          "coverage": 0.4
+        }
+      }
+    ],
+    "profile": {
+      "ageBand": "AGE_18_24",
+      "occupation": "UNIVERSITY",
+      "goals": [
+        "SLEEP"
+      ],
+      "interests": [
+        "기타 연습",
+        "러닝"
+      ],
+      "tone": "WARM"
+    },
+    "viewerType": "COMMUTER",
+    "coverage": 0.4,
+    "userNotes": ""
+  }
+}

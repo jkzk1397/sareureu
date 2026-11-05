@@ -34,12 +34,12 @@
 - [x] 기본 문구 팩 `assets/copy/default_pack.json` (R4)
 
 ## 4단계 · AI
-- [ ] `core:ai-engine`: `LlmClient`, `MockLlmClient`, `PromptRegistry` + 프롬프트 v1(weekly_report, copy_pack, context_check, coach_chat, poke_draft), 스키마, 검증기, `SafetyFilter`, `BannedWords`, `CoachEngine` + 단위 테스트 (R4)
-- [ ] `core:ai`: `CloudLlmClient`(Firebase, 설정 파일 없으면 비활성), `OnDeviceLlmClient`(스텁 가능), `AiRouter`, 생성기들 (R4)
-- [ ] 주간 리포트 화면(목업 06) + 가설 판정 저장 + 전략 선택 + 임계값 제안 (R4/R5)
-- [ ] 코치 채팅(도구 호출 루프, 근거 칩, 계획 저장 버튼)(목업 07) (R4)
-- [ ] `AiCallLog` + 설정의 "AI가 한 일" + AI 문장 '신고' (R4)
-- [ ] `:core:ai-engine:aiEval` 하네스 + 평가 데이터 + 보고서 (R4)
+- [x] `core:ai-engine`: `LlmClient`, `MockLlmClient`, `PromptRegistry` + 프롬프트 v1(weekly_report, copy_pack, context_check, coach_chat, poke_draft), 스키마, 검증기, `SafetyFilter`, `BannedWords`, `CoachEngine` + 단위 테스트 (R4)
+- [x] `core:ai`: `CloudLlmClient`(Firebase, 설정 파일 없으면 비활성), `OnDeviceLlmClient`(스텁 가능), `AiRouter`, 생성기들 (R4)
+- [x] 주간 리포트 화면(목업 06) + 가설 판정 저장 + 전략 선택 + 임계값 제안 (R4/R5)
+- [x] 코치 채팅(도구 호출 루프, 근거 칩, 계획 저장 버튼)(목업 07) (R4)
+- [x] `AiCallLog` + 설정의 "AI가 한 일" + AI 문장 '신고' (R4)
+- [x] `:core:ai-engine:aiEval` 하네스 + 평가 데이터 + 보고서 (R4)
 
 ## 5단계 · 리포트·친구·설정
 - [ ] 리포트 차트: 일주일 시계(+표 보기 히트맵), 맥락별 막대, 경로 흐름도, 세션 길이, 또래 비교(목업 05) (R5)

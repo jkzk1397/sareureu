@@ -11,11 +11,11 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
 }
 
-// 0단계 스텁: CI가 부르므로 먼저 등록한다. 4단계에서 실제 평가로 바꾼다.
+// AI 평가 하네스(05 문서 9절). gemini는 환경변수 GEMINI_API_KEY 필요(없으면 건너뜀).
 // 사용: ./gradlew :core:ai-engine:aiEval -Pprovider=mock
 tasks.register<JavaExec>("aiEval") {
     group = "verification"
-    description = "AI 평가 하네스 (0단계: 빈 보고서만 쓴다)"
+    description = "AI 평가 하네스(05 문서 9절). -Pprovider=mock|gemini"
     classpath = sourceSets["main"].runtimeClasspath
     mainClass.set("com.capstone.pause.core.ai.engine.eval.AiEvalMainKt")
     val provider = providers.gradleProperty("provider").orElse("mock")

@@ -35,12 +35,15 @@ import com.capstone.pause.core.designsystem.theme.PauseTheme
 
 /** 설정 탭 진입점. */
 @Composable
-fun SettingsRoute(viewModel: SettingsViewModel = hiltViewModel()) {
+fun SettingsRoute(viewModel: SettingsViewModel = hiltViewModel(), aiViewModel: AiSettingsViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val aiState by aiViewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     SettingsScreen(
         uiState = uiState,
         onAction = viewModel::onAction,
+        aiState = aiState,
+        onAiAction = aiViewModel::onAction,
         onOpenUsageAccess = {
             viewModel.onAction(SettingsAction.UsageAccessHandled)
             context.startActivity(
@@ -57,6 +60,8 @@ fun SettingsScreen(
     onAction: (SettingsAction) -> Unit,
     modifier: Modifier = Modifier,
     onOpenUsageAccess: () -> Unit = {},
+    aiState: AiSettingsUiState = AiSettingsUiState(),
+    onAiAction: (AiSettingsAction) -> Unit = {},
 ) {
     PauseScreenColumn(title = stringResource(R.string.settings_title), modifier = modifier) {
         SettingsSection(title = stringResource(R.string.settings_section_monitoring)) {
@@ -130,6 +135,12 @@ fun SettingsScreen(
                     onClick = { onAction(SettingsAction.SetTheme(mode)) },
                 )
             }
+        }
+        SettingsSection(title = stringResource(R.string.settings_section_ai)) {
+            AiModeRows(aiState, onAiAction)
+        }
+        SettingsSection(title = stringResource(R.string.settings_section_ai_log)) {
+            AiCallList(aiState, onAiAction)
         }
         SettingsSection(title = stringResource(R.string.settings_section_dev)) {
             RecentSessions(uiState.recentSessions)

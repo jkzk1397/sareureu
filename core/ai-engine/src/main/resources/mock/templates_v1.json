@@ -1,0 +1,90 @@
+{
+  "contextLabels": {
+    "WAKE_UP": "기상 직후",
+    "COMMUTE": "이동",
+    "CLASS_WORK": "수업·업무",
+    "MEAL": "식사",
+    "BREAK": "쉬는 시간",
+    "PRE_SLEEP": "자기 전",
+    "LATE_NIGHT": "한밤중",
+    "OTHER": "기타"
+  },
+  "summary": {
+    "PLAYFUL": "이번 주는 {topContext} 때가 제일 길었어. 그래도 기준보다 {reduction} 줄었어!",
+    "WARM": "이번 주엔 {topContext} 시간이 제일 길었네. 기준보다 {reduction} 줄인 거 잘했어",
+    "PLAIN": "이번 주 가장 긴 맥락은 {topContext}. 기준선 대비 {reduction} 줄었어"
+  },
+  "summaryNoReduction": {
+    "PLAYFUL": "이번 주는 {topContext} 때가 제일 길었어. 어디서 새는지 같이 보자!",
+    "WARM": "이번 주엔 {topContext} 시간이 제일 길었네. 천천히 같이 살펴보자",
+    "PLAIN": "이번 주 가장 긴 맥락은 {topContext}. 아래 가설을 확인해 줘"
+  },
+  "hypothesisContext": {
+    "WAKE_UP": { "text": "눈 뜨자마자 숏폼으로 하루를 여는 날이 많은 것 같아", "question": "알람 끄고 바로 열게 되는 거 맞아?" },
+    "COMMUTE": { "text": "이동할 때 끝없이 넘기다 보면 내릴 때까지 이어지는 것 같아", "question": "지하철에서 주로 보는 거 맞아?" },
+    "CLASS_WORK": { "text": "막히는 순간에 잠깐 쉬려다 길어지는 것 같아", "question": "하던 일이 막힐 때 열게 돼?" },
+    "MEAL": { "text": "밥 먹으면서 틀어 둔 게 식사 뒤까지 이어지는 것 같아", "question": "밥 먹을 때 틀어 두는 편이야?" },
+    "BREAK": { "text": "쉬는 시간에 볼 걸 정하지 않고 열면 길어지는 것 같아", "question": "쉴 때 그냥 열어 보는 편이야?" },
+    "PRE_SLEEP": { "text": "자기 전엔 메신저 보다가 숏폼으로 넘어가는 일이 많은 것 같아", "question": "자기 전에 메신저 보다가 넘어간 거 맞아?" },
+    "LATE_NIGHT": { "text": "자다 깨서 폰을 잡으면 다시 잠들기 어려운 것 같아", "question": "새벽에 깨서 보게 되는 날이 있었어?" },
+    "OTHER": { "text": "딱 정해진 때 없이 틈날 때마다 여는 것 같아", "question": "특별히 떠오르는 때가 있어?" }
+  },
+  "hypothesisEntry": { "text": "어디서 넘어왔는지가 길어지는 열쇠 같아. 진입 경로부터 바꿔 보자", "question": "그 앱 보다가 넘어오는 게 익숙해?" },
+  "hypothesisSecond": { "text": "{topContext} 다음으로 긴 때도 비슷한 흐름인 것 같아", "question": "두 때가 비슷하게 느껴져?" },
+  "strategyWhy": "{topContext} 세션이 제일 길어서",
+  "viewerType": {
+    "NIGHT_OWL": "밤이 되면 엄지가 바빠지는 밤 산책형!",
+    "COMMUTER": "이동할 때 몰아 보는 출퇴근 몰아보기형!",
+    "MEAL_BUDDY": "밥상 옆에 숏폼을 두는 밥친구형!",
+    "DOMINO": "알림 하나에 줄줄이 넘어가는 알림 도미노형!",
+    "GAP_FILLER": "짧은 틈마다 채워 넣는 틈새 채움형!",
+    "MORNING": "아침을 숏폼으로 여는 기상 루틴형!",
+    "BALANCED": "크게 쏠린 데 없는 균형형!"
+  },
+  "thresholdWhy": "자기 전 세션이 길게 이어져서",
+  "contextCheck": {
+    "question": "{timeRange}에 자주 보던데, 그때 뭐 하고 있었어?",
+    "options": {
+      "WAKE_UP": "막 일어났을 때",
+      "COMMUTE": "이동 중",
+      "CLASS_WORK": "수업이나 일 하다가",
+      "MEAL": "밥 먹으면서",
+      "BREAK": "쉬는 시간",
+      "PRE_SLEEP": "자기 전",
+      "LATE_NIGHT": "자다 깨서",
+      "OTHER": "딱히 아니야"
+    }
+  },
+  "poke": {
+    "PLAYFUL": ["{friend}! 엄지 그만 굴리고 자러 가 🙃", "{friend}, 그 영상 내일도 있어. 진짜로", "야 {friend}, 지금 손에 든 거 내려놓기!"],
+    "WARM": ["{friend}, 오늘도 고생했어. 이제 폰 내려놓고 쉬자", "{friend} 피곤하지? 눈 좀 쉬게 해 주자", "{friend}, 내일의 너를 위해 여기까지 💛"],
+    "PLAIN": ["{friend}, 여기까지 보고 쉬자", "{friend}, 지금 멈추면 딱 좋아", "{friend}, 할 일 먼저 하고 보자"]
+  },
+  "coach": {
+    "when": "%ctx% 때가 제일 길었어. 이번 주 %ctxMin%분이야. 특히 %day% %hour%시쯤이 위험 구간이었어. 그때 뭐 하다가 열었어?",
+    "why": "%ctx% 때가 %ctxMin%분으로 제일 길었고, %entry%에서 넘어온 흐름이 %flowCount%번으로 가장 많았어. 넘어오는 길이 열쇠일지도 몰라. 맞는 것 같아?",
+    "commute": "이동할 땐 '%then%' 해 보는 건 어때? %if% 때 바로 할 수 있는 거라 부담이 적어. 계획으로 저장해 둘까?",
+    "diff": "이번 주 하루 평균은 %thisAvg%분, 지난주는 %lastAvg%분이었어. 어떤 날이 달랐는지 같이 볼래?",
+    "type": "이번 주엔 %ctx% 때가 %ctxMin%분으로 제일 길었어. 그래서 리포트에선 그 시간 위주로 유형을 봤어. 궁금한 맥락 있어?",
+    "summary": "이번 주는 하루 평균 %avg%분 봤어. 세션은 %sessions%번이었어. 더 궁금한 거 있어?",
+    "unknown": "그건 기록으로는 알 수 없어. 대신 언제 많이 봤는지는 알려 줄 수 있어!",
+    "followUps": ["나 언제 제일 많이 봐?", "왜 자기 전에 못 끊을까?", "출근길엔 뭐 하면 좋아?", "지난주랑 뭐가 달라졌어?", "내 유형은 뭐야?"],
+    "dayLabels": {
+      "MONDAY": "월요일",
+      "TUESDAY": "화요일",
+      "WEDNESDAY": "수요일",
+      "THURSDAY": "목요일",
+      "FRIDAY": "금요일",
+      "SATURDAY": "토요일",
+      "SUNDAY": "일요일"
+    },
+    "entryLabels": {
+      "UNLOCK": "잠금 해제",
+      "HOME": "홈 화면",
+      "SHORTFORM": "다른 숏폼",
+      "MESSENGER": "메신저",
+      "SOCIAL": "SNS",
+      "OTHER": "다른 앱"
+    }
+  }
+}
