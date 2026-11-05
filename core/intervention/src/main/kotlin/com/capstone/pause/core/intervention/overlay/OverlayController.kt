@@ -11,6 +11,8 @@ import android.view.View
 import android.view.WindowManager
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
@@ -144,18 +146,25 @@ class OverlayController @Inject constructor(
         val view = composeView {
             val padding = Modifier.padding(OverlayDimens.cardOuterPadding)
             when (command) {
-                is NudgeCommand.ShowCard -> NudgeCard(command.card, onAction = ::emit, modifier = padding)
+                // 오버레이 창은 화면 높이까지만 커지므로, 큰 글자·키보드에서도 아래 버튼에 닿게 카드만 스크롤한다.
+                // (NudgePreviewActivity는 화면 전체가 이미 스크롤된다 — 겹쳐 두면 무한 높이 오류.)
+                is NudgeCommand.ShowCard -> NudgeCard(
+                    command.card,
+                    onAction = ::emit,
+                    modifier = padding.verticalScroll(rememberScrollState()),
+                )
+
                 is NudgeCommand.ShowPraise -> PraiseCard(command.text, onClose = { removeCard() }, modifier = padding)
+
                 else -> Unit
             }
         }
         card = add(view, params)
         if (command is NudgeCommand.ShowPraise) {
             mainHandler.postDelayed({
-                if (_current.value ==
-                    command
-                ) {
+                if (_current.value == command) {
                     removeCard()
+                    _current.value = null
                 }
             }, PRAISE_MS)
         }
