@@ -78,4 +78,6 @@
   <!-- 시간 길이 -->
   <string name="designsystem_duration_hm">%1$d시간 %2$d분</string>
   <string name="designsystem_duration_h">%1$d시간</string>
+  <!-- 고른 칩 앞의 체크 표시(색만으로 알리지 않기) -->
+  <string name="designsystem_selected_prefix">✓ %1$s</string>
 </resources>

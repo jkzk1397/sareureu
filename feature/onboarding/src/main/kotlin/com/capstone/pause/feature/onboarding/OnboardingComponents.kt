@@ -154,13 +154,22 @@ internal fun ChipFlow(content: @Composable () -> Unit) {
 @Composable
 internal fun timeText(t: LocalTime): String = stringResource(R.string.onboarding_time, t.hour, t.minute)
 
-/** 시각 하나를 −/+ 30분으로 고치는 칸(터치 48dp). [label]은 화면 읽기용 버튼 이름에 쓴다. */
+/** 시각 하나를 −/+ 30분으로 고치는 칸(터치 48dp). [label]은 화면 읽기용 버튼 이름, [caption]은 보이는 짧은 이름(시작·끝). */
 @Composable
-internal fun TimeStepper(label: String, time: LocalTime, onShift: (Int) -> Unit, modifier: Modifier = Modifier) {
+internal fun TimeStepper(
+    label: String,
+    time: LocalTime,
+    onShift: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+    caption: String? = null,
+) {
     val colors = PauseTheme.colors
     val earlier = stringResource(R.string.onboarding_time_earlier, label)
     val later = stringResource(R.string.onboarding_time_later, label)
     Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier) {
+        if (caption != null) {
+            Text(text = caption, style = PauseTheme.type.bodySmall, color = colors.ink2)
+        }
         TextButton(
             onClick = { onShift(-STEP_MIN) },
             modifier = Modifier

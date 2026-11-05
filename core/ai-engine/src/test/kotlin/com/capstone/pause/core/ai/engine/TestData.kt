@@ -103,7 +103,7 @@ class FakeCoachTools : CoachTools {
 
     override suspend fun getRiskWindows(): RiskWindowsResult {
         calls += "get_risk_windows"
-        return RiskWindowsResult(listOf(RiskItem("risk.TUESDAY.22", "TUESDAY", 22, 38)))
+        return RiskWindowsResult(listOf(RiskItem("risk.TUE.22", "TUE", 22, 38)))
     }
 
     override suspend fun getPlans(): PlansResult {

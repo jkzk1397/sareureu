@@ -20,6 +20,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import com.capstone.pause.core.data.insight.ContextShare
 import com.capstone.pause.core.data.insight.WeekChartData
 import com.capstone.pause.core.designsystem.chart.DayClockData
@@ -35,6 +36,7 @@ import com.capstone.pause.core.designsystem.component.iconRes
 import com.capstone.pause.core.designsystem.component.labelRes
 import com.capstone.pause.core.designsystem.theme.PauseSizes
 import com.capstone.pause.core.designsystem.theme.PauseTheme
+import com.capstone.pause.core.designsystem.theme.isLargeFont
 import java.time.format.TextStyle
 import java.util.Locale
 import kotlin.math.roundToInt
@@ -92,13 +94,8 @@ private fun ContextRow(item: ContextShare, fraction: Float) {
     val name = stringResource(item.slot.labelRes())
     val value =
         stringResource(R.string.report_context_value, durationLabel(item.minutes), (item.share * PERCENT).roundToInt())
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clearAndSetSemantics { contentDescription = "$name $value" },
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.width(LABEL_WIDTH)) {
+    val label: @Composable () -> Unit = {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 painter = painterResource(item.slot.iconRes()),
                 contentDescription = null,
@@ -108,7 +105,9 @@ private fun ContextRow(item: ContextShare, fraction: Float) {
             Spacer(Modifier.width(PauseTheme.spacing.xs))
             Text(name, style = PauseTheme.type.label, color = colors.ink)
         }
-        Column(modifier = Modifier.weight(1f)) {
+    }
+    val bar: @Composable (Modifier) -> Unit = { m ->
+        Column(modifier = m) {
             Box(
                 Modifier
                     .fillMaxWidth(fraction.coerceIn(MIN_BAR, 1f))
@@ -116,6 +115,21 @@ private fun ContextRow(item: ContextShare, fraction: Float) {
                     .background(colors.contextColor(item.slot), PauseTheme.shapes.small),
             )
             Text(value, style = PauseTheme.type.captionTabular, color = colors.ink2)
+        }
+    }
+    val rowModifier = Modifier
+        .fillMaxWidth()
+        .clearAndSetSemantics { contentDescription = "$name $value" }
+    if (isLargeFont()) {
+        // 큰 글자: 이름을 막대 위에 둬서 이름이 한 글자씩 줄바꿈되지 않게.
+        Column(modifier = rowModifier) {
+            label()
+            bar(Modifier.fillMaxWidth())
+        }
+    } else {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = rowModifier) {
+            Box(Modifier.width(LABEL_WIDTH)) { label() }
+            bar(Modifier.weight(1f))
         }
     }
 }
@@ -126,15 +140,41 @@ private fun FlowCard(charts: WeekChartData) {
     val total = charts.sessionCount.coerceAtLeast(1)
     PauseCard(title = stringResource(R.string.report_flow_title)) {
         Caption(stringResource(R.string.report_flow_caption, charts.sessionCount))
-        FlowDiagram(
-            entries = flow.entries.map { (k, n) -> FlowNode(ENTRY + k, nodeLabel(keyLabel(k), n, total), n.toFloat()) },
-            apps = flow.apps.map { (k, n) -> FlowNode(APP + k, reportAppLabel(k), n.toFloat()) },
-            exits = flow.exits.map { (k, n) -> FlowNode(EXIT + k, nodeLabel(keyLabel(k), n, total), n.toFloat()) },
-            links = flow.entryToApp.map { FlowLink(ENTRY + it.first, APP + it.second, it.third.toFloat()) } +
-                flow.appToExit.map { FlowLink(APP + it.first, EXIT + it.second, it.third.toFloat()) },
-        )
+        val entries = flow.entries.map { (k, n) -> FlowNode(ENTRY + k, nodeLabel(keyLabel(k), n, total), n.toFloat()) }
+        val apps = flow.apps.map { (k, n) -> FlowNode(APP + k, reportAppLabel(k), n.toFloat()) }
+        val exits = flow.exits.map { (k, n) -> FlowNode(EXIT + k, nodeLabel(keyLabel(k), n, total), n.toFloat()) }
+        if (isLargeFont()) {
+            // 큰 글자에서는 띠 그림 대신 같은 값을 표로 보인다(라벨이 겹치지 않게).
+            FlowTable(entries, apps.map { it.copy(label = nodeLabel(it.label, it.value.toInt(), total)) }, exits)
+        } else {
+            FlowDiagram(
+                entries = entries,
+                apps = apps,
+                exits = exits,
+                links = flow.entryToApp.map { FlowLink(ENTRY + it.first, APP + it.second, it.third.toFloat()) } +
+                    flow.appToExit.map { FlowLink(APP + it.first, EXIT + it.second, it.third.toFloat()) },
+            )
+        }
         charts.longestEntry?.let {
             Insight(stringResource(R.string.report_flow_insight, keyLabel(it.key), durationLabel(it.medianMinutes)))
+        }
+    }
+}
+
+/** 흐름도의 표 보기: 진입·앱·이탈마다 이름과 비율. */
+@Composable
+private fun FlowTable(entries: List<FlowNode>, apps: List<FlowNode>, exits: List<FlowNode>) {
+    val colors = PauseTheme.colors
+    Column(verticalArrangement = Arrangement.spacedBy(PauseTheme.spacing.sm)) {
+        listOf(
+            R.string.report_flow_col_entry to entries,
+            R.string.report_flow_col_app to apps,
+            R.string.report_flow_col_exit to exits,
+        ).forEach { (title, nodes) ->
+            Column(Modifier.semantics(mergeDescendants = true) {}) {
+                Text(stringResource(title), style = PauseTheme.type.label, color = colors.ink2)
+                nodes.forEach { Text(it.label, style = PauseTheme.type.body, color = colors.ink) }
+            }
         }
     }
 }
@@ -185,14 +225,14 @@ private fun PeerCard(charts: WeekChartData) {
                 stringResource(R.string.report_peer_peer),
                 durationLabel(peer.peerMedian),
                 peer.position(peer.peerMedian),
-                colors.surfaceAlt,
+                colors.ink2,
             )
             peer.myBaseline?.let {
                 PeerMarker(
                     stringResource(R.string.report_peer_baseline),
                     durationLabel(it),
                     peer.position(it),
-                    colors.line,
+                    colors.ink3,
                 )
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {

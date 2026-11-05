@@ -56,10 +56,14 @@ class NudgePreviewActivity : ComponentActivity() {
                         .verticalScroll(rememberScrollState())
                         .padding(OverlayDimens.cardOuterPadding),
                 ) {
+                    // 반투명 바탕 위 작은 흰 글자는 대비가 낮아서, 표면색 알약 위에 잉크 글자로 둔다.
                     Text(
                         text = stringResource(R.string.intervention_preview_title),
-                        style = PauseTheme.type.caption,
-                        color = PauseTheme.colors.surface,
+                        style = PauseTheme.type.label,
+                        color = PauseTheme.colors.ink,
+                        modifier = Modifier
+                            .background(PauseTheme.colors.surface, PauseTheme.shapes.pill)
+                            .padding(horizontal = PauseTheme.spacing.md, vertical = PauseTheme.spacing.xs),
                     )
                     when (val c = command) {
                         is NudgeCommand.ShowCard -> NudgeCard(c.card, onAction = { controller.emit(it) })

@@ -77,20 +77,12 @@ class UsageStatsSource @Inject constructor(
         ContextCompat.registerReceiver(context, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
         val reducer = UsageEventReducer(kinds::isIgnored, clock.now().toEpochMilli())
         launch {
-            while (true) {
-                if (usage == null || !UsageAccess.isGranted(context)) {
-                    delay(NO_PERMISSION_DELAY_MS)
-                    continue
-                }
-                val wasInteractive = interactive.value
-                reducer.reduce(query(usage)).forEach { send(it) }
-                if (!wasInteractive) {
-                    // 화면 꺼짐: 마지막으로 한 번 읽어 SCREEN_NON_INTERACTIVE를 보낸 뒤 켜질 때까지 멈춘다.
-                    interactive.first { it }
-                    continue
-                }
-                delay(if (fastPolling) FAST_POLL_MS else SLOW_POLL_MS)
-            }
+            pollWhileScreenOn(
+                canPoll = { usage != null && UsageAccess.isGranted(context) },
+                interactive = interactive,
+                intervalMs = { if (fastPolling) FAST_POLL_MS else SLOW_POLL_MS },
+                noPermissionDelayMs = NO_PERMISSION_DELAY_MS,
+            ) { usage?.let { reducer.reduce(query(it)).forEach { e -> send(e) } } }
         }
         awaitClose { context.unregisterReceiver(receiver) }
     }
@@ -126,5 +118,31 @@ class UsageStatsSource @Inject constructor(
         const val FAST_POLL_MS = 2_000L
         const val SLOW_POLL_MS = 5_000L
         const val NO_PERMISSION_DELAY_MS = 30_000L
+    }
+}
+
+/**
+ * 화면이 켜져 있을 때만 [poll]을 되풀이한다. 화면이 꺼지면 마지막으로 한 번 읽고(꺼짐 이벤트를 받으려고)
+ * 다시 켜질 때까지 멈춘다(배터리, 03 문서 9절). 권한이 없으면 [noPermissionDelayMs]마다 다시 확인만 한다.
+ */
+internal suspend fun pollWhileScreenOn(
+    canPoll: () -> Boolean,
+    interactive: kotlinx.coroutines.flow.StateFlow<Boolean>,
+    intervalMs: () -> Long,
+    noPermissionDelayMs: Long,
+    poll: suspend () -> Unit,
+) {
+    while (true) {
+        if (!canPoll()) {
+            delay(noPermissionDelayMs)
+            continue
+        }
+        val wasInteractive = interactive.value
+        poll()
+        if (!wasInteractive) {
+            interactive.first { it }
+            continue
+        }
+        delay(intervalMs())
     }
 }

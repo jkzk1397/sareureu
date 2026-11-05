@@ -33,6 +33,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import com.capstone.pause.core.designsystem.R
 import com.capstone.pause.core.designsystem.component.labelRes
+import com.capstone.pause.core.designsystem.theme.CappedFontScale
 import com.capstone.pause.core.designsystem.theme.PauseColors
 import com.capstone.pause.core.designsystem.theme.PauseSizes
 import com.capstone.pause.core.designsystem.theme.PauseTheme
@@ -92,6 +93,13 @@ fun DayClock(
     diameter: Dp = PauseSizes.dayClock,
     onHourClick: ((Int) -> Unit)? = null,
 ) {
+    // 다이얼은 크기가 정해진 그림이라 안의 글자를 시스템 글자 크기만큼 끝없이 키우지 않는다(최대 1.3배).
+    // 같은 숫자는 아래 범례·표 보기와 화면 읽기 설명에서 원래 크기로 읽을 수 있다.
+    CappedFontScale { DayClockContent(data, modifier, diameter, onHourClick) }
+}
+
+@Composable
+private fun DayClockContent(data: DayClockData, modifier: Modifier, diameter: Dp, onHourClick: ((Int) -> Unit)?) {
     val colors = PauseTheme.colors
     val measurer = rememberTextMeasurer()
     val labelStyle = PauseTheme.type.captionTabular.copy(color = colors.ink3, textAlign = TextAlign.Center)
@@ -143,7 +151,7 @@ fun DayClock(
         ) {
             // 일주일 합계("11시간 12분")는 가운데 원에 비해 길어서 한 단계 작은 글자로 한 줄에 둔다.
             val totalStyle = if (data.scale == DayClockScale.Week) PauseTheme.type.label else PauseTheme.type.title
-            Text(data.totalLabel, style = totalStyle, color = colors.ink, textAlign = TextAlign.Center, maxLines = 1)
+            Text(data.totalLabel, style = totalStyle, color = colors.ink, textAlign = TextAlign.Center, maxLines = 2)
             Text(data.caption, style = PauseTheme.type.caption, color = colors.ink2, textAlign = TextAlign.Center)
         }
     }

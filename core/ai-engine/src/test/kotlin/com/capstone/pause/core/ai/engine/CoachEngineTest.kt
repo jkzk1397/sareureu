@@ -86,6 +86,15 @@ class CoachEngineTest {
     }
 
     @Test
+    fun mockWritesWeekdayInKoreanEvenForShortCodes() = runTest {
+        // 앱의 도구는 요일을 "TUE"처럼 줄여 준다. 모의 답에 영어 코드가 그대로 나오면 안 된다.
+        val turn = engine(FakeCoachTools()).reply(mock, emptyList(), "나 언제 제일 많이 봐?", ProfileSummary())
+        assertIs<CoachTurn.Reply>(turn)
+        assertTrue("화요일" in turn.reply.answer, turn.reply.answer)
+        assertTrue("TUE" !in turn.reply.answer, turn.reply.answer)
+    }
+
+    @Test
     fun mockAnswersSuggestedQuestionsWithEvidence() = runTest {
         listOf("나 언제 제일 많이 봐?", "왜 자기 전에 못 끊을까?", "출근길엔 뭐 하면 좋아?", "지난주랑 뭐가 달라졌어?", "내 유형은 뭐야?").forEach { q ->
             val turn = engine(FakeCoachTools()).reply(mock, emptyList(), q, ProfileSummary())

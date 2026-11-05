@@ -176,7 +176,10 @@ internal class MockCoach(private val t: MockTemplates) {
 
     private fun label(slot: ContextSlot) = t.contextLabels[slot] ?: slot.name
 
-    private fun day(name: String) = t.coach.dayLabels[name] ?: name
+    /** 도구 결과의 요일은 "MON"처럼 줄인 값일 수 있어 앞부분으로도 찾는다. */
+    private fun day(name: String) = t.coach.dayLabels[name]
+        ?: t.coach.dayLabels.entries.firstOrNull { name.length >= 3 && it.key.startsWith(name) }?.value
+        ?: name
 
     private companion object {
         val FLOW_LIMIT = JsonPrimitive(3)
