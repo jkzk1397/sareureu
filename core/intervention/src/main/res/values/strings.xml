@@ -19,7 +19,9 @@
   <string name="intervention_chip_procrastinating">할 일 미루는 중</string>
   <string name="intervention_chip_fun">재밌어서</string>
   <string name="intervention_chip_just">그냥</string>
-  <string name="intervention_type_to_extend">5분만 더 볼게</string>
+  <string name="intervention_type_to_extend_l1">5분만 더 볼게</string>
+  <string name="intervention_type_to_extend_l2">알면서도 5분만 더 볼게</string>
+  <string name="intervention_type_to_extend_l3">지금 멈추면 더 개운한 거 알지만 그래도 5분만 더 볼게</string>
   <string name="intervention_app_youtube">유튜브</string>
   <string name="intervention_app_instagram">인스타그램</string>
   <string name="intervention_app_tiktok">틱톡</string>
@@ -35,7 +37,6 @@
   <!-- ===== 엔진·서비스·알림·예약 끝 ===== -->
   <!-- ===== 오버레이·카드 (fork D) ===== -->
   <string name="intervention_card_title">%1$s %2$d분째야</string>
-  <string name="intervention_card_threshold">기준 %1$d분</string>
   <string name="intervention_stop">그만 볼래</string>
   <string name="intervention_extend">%1$d분만 더</string>
   <string name="intervention_snooze_today">오늘은 그만 알려 줘</string>
@@ -46,11 +47,11 @@
   <string name="intervention_l3_subtitle">%1$d초만 화면에서 눈을 떼 봐</string>
   <string name="intervention_l3_seconds_left">초 남음</string>
   <string name="intervention_l3_type_label">더 보려면 이 문장을 그대로 입력해 줘</string>
-  <string name="intervention_l3_hint_locked">숨 고르기가 끝나면 입력할 수 있어. 이번 연장은 %1$d분이야.</string>
+  <string name="intervention_breath_short">%1$d초 숨 고르고 나면 입력할 수 있어</string>
   <string name="intervention_l3_hint_open">그대로 입력하면 %1$d분 더 볼 수 있어.</string>
   <string name="intervention_l4_title">하나만 답해 줘</string>
   <string name="intervention_l4_answer_label">내 답</string>
-  <string name="intervention_l4_hint">답하면 %1$d분 더 볼 수 있어.</string>
+  <string name="intervention_l4_hint">%2$d자 넘게 답하면 %1$d분 더 볼 수 있어.</string>
   <string name="intervention_close">닫기</string>
   <string name="intervention_bubble_description">%1$s, 숏폼 %2$d분째. 누르면 자세히</string>
   <string name="intervention_preview_title">다른 앱 위 표시 권한이 없어서 앱 화면으로 보여 줄게</string>

@@ -23,8 +23,15 @@ class FrictionGateTest {
     }
 
     @Test
-    fun answerNeedsTwoNonBlankChars() {
-        assertFalse(FrictionGate.canExtendAnswered(" a "))
-        assertTrue(FrictionGate.canExtendAnswered("응 볼래"))
+    fun answerNeedsFiveNonBlankCharsAndFinishedBreath() {
+        assertFalse(FrictionGate.canExtendAnswered("응 볼래"))
+        assertTrue(FrictionGate.canExtendAnswered("심심해서 그냥 봐"))
+        assertFalse(FrictionGate.canExtendAnswered("심심해서 그냥 봐", breathSecondsLeft = 4))
+    }
+
+    @Test
+    fun ladderGetsHarderEachLevel() {
+        val breaths = (1..4).map { com.capstone.pause.core.intervention.nudge.FrictionLadder.breathSeconds(it) }
+        assertTrue(breaths == breaths.sorted() && breaths.first() == 0 && breaths.last() > breaths[2], "$breaths")
     }
 }

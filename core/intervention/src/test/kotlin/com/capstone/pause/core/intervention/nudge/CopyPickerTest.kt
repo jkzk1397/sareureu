@@ -34,7 +34,7 @@ class CopyPickerTest {
         friendSenderFormat = "%1\$s · 맡겨 둔 잔소리",
         contextLabels = mapOf(ContextSlot.PRE_SLEEP to "자기 전"),
         reasonChips = listOf(ReasonChip("BORED", "심심해서")),
-        typeToExtend = "5분만 더 볼게",
+        typeToExtend = mapOf(1 to "5분만 더 볼게", 2 to "알면서도 5분만 더 볼게", 3 to "그래도 5분만 더 볼게"),
     )
     private val live = LiveInput(Instant.ofEpochSecond(1000), ContextSlot.PRE_SLEEP, "유튜브", 15)
 
@@ -63,7 +63,7 @@ class CopyPickerTest {
         assertEquals(listOf("BORED"), writer.card(2, live, 20).reasonChips.map { it.key })
         val l3 = writer.card(3, live, 25)
         assertEquals(10, l3.breathSeconds)
-        assertEquals("5분만 더 볼게", l3.typeToExtend)
+        assertEquals("그래도 5분만 더 볼게", l3.typeToExtend)
         val l4 = writer.card(4, live, 30)
         assertEquals("다음 할 일은?", l4.question)
         assertEquals(3, l4.extendMinutes)
