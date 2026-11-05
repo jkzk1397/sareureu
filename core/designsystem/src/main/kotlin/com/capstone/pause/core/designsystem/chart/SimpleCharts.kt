@@ -30,6 +30,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import com.capstone.pause.core.designsystem.R
+import com.capstone.pause.core.designsystem.theme.CappedFontScale
 import com.capstone.pause.core.designsystem.theme.PauseSizes
 import com.capstone.pause.core.designsystem.theme.PauseTheme
 import com.capstone.pause.core.model.ContextSlot
@@ -59,27 +60,29 @@ fun ContextBar(values: List<Pair<ContextSlot, Int>>, modifier: Modifier = Modifi
 /** 세션 길이 분포. [buckets] = (구간 이름, 비율 0..1). 막대 위에 비율 글자를 직접 쓴다. */
 @Composable
 fun DurationHistogram(buckets: List<Pair<String, Float>>, modifier: Modifier = Modifier) {
-    val colors = PauseTheme.colors
-    val max = buckets.maxOfOrNull { it.second }?.takeIf { it > 0f } ?: 1f
-    val description = stringResource(R.string.designsystem_histogram_a11y) + ": " +
-        buckets.joinToString { "${it.first} ${(it.second * 100).toInt()}%" }
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .semantics { contentDescription = description },
-        horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xs),
-        verticalAlignment = Alignment.Bottom,
-    ) {
-        buckets.forEach { (label, ratio) ->
-            Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("${(ratio * 100).toInt()}%", style = PauseTheme.type.label, color = colors.ink)
-                Box(
-                    Modifier
-                        .fillMaxWidth()
-                        .height(PauseSizes.histogramHeight * (ratio / max))
-                        .background(colors.ink2, PauseTheme.shapes.small),
-                )
-                Text(label, style = PauseTheme.type.caption, color = colors.ink3, textAlign = TextAlign.Center)
+    CappedFontScale {
+        val colors = PauseTheme.colors
+        val max = buckets.maxOfOrNull { it.second }?.takeIf { it > 0f } ?: 1f
+        val description = stringResource(R.string.designsystem_histogram_a11y) + ": " +
+            buckets.joinToString { "${it.first} ${(it.second * 100).toInt()}%" }
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .semantics { contentDescription = description },
+            horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xs),
+            verticalAlignment = Alignment.Bottom,
+        ) {
+            buckets.forEach { (label, ratio) ->
+                Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("${(ratio * 100).toInt()}%", style = PauseTheme.type.label, color = colors.ink)
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(PauseSizes.histogramHeight * (ratio / max))
+                            .background(colors.ink2, PauseTheme.shapes.small),
+                    )
+                    Text(label, style = PauseTheme.type.caption, color = colors.ink3, textAlign = TextAlign.Center)
+                }
             }
         }
     }

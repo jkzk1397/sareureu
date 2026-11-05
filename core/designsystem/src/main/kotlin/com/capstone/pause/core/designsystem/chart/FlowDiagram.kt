@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
 import com.capstone.pause.core.designsystem.R
+import com.capstone.pause.core.designsystem.theme.CappedFontScale
 import com.capstone.pause.core.designsystem.theme.PauseSizes
 import com.capstone.pause.core.designsystem.theme.PauseTheme
 
@@ -49,48 +50,58 @@ fun FlowDiagram(
     links: List<FlowLink>,
     modifier: Modifier = Modifier,
 ) {
-    val colors = PauseTheme.colors
-    val measurer = rememberTextMeasurer()
-    val labelStyle = PauseTheme.type.caption.copy(color = colors.ink2)
-    val description = stringResource(R.string.designsystem_flow_a11y) + ": " +
-        (entries + apps + exits).joinToString { it.label }
-    Canvas(
-        modifier
-            .fillMaxWidth()
-            .height(PauseSizes.flowHeight)
-            .semantics { contentDescription = description },
-    ) {
-        val nodeW = PauseSizes.flowNodeWidth.toPx()
-        val labelGap = PauseSizes.dash.toPx()
-        val labelW = size.width * LABEL_FRACTION
-        val xs = listOf(labelW, (size.width - nodeW) / 2f, size.width - labelW - nodeW)
-        val boxes = HashMap<String, NodeBox>()
-        listOf(entries, apps, exits).forEach { nodes -> layoutColumn(nodes, boxes) }
-        // 띠
-        links.forEach { link ->
-            val a = boxes[link.from] ?: return@forEach
-            val b = boxes[link.to] ?: return@forEach
-            val fromCol = colOf(link.from, entries, apps)
-            val toCol = fromCol + 1
-            if (toCol > 2) return@forEach
-            val h = link.value * scaleOf(boxes, link.from, entries, apps, exits)
-            val x0 = xs[fromCol] + nodeW
-            val x1 = xs[toCol]
-            val y0 = a.outCursor
-            val y1 = b.inCursor
-            a.outCursor += h
-            b.inCursor += h
-            drawBand(x0, y0, x1, y1, h, colors.line)
-        }
-        // 마디 + 라벨
-        listOf(entries, apps, exits).forEachIndexed { col, nodes ->
-            nodes.forEach { n ->
-                val box = boxes[n.id] ?: return@forEach
-                drawRect(colors.ink, Offset(xs[col], box.top), Size(nodeW, box.height))
-                val textX = if (col == 0) 0f else xs[col] + nodeW + labelGap
-                // 가운데 열(앱) 라벨은 띠 위에 놓이므로 바탕을 깔아 읽히게 한다(BUILD_REPORT TODO#6).
-                val backing = if (col == 1) colors.surface else null
-                drawLabel(measurer, n.label, labelStyle, textX, box.top + box.height / 2f, labelW - labelGap, backing)
+    CappedFontScale {
+        val colors = PauseTheme.colors
+        val measurer = rememberTextMeasurer()
+        val labelStyle = PauseTheme.type.caption.copy(color = colors.ink2)
+        val description = stringResource(R.string.designsystem_flow_a11y) + ": " +
+            (entries + apps + exits).joinToString { it.label }
+        Canvas(
+            modifier
+                .fillMaxWidth()
+                .height(PauseSizes.flowHeight)
+                .semantics { contentDescription = description },
+        ) {
+            val nodeW = PauseSizes.flowNodeWidth.toPx()
+            val labelGap = PauseSizes.dash.toPx()
+            val labelW = size.width * LABEL_FRACTION
+            val xs = listOf(labelW, (size.width - nodeW) / 2f, size.width - labelW - nodeW)
+            val boxes = HashMap<String, NodeBox>()
+            listOf(entries, apps, exits).forEach { nodes -> layoutColumn(nodes, boxes) }
+            // 띠
+            links.forEach { link ->
+                val a = boxes[link.from] ?: return@forEach
+                val b = boxes[link.to] ?: return@forEach
+                val fromCol = colOf(link.from, entries, apps)
+                val toCol = fromCol + 1
+                if (toCol > 2) return@forEach
+                val h = link.value * scaleOf(boxes, link.from, entries, apps, exits)
+                val x0 = xs[fromCol] + nodeW
+                val x1 = xs[toCol]
+                val y0 = a.outCursor
+                val y1 = b.inCursor
+                a.outCursor += h
+                b.inCursor += h
+                drawBand(x0, y0, x1, y1, h, colors.line)
+            }
+            // 마디 + 라벨
+            listOf(entries, apps, exits).forEachIndexed { col, nodes ->
+                nodes.forEach { n ->
+                    val box = boxes[n.id] ?: return@forEach
+                    drawRect(colors.ink, Offset(xs[col], box.top), Size(nodeW, box.height))
+                    val textX = if (col == 0) 0f else xs[col] + nodeW + labelGap
+                    // 가운데 열(앱) 라벨은 띠 위에 놓이므로 바탕을 깔아 읽히게 한다(BUILD_REPORT TODO#6).
+                    val backing = if (col == 1) colors.surface else null
+                    drawLabel(
+                        measurer,
+                        n.label,
+                        labelStyle,
+                        textX,
+                        box.top + box.height / 2f,
+                        labelW - labelGap,
+                        backing,
+                    )
+                }
             }
         }
     }

@@ -40,6 +40,7 @@ import com.capstone.pause.core.designsystem.R
 import com.capstone.pause.core.designsystem.theme.PauseColors
 import com.capstone.pause.core.designsystem.theme.PauseMotion
 import com.capstone.pause.core.designsystem.theme.PauseTheme
+import com.capstone.pause.core.designsystem.theme.motionSpec
 import com.capstone.pause.core.model.BuddyExpression
 import com.capstone.pause.core.model.MeltStage
 
@@ -56,8 +57,16 @@ fun BuddyAvatar(
     shadow: Boolean = !PauseTheme.colors.isDark,
 ) {
     val body = ImageBitmap.imageResource(R.drawable.designsystem_buddy_body)
-    val puddle by animateFloatAsState(BuddyMelt.puddleWidth(melt), tween(PauseMotion.MELT_MS), label = "puddle")
-    val scaleY by animateFloatAsState(BuddyMelt.bodyScaleY(melt), tween(PauseMotion.MELT_MS), label = "bodyScale")
+    val puddle by animateFloatAsState(
+        BuddyMelt.puddleWidth(melt),
+        motionSpec(tween(PauseMotion.MELT_MS)),
+        label = "puddle",
+    )
+    val scaleY by animateFloatAsState(
+        BuddyMelt.bodyScaleY(melt),
+        motionSpec(tween(PauseMotion.MELT_MS)),
+        label = "bodyScale",
+    )
     val description = stringResource(
         R.string.designsystem_buddy_description,
         stringResource(R.string.buddy_name),

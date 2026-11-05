@@ -114,7 +114,8 @@ fun HypothesisCard(
 fun ChoicePill(text: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val colors = PauseTheme.colors
     Text(
-        text = text,
+        // 고른 상태를 색만으로 알리지 않는다(AGENTS.md 6절): 체크 표시를 함께 붙인다.
+        text = if (selected) stringResource(R.string.designsystem_selected_prefix, text) else text,
         style = PauseTheme.type.label,
         color = if (selected) colors.onAccentContainer else colors.ink,
         modifier = modifier
