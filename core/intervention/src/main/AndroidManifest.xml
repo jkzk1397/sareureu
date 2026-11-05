@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 개입 모듈 권한(03 문서 5절). 서비스·리시버는 3단계에서 여기에 더한다. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <!-- 메시지 알림·예약 알림(13+ 런타임 요청). 거절하면 오버레이 카드만 쓴다. -->
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+  <!-- 플로팅 캐릭터·카드(특별 접근). 거절하면 알림으로 대체한다. -->
+  <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+</manifest>
