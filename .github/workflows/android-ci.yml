@@ -10,7 +10,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # 원샷 0단계 전(앱 코드가 아직 없을 때)에는 빌드를 건너뛴다
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      has_build: ${{ steps.check.outputs.has_build }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: check
+        run: |
+          if [ -f settings.gradle.kts ]; then echo "has_build=true" >> "$GITHUB_OUTPUT"; else echo "has_build=false" >> "$GITHUB_OUTPUT"; echo "아직 Gradle 프로젝트가 없어 빌드를 건너뜁니다."; fi
+
   build:
+    needs: check
+    if: needs.check.outputs.has_build == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
