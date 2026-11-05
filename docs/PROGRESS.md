@@ -26,12 +26,12 @@
 - [x] 온보딩: 연령 확인(만 18세 미만 종료)·프로필·하루 리듬·목표·말투·추적 앱·권한 고지·AI 동의(국외 이전 고지) (R3)
 
 ## 3단계 · 실시간 개입
-- [ ] `NudgeEngine` 상태 기계(1~4단계, 연장, 오늘은 그만, 하루 3회 초과 시 2단계 시작) + 테스트 (R3)
-- [ ] 오버레이 창 관리(Compose 수명 주기 연결), 플로팅 르르(가장자리에서 빼꼼, 녹는 단계, 끌기·가장자리 붙기) (R3)
-- [ ] 카드 1~4단계 UI(목업 02·03·04) (R3/R5)
-- [ ] 르르 메시지 알림(MessagingStyle + `BuddyBitmap` 아이콘 + 실루엣 작은 아이콘, 채널), 탭하면 코치 채팅 (R3)
-- [ ] 예약 알림·위험 시간대 미리 알림(WorkManager) (R3)
-- [ ] 기본 문구 팩 `assets/copy/default_pack.json` (R4)
+- [x] `NudgeEngine` 상태 기계(1~4단계, 연장, 오늘은 그만, 하루 3회 초과 시 2단계 시작) + 테스트 (R3)
+- [x] 오버레이 창 관리(Compose 수명 주기 연결), 플로팅 르르(가장자리에서 빼꼼, 녹는 단계, 끌기·가장자리 붙기) (R3)
+- [x] 카드 1~4단계 UI(목업 02·03·04) (R3/R5)
+- [x] 르르 메시지 알림(MessagingStyle + `BuddyBitmap` 아이콘 + 실루엣 작은 아이콘, 채널), 탭하면 코치 채팅 (R3)
+- [x] 예약 알림·위험 시간대 미리 알림(WorkManager) (R3)
+- [x] 기본 문구 팩 `assets/copy/default_pack.json` (R4)
 
 ## 4단계 · AI
 - [ ] `core:ai-engine`: `LlmClient`, `MockLlmClient`, `PromptRegistry` + 프롬프트 v1(weekly_report, copy_pack, context_check, coach_chat, poke_draft), 스키마, 검증기, `SafetyFilter`, `BannedWords`, `CoachEngine` + 단위 테스트 (R4)
