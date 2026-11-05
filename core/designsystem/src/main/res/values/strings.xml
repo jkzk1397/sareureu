@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- 브랜드 이름은 이 두 줄에만 둔다(AGENTS.md 0절). 모든 모듈이 designsystem의 R로 읽는다. -->
+  <string name="app_name">사르르</string>
+  <string name="buddy_name">르르</string>
+  <string name="designsystem_demo_badge">시연 데이터</string>
+</resources>

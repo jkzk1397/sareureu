@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- 앱 아이콘·스플래시 배경(06 문서 8절, accent). 화면 색은 designsystem 토큰만 쓴다. -->
+  <color name="app_icon_background">#C6F24E</color>
+  <color name="app_splash_background">#F3F3EE</color>
+</resources>
