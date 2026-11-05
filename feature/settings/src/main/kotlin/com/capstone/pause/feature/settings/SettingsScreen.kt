@@ -37,7 +37,7 @@ fun SettingsRoute(viewModel: SettingsViewModel = hiltViewModel()) {
     SettingsScreen(uiState = uiState, onAction = viewModel::onAction)
 }
 
-/** 설정 탭(상태 없음). TODO(BUILD_REPORT#2): 5단계에서 임계값·추적 앱·AI·개인정보 항목을 더한다. */
+/** 설정 탭(상태 없음). TODO(BUILD_REPORT#2): 5단계에서 추적 앱·감지 방식·AI·개인정보 항목을 더한다. */
 @Composable
 fun SettingsScreen(uiState: SettingsUiState, onAction: (SettingsAction) -> Unit, modifier: Modifier = Modifier) {
     PauseScreenColumn(title = stringResource(R.string.settings_title), modifier = modifier) {
@@ -72,6 +72,9 @@ fun SettingsScreen(uiState: SettingsUiState, onAction: (SettingsAction) -> Unit,
                 }
             }
         }
+        SettingsSection(title = stringResource(R.string.settings_section_threshold)) {
+            ThresholdRows(uiState.thresholds, onSet = { slot, m -> onAction(SettingsAction.SetThreshold(slot, m)) })
+        }
         SettingsSection(title = stringResource(R.string.settings_section_display)) {
             SwitchRow(
                 label = stringResource(R.string.settings_show_melt),
@@ -86,6 +89,9 @@ fun SettingsScreen(uiState: SettingsUiState, onAction: (SettingsAction) -> Unit,
                     onClick = { onAction(SettingsAction.SetTheme(mode)) },
                 )
             }
+        }
+        SettingsSection(title = stringResource(R.string.settings_section_dev)) {
+            RecentSessions(uiState.recentSessions)
         }
     }
 }

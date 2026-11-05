@@ -2,11 +2,17 @@ package com.capstone.pause.feature.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.capstone.pause.core.common.AppClock
 import com.capstone.pause.core.data.demo.DemoDataSeeder
 import com.capstone.pause.core.data.demo.DemoPattern
+import com.capstone.pause.core.data.session.SessionRepository
+import com.capstone.pause.core.data.settings.DefaultThresholds
 import com.capstone.pause.core.data.settings.SettingsRepository
 import com.capstone.pause.core.data.settings.ThemeMode
+import com.capstone.pause.core.model.ContextSlot
+import com.capstone.pause.core.model.ShortformSession
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.time.Duration
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -23,6 +29,8 @@ data class SettingsUiState(
     val seeding: Boolean = false,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val showMelt: Boolean = true,
+    val thresholds: Map<ContextSlot, Int> = DefaultThresholds.ALL,
+    val recentSessions: List<ShortformSession> = emptyList(),
 )
 
 /** 설정 화면 동작. */
@@ -44,6 +52,9 @@ sealed interface SettingsAction {
 
     /** 르르 녹는 표시. */
     data class SetShowMelt(val enabled: Boolean) : SettingsAction
+
+    /** 맥락별 임계값(분). */
+    data class SetThreshold(val slot: ContextSlot, val minutes: Int) : SettingsAction
 }
 
 /** 설정 화면 ViewModel. */
@@ -51,18 +62,26 @@ sealed interface SettingsAction {
 class SettingsViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val demoDataSeeder: DemoDataSeeder,
+    sessionRepository: SessionRepository,
+    clock: AppClock,
 ) : ViewModel() {
 
     private val seeding = MutableStateFlow(false)
 
     /** 화면 상태. */
-    val uiState: StateFlow<SettingsUiState> = combine(settingsRepository.settings, seeding) { s, busy ->
+    val uiState: StateFlow<SettingsUiState> = combine(
+        settingsRepository.settings,
+        seeding,
+        sessionRepository.observeRecent(clock.now().minus(Duration.ofDays(RECENT_DAYS)), RECENT_LIMIT),
+    ) { s, busy, recent ->
         SettingsUiState(
             demoMode = s.demoMode,
             demoPattern = s.demoPattern,
             seeding = busy,
             themeMode = s.themeMode,
             showMelt = s.showMelt,
+            thresholds = s.thresholds,
+            recentSessions = recent,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), SettingsUiState())
 
@@ -87,6 +106,8 @@ class SettingsViewModel @Inject constructor(
                 is SettingsAction.SetTheme -> settingsRepository.setThemeMode(action.mode)
 
                 is SettingsAction.SetShowMelt -> settingsRepository.setShowMelt(action.enabled)
+
+                is SettingsAction.SetThreshold -> settingsRepository.setThreshold(action.slot, action.minutes)
             }
         }
     }
@@ -102,5 +123,7 @@ class SettingsViewModel @Inject constructor(
 
     private companion object {
         const val STOP_TIMEOUT_MS = 5_000L
+        const val RECENT_DAYS = 2L
+        const val RECENT_LIMIT = 20
     }
 }

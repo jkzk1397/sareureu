@@ -17,6 +17,7 @@ import com.capstone.pause.core.data.plan.PlanRepository
 import com.capstone.pause.core.data.plan.PokeRepository
 import com.capstone.pause.core.data.plan.RoomPlanRepository
 import com.capstone.pause.core.data.plan.RoomPokeRepository
+import com.capstone.pause.core.data.profile.ConsentRepository
 import com.capstone.pause.core.data.profile.DataStoreProfileRepository
 import com.capstone.pause.core.data.profile.ProfileRepository
 import com.capstone.pause.core.data.session.RoomSessionRepository
@@ -100,6 +101,9 @@ internal abstract class DataBindsModule {
 
     @Binds
     abstract fun profileRepository(impl: DataStoreProfileRepository): ProfileRepository
+
+    @Binds
+    abstract fun consentRepository(impl: DataStoreProfileRepository): ConsentRepository
 
     @Binds
     abstract fun sessionRepository(impl: RoomSessionRepository): SessionRepository
