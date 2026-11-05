@@ -222,3 +222,25 @@ private fun SmallCard(
 
 private val PauseColorsInk = com.capstone.pause.core.designsystem.theme.PauseColors.BuddyInk
 private val LIVE_BUDDY: Dp = PauseSizes.liveBuddy
+
+/** 시연 모드 전용: "시연: 숏폼 보기 시작" / "시연 멈추기"(DemoController만 부른다). */
+@Composable
+internal fun DemoPlayButton(running: Boolean, onAction: (TodayAction) -> Unit) {
+    if (running) {
+        androidx.compose.material3.OutlinedButton(
+            onClick = { onAction(TodayAction.StopDemo) },
+            shape = PauseTheme.shapes.pill,
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = PauseTheme.spacing.minTouch),
+        ) {
+            Text(
+                text = stringResource(R.string.today_demo_stop),
+                style = PauseTheme.type.label,
+                color = PauseTheme.colors.ink,
+            )
+        }
+    } else {
+        PrimaryButton(text = stringResource(R.string.today_demo_start), onClick = { onAction(TodayAction.StartDemo) })
+    }
+}

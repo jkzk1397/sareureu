@@ -15,6 +15,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -55,7 +56,7 @@ private enum class TopTab(val root: NavKey, @StringRes val label: Int, @Drawable
 
 /** 앱 셸: 프로필이 없으면 온보딩, 있으면 탭별 백 스택을 가진 하단 탭. */
 @Composable
-fun PauseAppShell(needsOnboarding: Boolean) {
+fun PauseAppShell(needsOnboarding: Boolean, openTabRequest: String? = null, onTabRequestHandled: () -> Unit = {}) {
     if (needsOnboarding) {
         val onboardingStack = rememberNavBackStack(OnboardingKey)
         PauseNavDisplay(
@@ -75,6 +76,13 @@ fun PauseAppShell(needsOnboarding: Boolean) {
     var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
     val selected = TopTab.entries[selectedIndex]
     val stack = stacks.getValue(selected)
+
+    // 알림 딥링크(예: 메시지 알림 → 코치 탭).
+    LaunchedEffect(openTabRequest) {
+        val tab = TopTab.entries.firstOrNull { it.name.equals(openTabRequest, ignoreCase = true) }
+        if (tab != null) selectedIndex = tab.ordinal
+        if (openTabRequest != null) onTabRequestHandled()
+    }
 
     // 탭 루트에서 뒤로 가기: 오늘 탭이 아니면 오늘 탭으로(예측형 뒤로 가기, onBackPressed 안 씀).
     BackHandler(enabled = stack.size == 1 && selected != TopTab.TODAY) { selectedIndex = 0 }

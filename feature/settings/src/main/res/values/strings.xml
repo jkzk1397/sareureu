@@ -40,4 +40,20 @@
   <string name="settings_kind_game">게임</string>
   <string name="settings_kind_shopping">쇼핑</string>
   <string name="settings_kind_other">다른 앱</string>
+  <string name="settings_section_monitoring">감지</string>
+  <string name="settings_monitoring">감지 켜기</string>
+  <string name="settings_monitoring_desc">켜 둔 동안 숏폼 시간을 세고, 기준 시간이 되면 화면 위에서 말 걸어. 상태 알림이 하나 떠 있어.</string>
+  <string name="settings_usage_notice_title">사용 기록 접근이 필요해</string>
+  <string name="settings_usage_notice_body">어떤 앱이 언제 열리고 닫혔는지(앱 이름과 시각만) 읽어서 숏폼 시간을 세. 기록은 이 폰 안에만 남고, 화면 글자는 읽지 않아. 켜지 않아도 시연 모드로 둘러볼 수 있어.</string>
+  <string name="settings_usage_notice_agree">동의하고 설정으로 이동</string>
+  <string name="settings_usage_notice_cancel">지금은 안 할래</string>
+  <string name="settings_section_reminder">예약 알림</string>
+  <string name="settings_reminder_desc">정한 시각에 오늘 결산을 알려 줘. 하루 최대 세 개.</string>
+  <string name="settings_reminder_add">예약 알림 추가</string>
+  <string name="settings_reminder_earlier">%1$s 알림 30분 앞당기기</string>
+  <string name="settings_reminder_later">%1$s 알림 30분 늦추기</string>
+  <string name="settings_reminder_remove">%1$s 알림 지우기</string>
+  <string name="settings_reminder_remove_short">지우기</string>
+  <string name="settings_minus">−</string>
+  <string name="settings_plus">+</string>
 </resources>

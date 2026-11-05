@@ -1,0 +1,994 @@
+{
+  "version": "default-1",
+  "card": {
+    "WAKE_UP": {
+      "L1": [
+        {
+          "id": "d_wake_l1_p",
+          "text": "눈은 떴는데 엄지가 먼저 깼네. {app} 여기까지!",
+          "tones": [
+            "PLAYFUL"
+          ]
+        },
+        {
+          "id": "d_wake_l1_w",
+          "text": "아침 숏폼은 금방 길어져. 첫 일 하나만 먼저 해 볼까?",
+          "tones": [
+            "WARM"
+          ]
+        },
+        {
+          "id": "d_wake_l1_n",
+          "text": "기상 직후 {app} {min}분째야. 여기서 끊으면 아침이 길어져",
+          "tones": [
+            "PLAIN"
+          ]
+        }
+      ],
+      "L2": [
+        {
+          "id": "d_wake_l2_p",
+          "text": "이불 밖은 위험하다지만 이제 나갈 시간이야. 이유는?",
+          "tones": [
+            "PLAYFUL"
+          ]
+        },
+        {
+          "id": "d_wake_l2_w",
+          "text": "조금만 더 누워 있고 싶은 아침이지. 왜 그런지 골라 줄래?",
+          "tones": [
+            "WARM"
+          ]
+        },
+        {
+          "id": "d_wake_l2_n",
+          "text": "연장했어. 이유를 하나 골라 줘",
+          "tones": [
+            "PLAIN"
+          ]
+        }
+      ],
+      "L3": [
+        {
+          "id": "d_wake_l3_p",
+          "text": "기지개 한 번 켜고 와. 그래도 보고 싶으면 써 줘",
+          "tones": [
+            "PLAYFUL"
+          ]
+        },
+        {
+          "id": "d_wake_l3_w",
+          "text": "창문 열고 숨 한 번 쉬어 봐. 그래도 보고 싶으면 적어 줘",
+          "tones": [
+            "WARM"
+          ]
+        },
+        {
+          "id": "d_wake_l3_n",
+          "text": "숨 고르기가 끝나면 직접 입력해야 연장돼",
+          "tones": [
+            "PLAIN"
+          ]
+        }
+      ],
+      "L4Question": [
+        {
+          "id": "d_wake_l4question_p",
+          "text": "오늘 아침에 꼭 해야 하는 일 하나만 말해 줘!",
+          "tones": [
+            "PLAYFUL"
+          ]
+        },
+        {
+          "id": "d_wake_l4question_w",
+          "text": "지금 이걸 더 보면 오늘 아침 기분이 어떨 것 같아?",
+          "tones": [
+            "WARM"
+          ]
+        },
+        {
+          "id": "d_wake_l4question_n",
+          "text": "지금 안 하면 미뤄지는 일이 뭐야?",
+          "tones": [
+            "PLAIN"
+          ]
+        }
+      ]
+    },
+    "COMMUTE": {
+      "L1": [
+        {
+          "id": "d_commute_l1_p",
+          "text": "{app} {min}분째! 내릴 역 지나치면 안 돼",
+          "tones": [
+            "PLAYFUL"
+          ]
+        },
+        {
+          "id": "d_commute_l1_w",
+          "text": "이동하면서 보는 숏폼은 끝이 없지. 저장한 글 하나 읽어 볼래?",
+          "tones": [
+            "WARM"
+          ]
+        },
+        {
+          "id": "d_commute_l1_n",
+          "text": "이동 중 {app} {min}분째야. 다음 역에서 멈추는 건 어때?",
+          "tones": [
+            "PLAIN"
+          ]
+        }
+      ],
+      "L2": [
+        {
+          "id": "d_commute_l2_p",
+          "text": "아직 도착 전이구나. 왜 더 보고 싶은지 골라 봐",
+          "tones": [
+            "PLAYFUL"
+          ]
+        },
+        {
+          "id": "d_commute_l2_w",
+          "text": "길이 지루하지? 이유를 알려 주면 같이 방법을 찾아볼게",
+          "tones": [
+            "WARM"
+          ]
+        },
+        {
+          "id": "d_commute_l2_n",
+          "text": "연장했어. 이유를 하나 골라 줘",
+          "tones": [
+            "PLAIN"
+          ]
+        }
+      ],
+      "L3": [
+        {
+          "id": "d_commute_l3_p",
+          "text": "창밖 한 번 보고 와. 그래도 보고 싶으면 직접 써 줘",
+          "tones": [
+            "PLAYFUL"
+          ]
+        },
+        {
+          "id": "d_commute_l3_w",
+          "text": "음악으로 바꿔도 좋아. 그래도 보고 싶으면 적어 줘",
+          "tones": [
+            "WARM"
+          ]
+        },
+        {
+          "id": "d_commute_l3_n",
+          "text": "숨 고르기가 끝나면 직접 입력해야 연장돼",
+          "tones": [
+            "PLAIN"
+          ]
+        }
+      ],
+      "L4Question": [
+        {
+          "id": "d_commute_l4question_p",
+          "text": "내리면 제일 먼저 할 일이 뭐야?",
+          "tones": [
+            "PLAYFUL"
+          ]
+        },
+        {
+          "id": "d_commute_l4question_w",
+          "text": "오늘 이 길에서 뭘 들으면 기분이 좋아질까?",
+          "tones": [
+            "WARM"
+          ]
+        },
+        {
+          "id": "d_commute_l4question_n",
+          "text": "도착하면 무엇부터 할 거야?",
+          "tones": [
+            "PLAIN"
+          ]
+        }
+      ]
+    },
+    "CLASS_WORK": {
+      "L1": [
+        {
+          "id": "d_class_l1_p",
+          "text": "하던 일 두고 {app} {min}분째! 엄지가 땡땡이 중",
+          "tones": [
+            "PLAYFUL"
+          ]
+        },
+        {
+          "id": "d_class_l1_w",
+          "text": "하던 일이 막혔구나. 다음 한 줄만 적어 두고 돌아가 볼까?",
+          "tones": [
+            "WARM"
+          ]
+        },
+        {
+          "id": "d_class_l1_n",
+          "text": "작업 중 {app} {min}분째야. 하던 일로 돌아갈 때야",
+          "tones": [
+            "PLAIN"
+          ]
+        }
+      ],
+      "L2": [
+        {
+          "id": "d_class_l2_p",
+          "text": "딴짓 연장이다! 이유가 뭔지 골라 봐",
+          "tones": [
+            "PLAYFUL"
+          ]
+        },
+        {
+          "id": "d_class_l2_w",
+          "text": "집중이 잘 안 되는 날도 있지. 이유를 골라 줄래?",
+          "tones": [
+            "WARM"
+          ]
+        },
+        {
+          "id": "d_class_l2_n",
+          "text": "연장했어. 이유를 하나 골라 줘",
+          "tones": [
+            "PLAIN"
+          ]
+        }
+      ],
+      "L3": [
+        {
+          "id": "d_class_l3_p",
+          "text": "기지개 한 번! 그래도 보고 싶으면 직접 써 줘",
+          "tones": [
+            "PLAYFUL"
+          ]
+        },
+        {
+          "id": "d_class_l3_w",
+          "text": "물 한 모금 마시고 와. 그래도 보고 싶으면 적어 줘",
+          "tones": [
+            "WARM"
+          ]
+        },
+        {
+          "id": "d_class_l3_n",
+          "text": "숨 고르기가 끝나면 직접 입력해야 연장돼",
+          "tones": [
+            "PLAIN"
+          ]
+        }
+      ],
+      "L4Question": [
+        {
+          "id": "d_class_l4question_p",
+          "text": "지금 하던 일, 다음 한 줄은 뭐야?",
+          "tones": [
+            "PLAYFUL"
+          ]
+        },
+        {
+          "id": "d_class_l4question_w",
+          "text": "어디서 막혔는지 한 줄로 말해 줄래?",
+          "tones": [
+            "WARM"
+          ]
+        },
+        {
+          "id": "d_class_l4question_n",
+          "text": "끝내야 할 일 하나만 적어 줘",
+          "tones": [
+            "PLAIN"
+          ]
+        }
+      ]
+    },
+    "MEAL": {
+      "L1": [
+        {
+          "id": "d_meal_l1_p",
+          "text": "밥이랑 {app} 같이 먹는 중? 밥 식겠다",
+          "tones": [
+            "PLAYFUL"
+          ]
+        },
+        {
+          "id": "d_meal_l1_w",
+          "text": "밥 먹을 땐 폰을 잠깐 뒤집어 두는 건 어때?",
+          "tones": [
+            "WARM"
+          ]
+        },
+        {
+          "id": "d_meal_l1_n",
+          "text": "식사 중 {app} {min}분째야. 폰을 내려놓을 때야",
+          "tones": [
+            "PLAIN"
+          ]
+        }
+      ],
+      "L2": [
+        {
+          "id": "d_meal_l2_p",
+          "text": "디저트로 숏폼 더? 이유를 골라 봐",
+          "tones": [
+            "PLAYFUL"
+          ]
+        },
+        {
+          "id": "d_meal_l2_w",
+          "text": "천천히 먹고 싶은데 손이 가지? 이유를 골라 줘",
+          "tones": [
+            "WARM"
+          ]
+        },
+        {
+          "id": "d_meal_l2_n",
+          "text": "연장했어. 이유를 하나 골라 줘",
+          "tones": [
+            "PLAIN"
+          ]
+        }
+      ],
+      "L3": [
+        {
+          "id": "d_meal_l3_p",
+          "text": "한 입 먹고 숨 한 번. 그래도 보고 싶으면 써 줘",
+          "tones": [
+            "PLAYFUL"
+          ]
+        },
+        {
+          "id": "d_meal_l3_w",
+          "text": "음식 맛에 잠깐 집중해 봐. 그래도 보고 싶으면 적어 줘",
+          "tones": [
+            "WARM"
+          ]
+        },
+        {
+          "id": "d_meal_l3_n",
+          "text": "숨 고르기가 끝나면 직접 입력해야 연장돼",
+          "tones": [
+            "PLAIN"
+          ]
+        }
+      ],
+      "L4Question": [
+        {
+          "id": "d_meal_l4question_p",
+          "text": "오늘 먹은 것 중에 제일 맛있는 게 뭐야?",
+          "tones": [
+            "PLAYFUL"
+          ]
+        },
+        {
+          "id": "d_meal_l4question_w",
+          "text": "같이 먹는 사람이 있다면 무슨 얘기를 해 볼래?",
+          "tones": [
+            "WARM"
+          ]
+        },
+        {
+          "id": "d_meal_l4question_n",
+          "text": "식사 끝나고 할 일은 뭐야?",
+          "tones": [
+            "PLAIN"
+          ]
+        }
+      ]
+    },
+    "BREAK": {
+      "L1": [
+        {
+          "id": "d_break_l1_p",
+          "text": "쉬는 시간에 {app} {min}분째. 쉬는 건지 엄지 운동인지!",
+          "tones": [
+            "PLAYFUL"
+          ]
+        },
+        {
+          "id": "d_break_l1_w",
+          "text": "쉬는 시간은 금방 지나가지. 볼 것만 정하고 볼까?",
+          "tones": [
+            "WARM"
+          ]
+        },
+        {
+          "id": "d_break_l1_n",
+          "text": "쉬는 시간 {app} {min}분째야. 끝낼 시점을 정해 줘",
+          "tones": [
+            "PLAIN"
+          ]
+        }
+      ],
+      "L2": [
+        {
+          "id": "d_break_l2_p",
+          "text": "{buddy}가 또 왔지롱. 왜 더 보고 싶은지 골라 봐",
+          "tones": [
+            "PLAYFUL"
+          ]
+        },
+        {
+          "id": "d_break_l2_w",
+          "text": "더 보고 싶은 이유가 있을 거야. 하나만 골라 줄래?",
+          "tones": [
+            "WARM"
+          ]
+        },
+        {
+          "id": "d_break_l2_n",
+          "text": "연장했어. 이유를 하나 골라 줘",
+          "tones": [
+            "PLAIN"
+          ]
+        }
+      ],
+      "L3": [
+        {
+          "id": "d_break_l3_p",
+          "text": "일어나서 한 바퀴! 그래도 보고 싶으면 써 줘",
+          "tones": [
+            "PLAYFUL"
+          ]
+        },
+        {
+          "id": "d_break_l3_w",
+          "text": "어깨 한 번 돌리고 와. 그래도 보고 싶으면 적어 줘",
+          "tones": [
+            "WARM"
+          ]
+        },
+        {
+          "id": "d_break_l3_n",
+          "text": "숨 고르기가 끝나면 직접 입력해야 연장돼",
+          "tones": [
+            "PLAIN"
+          ]
+        }
+      ],
+      "L4Question": [
+        {
+          "id": "d_break_l4question_p",
+          "text": "쉬고 나서 제일 먼저 할 일은?",
+          "tones": [
+            "PLAYFUL"
+          ]
+        },
+        {
+          "id": "d_break_l4question_w",
+          "text": "지금 진짜로 쉬고 싶은 방법은 뭐야?",
+          "tones": [
+            "WARM"
+          ]
+        },
+        {
+          "id": "d_break_l4question_n",
+          "text": "다음 일정은 뭐야?",
+          "tones": [
+            "PLAIN"
+          ]
+        }
+      ]
+    },
+    "PRE_SLEEP": {
+      "L1": [
+        {
+          "id": "d_presleep_l1_p",
+          "text": "자기 전 {app} {min}분째. 이불 속 엄지 운동은 그만!",
+          "tones": [
+            "PLAYFUL"
+          ]
+        },
+        {
+          "id": "d_presleep_l1_w",
+          "text": "자기 전 숏폼은 금방 길어져. 오늘은 여기서 불 끌까?",
+          "tones": [
+            "WARM"
+          ]
+        },
+        {
+          "id": "d_presleep_l1_n",
+          "text": "자기 전 {app} {min}분째야. 잘 준비를 시작할 때야",
+          "tones": [
+            "PLAIN"
+          ]
+        }
+      ],
+      "L2": [
+        {
+          "id": "d_presleep_l2_p",
+          "text": "{buddy}도 졸려. 왜 더 보고 싶은지 골라 봐",
+          "tones": [
+            "PLAYFUL"
+          ]
+        },
+        {
+          "id": "d_presleep_l2_w",
+          "text": "잠이 안 와? 이유를 고르면 같이 방법을 찾아볼게",
+          "tones": [
+            "WARM"
+          ]
+        },
+        {
+          "id": "d_presleep_l2_n",
+          "text": "연장했어. 이유를 하나 골라 줘",
+          "tones": [
+            "PLAIN"
+          ]
+        }
+      ],
+      "L3": [
+        {
+          "id": "d_presleep_l3_p",
+          "text": "눈 감고 숨 한 번. 그래도 보고 싶으면 직접 써 줘",
+          "tones": [
+            "PLAYFUL"
+          ]
+        },
+        {
+          "id": "d_presleep_l3_w",
+          "text": "폰을 내려놓고 숨을 쉬어 봐. 그래도 보고 싶으면 적어 줘",
+          "tones": [
+            "WARM"
+          ]
+        },
+        {
+          "id": "d_presleep_l3_n",
+          "text": "숨 고르기가 끝나면 직접 입력해야 연장돼",
+          "tones": [
+            "PLAIN"
+          ]
+        }
+      ],
+      "L4Question": [
+        {
+          "id": "d_presleep_l4question_p",
+          "text": "내일 아침에 제일 먼저 할 일이 뭐야?",
+          "tones": [
+            "PLAYFUL"
+          ]
+        },
+        {
+          "id": "d_presleep_l4question_w",
+          "text": "오늘 좋았던 일 하나만 말해 줄래?",
+          "tones": [
+            "WARM"
+          ]
+        },
+        {
+          "id": "d_presleep_l4question_n",
+          "text": "내일 일어날 시간은 언제야?",
+          "tones": [
+            "PLAIN"
+          ]
+        }
+      ]
+    },
+    "LATE_NIGHT": {
+      "L1": [
+        {
+          "id": "d_late_l1_p",
+          "text": "깼구나. 폰 대신 물 한 잔 어때?",
+          "tones": [
+            "PLAYFUL"
+          ]
+        },
+        {
+          "id": "d_late_l1_w",
+          "text": "한밤중이야. 화면 불빛이 잠을 더 멀리 보내",
+          "tones": [
+            "WARM"
+          ]
+        },
+        {
+          "id": "d_late_l1_n",
+          "text": "한밤중 {app} {min}분째야. 다시 잘 시간이야",
+          "tones": [
+            "PLAIN"
+          ]
+        }
+      ],
+      "L2": [
+        {
+          "id": "d_late_l2_p",
+          "text": "새벽 감성 연장? 이유를 골라 봐",
+          "tones": [
+            "PLAYFUL"
+          ]
+        },
+        {
+          "id": "d_late_l2_w",
+          "text": "잠이 안 오는구나. 이유를 골라 줄래?",
+          "tones": [
+            "WARM"
+          ]
+        },
+        {
+          "id": "d_late_l2_n",
+          "text": "연장했어. 이유를 하나 골라 줘",
+          "tones": [
+            "PLAIN"
+          ]
+        }
+      ],
+      "L3": [
+        {
+          "id": "d_late_l3_p",
+          "text": "눈 감고 천천히 숨 쉬어 봐. 그래도 보고 싶으면 써 줘",
+          "tones": [
+            "PLAYFUL"
+          ]
+        },
+        {
+          "id": "d_late_l3_w",
+          "text": "불을 끄고 숨을 천천히 쉬어 봐. 그래도 보고 싶으면 적어 줘",
+          "tones": [
+            "WARM"
+          ]
+        },
+        {
+          "id": "d_late_l3_n",
+          "text": "숨 고르기가 끝나면 직접 입력해야 연장돼",
+          "tones": [
+            "PLAIN"
+          ]
+        }
+      ],
+      "L4Question": [
+        {
+          "id": "d_late_l4question_p",
+          "text": "지금 제일 하고 싶은 건 잠이야, 영상이야?",
+          "tones": [
+            "PLAYFUL"
+          ]
+        },
+        {
+          "id": "d_late_l4question_w",
+          "text": "눈을 감으면 떠오르는 게 있어?",
+          "tones": [
+            "WARM"
+          ]
+        },
+        {
+          "id": "d_late_l4question_n",
+          "text": "내일 꼭 해야 하는 일은 뭐야?",
+          "tones": [
+            "PLAIN"
+          ]
+        }
+      ]
+    },
+    "OTHER": {
+      "L1": [
+        {
+          "id": "d_other_l1_p",
+          "text": "{app} {min}분째! 엄지 좀 쉬게 해 주자",
+          "tones": [
+            "PLAYFUL"
+          ]
+        },
+        {
+          "id": "d_other_l1_w",
+          "text": "생각보다 오래 봤어. 여기서 한 번 멈춰 볼까?",
+          "tones": [
+            "WARM"
+          ]
+        },
+        {
+          "id": "d_other_l1_n",
+          "text": "{app} {min}분째야. 끝낼 시점을 정해 줘",
+          "tones": [
+            "PLAIN"
+          ]
+        }
+      ],
+      "L2": [
+        {
+          "id": "d_other_l2_p",
+          "text": "{buddy}가 또 왔지롱. 왜 더 보고 싶은지 골라 봐",
+          "tones": [
+            "PLAYFUL"
+          ]
+        },
+        {
+          "id": "d_other_l2_w",
+          "text": "더 보고 싶은 이유가 있을 거야. 하나만 골라 줄래?",
+          "tones": [
+            "WARM"
+          ]
+        },
+        {
+          "id": "d_other_l2_n",
+          "text": "연장했어. 이유를 하나 골라 줘",
+          "tones": [
+            "PLAIN"
+          ]
+        }
+      ],
+      "L3": [
+        {
+          "id": "d_other_l3_p",
+          "text": "숨 한 번 크게! 그래도 보고 싶으면 직접 써 줘",
+          "tones": [
+            "PLAYFUL"
+          ]
+        },
+        {
+          "id": "d_other_l3_w",
+          "text": "잠깐 눈을 쉬게 해 줘. 그래도 보고 싶으면 적어 줘",
+          "tones": [
+            "WARM"
+          ]
+        },
+        {
+          "id": "d_other_l3_n",
+          "text": "숨 고르기가 끝나면 직접 입력해야 연장돼",
+          "tones": [
+            "PLAIN"
+          ]
+        }
+      ],
+      "L4Question": [
+        {
+          "id": "d_other_l4question_p",
+          "text": "지금 이 시간에 원래 하려던 건 뭐였어?",
+          "tones": [
+            "PLAYFUL"
+          ]
+        },
+        {
+          "id": "d_other_l4question_w",
+          "text": "지금 기분을 한 단어로 말해 줄래?",
+          "tones": [
+            "WARM"
+          ]
+        },
+        {
+          "id": "d_other_l4question_n",
+          "text": "다음에 할 일은 뭐야?",
+          "tones": [
+            "PLAIN"
+          ]
+        }
+      ]
+    }
+  },
+  "chipReply": {
+    "BORED": [
+      {
+        "id": "d_chip_bored_p",
+        "text": "심심할 땐 {buddy}랑 산책 어때? 진짜 걷기!",
+        "tones": [
+          "PLAYFUL"
+        ]
+      },
+      {
+        "id": "d_chip_bored_w",
+        "text": "심심했구나. 끝이 있는 다른 놀이를 찾아보자",
+        "tones": [
+          "WARM"
+        ]
+      },
+      {
+        "id": "d_chip_bored_n",
+        "text": "심심할 땐 끝이 있는 콘텐츠가 나아",
+        "tones": [
+          "PLAIN"
+        ]
+      }
+    ],
+    "TIRED": [
+      {
+        "id": "d_chip_tired_p",
+        "text": "피곤하면 숏폼 말고 눈을 감자",
+        "tones": [
+          "PLAYFUL"
+        ]
+      },
+      {
+        "id": "d_chip_tired_w",
+        "text": "많이 피곤했구나. 오늘은 일찍 쉬어도 돼",
+        "tones": [
+          "WARM"
+        ]
+      },
+      {
+        "id": "d_chip_tired_n",
+        "text": "피곤할 땐 쉬는 게 회복에 더 좋아",
+        "tones": [
+          "PLAIN"
+        ]
+      }
+    ],
+    "PROCRASTINATING": [
+      {
+        "id": "d_chip_procrastinating_p",
+        "text": "할 일이 무섭지? 딱 한 줄만 하고 오자",
+        "tones": [
+          "PLAYFUL"
+        ]
+      },
+      {
+        "id": "d_chip_procrastinating_w",
+        "text": "미루고 싶은 마음 알아. 제일 작은 것부터 해 볼까?",
+        "tones": [
+          "WARM"
+        ]
+      },
+      {
+        "id": "d_chip_procrastinating_n",
+        "text": "할 일의 첫 단계만 먼저 해 보자",
+        "tones": [
+          "PLAIN"
+        ]
+      }
+    ],
+    "FUN": [
+      {
+        "id": "d_chip_fun_p",
+        "text": "재밌는 건 인정! 대신 마지막 하나만",
+        "tones": [
+          "PLAYFUL"
+        ]
+      },
+      {
+        "id": "d_chip_fun_w",
+        "text": "재밌는 걸 보는 건 좋아. 끝낼 지점만 정해 두자",
+        "tones": [
+          "WARM"
+        ]
+      },
+      {
+        "id": "d_chip_fun_n",
+        "text": "재밌으면 끝낼 시점을 미리 정해 두자",
+        "tones": [
+          "PLAIN"
+        ]
+      }
+    ],
+    "JUST": [
+      {
+        "id": "d_chip_just_p",
+        "text": "그냥이 제일 무서워. 손이 알아서 넘기거든",
+        "tones": [
+          "PLAYFUL"
+        ]
+      },
+      {
+        "id": "d_chip_just_w",
+        "text": "그냥 손이 갈 때가 있지. 지금 알아챈 것만으로도 좋아",
+        "tones": [
+          "WARM"
+        ]
+      },
+      {
+        "id": "d_chip_just_n",
+        "text": "이유가 없으면 지금 멈추기 좋은 때야",
+        "tones": [
+          "PLAIN"
+        ]
+      }
+    ]
+  },
+  "buddyMessage": [
+    {
+      "id": "d_msg_p",
+      "text": "너 아직도 {app} 보고 있어? 👀",
+      "tones": [
+        "PLAYFUL"
+      ]
+    },
+    {
+      "id": "d_msg_w",
+      "text": "{app} 꽤 오래 보고 있네. 괜찮아?",
+      "tones": [
+        "WARM"
+      ]
+    },
+    {
+      "id": "d_msg_n",
+      "text": "{app} {min}분째야. 한 번 쉬어 가자",
+      "tones": [
+        "PLAIN"
+      ]
+    }
+  ],
+  "praise": [
+    {
+      "id": "d_praise_p",
+      "text": "멈췄다! 엄지야 수고했어 ✨",
+      "tones": [
+        "PLAYFUL"
+      ]
+    },
+    {
+      "id": "d_praise_w",
+      "text": "잘 멈췄어. 이 기분 기억하자",
+      "tones": [
+        "WARM"
+      ]
+    },
+    {
+      "id": "d_praise_n",
+      "text": "멈췄어. 잘했어",
+      "tones": [
+        "PLAIN"
+      ]
+    }
+  ],
+  "predictive": {
+    "WAKE_UP": {
+      "id": "d_pred_wake",
+      "text": "곧 {timeRange}야. 알람 끄고 숏폼 말고 물 한 잔부터!",
+      "tones": [
+        "PLAYFUL",
+        "WARM",
+        "PLAIN"
+      ]
+    },
+    "COMMUTE": {
+      "id": "d_pred_commute",
+      "text": "곧 {timeRange}야. 오늘 이동길엔 끝이 있는 걸 골라 보자",
+      "tones": [
+        "PLAYFUL",
+        "WARM",
+        "PLAIN"
+      ]
+    },
+    "CLASS_WORK": {
+      "id": "d_pred_class",
+      "text": "곧 {timeRange}야. 막히면 다음 한 줄부터 적어 두자",
+      "tones": [
+        "PLAYFUL",
+        "WARM",
+        "PLAIN"
+      ]
+    },
+    "MEAL": {
+      "id": "d_pred_meal",
+      "text": "곧 {timeRange}야. 밥 먹는 동안 폰은 뒤집어 둘까?",
+      "tones": [
+        "PLAYFUL",
+        "WARM",
+        "PLAIN"
+      ]
+    },
+    "BREAK": {
+      "id": "d_pred_break",
+      "text": "곧 {timeRange}야. 쉬는 시간에 볼 것만 정해 두자",
+      "tones": [
+        "PLAYFUL",
+        "WARM",
+        "PLAIN"
+      ]
+    },
+    "PRE_SLEEP": {
+      "id": "d_pred_presleep",
+      "text": "곧 {timeRange}야. 오늘은 침대에 폰 없이 가 보자",
+      "tones": [
+        "PLAYFUL",
+        "WARM",
+        "PLAIN"
+      ]
+    },
+    "LATE_NIGHT": {
+      "id": "d_pred_late",
+      "text": "곧 {timeRange}야. 깨면 폰 대신 물 한 잔 어때?",
+      "tones": [
+        "PLAYFUL",
+        "WARM",
+        "PLAIN"
+      ]
+    },
+    "OTHER": {
+      "id": "d_pred_other",
+      "text": "곧 {timeRange}야. 보기 전에 끝낼 시점을 정해 두자",
+      "tones": [
+        "PLAYFUL",
+        "WARM",
+        "PLAIN"
+      ]
+    }
+  }
+}

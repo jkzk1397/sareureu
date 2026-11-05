@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- 미리보기 카드 액티비티: 반투명 바탕 위에 카드만(fork D). -->
+  <style name="Theme.Intervention.Preview" parent="android:Theme.Translucent.NoTitleBar">
+    <item name="android:windowSoftInputMode">adjustResize</item>
+  </style>
+</resources>

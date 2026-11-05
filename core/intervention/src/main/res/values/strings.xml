@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- ===== 엔진·서비스·알림·예약 (fork C) ===== -->
+  <string name="intervention_sender_buddy">%1$s · %2$s</string>
+  <string name="intervention_sender_friend">%1$s · 맡겨 둔 잔소리</string>
+  <string name="intervention_me">나</string>
+  <string name="intervention_channel_buddy">%1$s 메시지</string>
+  <string name="intervention_channel_buddy_desc">숏폼을 오래 볼 때 오는 메신저형 알림</string>
+  <string name="intervention_channel_reminder">예약·미리 알림</string>
+  <string name="intervention_channel_reminder_desc">내가 정한 시각과 위험 시간대 전 알림</string>
+  <string name="intervention_channel_friends">친구</string>
+  <string name="intervention_channel_friends_desc">친구가 맡긴 잔소리와 친구 소식</string>
+  <string name="intervention_channel_status">감지 상태</string>
+  <string name="intervention_channel_status_desc">감지가 켜져 있는 동안 보이는 알림</string>
+  <string name="intervention_status_title">숏폼 감지 중</string>
+  <string name="intervention_status_body">숏폼을 볼 때만 옆에서 말 걸게. 끄려면 앱 설정에서.</string>
+  <string name="intervention_chip_bored">심심해서</string>
+  <string name="intervention_chip_tired">피곤해서</string>
+  <string name="intervention_chip_procrastinating">할 일 미루는 중</string>
+  <string name="intervention_chip_fun">재밌어서</string>
+  <string name="intervention_chip_just">그냥</string>
+  <string name="intervention_type_to_extend">5분만 더 볼게</string>
+  <string name="intervention_app_youtube">유튜브</string>
+  <string name="intervention_app_instagram">인스타그램</string>
+  <string name="intervention_app_tiktok">틱톡</string>
+  <string name="intervention_app_other">숏폼</string>
+  <string name="intervention_reminder_title">%1$s의 예약 알림</string>
+  <string name="intervention_reminder_body">오늘 기록 정리해 놨어. 결산 볼래?</string>
+  <string name="intervention_weekly_title">이번 주 리포트가 나왔어</string>
+  <string name="intervention_weekly_body">%1$s가 이번 주를 정리했어. 같이 볼래?</string>
+  <string name="intervention_predictive_title">%1$s의 미리 알림</string>
+  <string name="intervention_time_night">밤 %1$d시</string>
+  <string name="intervention_time_dawn">새벽 %1$d시</string>
+  <string name="intervention_time_day">%1$d시</string>
+  <!-- ===== 엔진·서비스·알림·예약 끝 ===== -->
+  <!-- ===== 오버레이·카드 (fork D) ===== -->
+  <string name="intervention_card_title">%1$s %2$d분째야</string>
+  <string name="intervention_card_threshold">기준 %1$d분</string>
+  <string name="intervention_stop">그만 볼래</string>
+  <string name="intervention_extend">%1$d분만 더</string>
+  <string name="intervention_snooze_today">오늘은 그만 알려 줘</string>
+  <string name="intervention_level_badge">%1$d단계</string>
+  <string name="intervention_l2_question">왜 더 보고 싶어?</string>
+  <string name="intervention_l2_reply">그럴 수 있어. 고른 이유는 리포트에서 같이 볼게.</string>
+  <string name="intervention_l3_title">숨 한 번 고르고 가자</string>
+  <string name="intervention_l3_subtitle">%1$d초만 화면에서 눈을 떼 봐</string>
+  <string name="intervention_l3_seconds_left">초 남음</string>
+  <string name="intervention_l3_type_label">더 보려면 이 문장을 그대로 입력해 줘</string>
+  <string name="intervention_l3_hint_locked">숨 고르기가 끝나면 입력할 수 있어. 이번 연장은 %1$d분이야.</string>
+  <string name="intervention_l3_hint_open">그대로 입력하면 %1$d분 더 볼 수 있어.</string>
+  <string name="intervention_l4_title">하나만 답해 줘</string>
+  <string name="intervention_l4_answer_label">내 답</string>
+  <string name="intervention_l4_hint">답하면 %1$d분 더 볼 수 있어.</string>
+  <string name="intervention_close">닫기</string>
+  <string name="intervention_bubble_description">%1$s, 숏폼 %2$d분째. 누르면 자세히</string>
+  <string name="intervention_preview_title">다른 앱 위 표시 권한이 없어서 앱 화면으로 보여 줄게</string>
+</resources>

@@ -49,6 +49,8 @@ fun TodayRoute(onOpenMessages: () -> Unit, viewModel: TodayViewModel = hiltViewM
         when (action) {
             TodayAction.OpenMessages -> onOpenMessages()
 
+            TodayAction.StartDemo, TodayAction.StopDemo -> viewModel.onDemoAction(action)
+
             TodayAction.StopNow -> context.startActivity(
                 Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
             )
@@ -64,7 +66,19 @@ fun TodayScreen(uiState: TodayUiState, onAction: (TodayAction) -> Unit, modifier
         TodayTopBar(ready = ready, onMessages = { onAction(TodayAction.OpenMessages) })
         if (ready == null) return@PauseScreenColumn
         val summary = ready.summary
-        if (summary.isDemo) DemoBadge()
+        if (summary.isDemo) {
+            DemoBadge()
+            DemoPlayButton(running = ready.demoRunning, onAction = onAction)
+        }
+        if (ready.monitoringStopped) {
+            PauseCard(title = stringResource(R.string.today_monitoring_off_title)) {
+                Text(
+                    text = stringResource(R.string.today_monitoring_off_body),
+                    style = PauseTheme.type.bodySmall,
+                    color = PauseTheme.colors.ink2,
+                )
+            }
+        }
         val live = summary.live
         if (live != null) {
             LiveCard(live = live, melt = if (ready.showMelt) summary.meltStage else MeltStage.NONE, onStop = {
