@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="settings_title">설정</string>
+  <string name="settings_section_demo">시연</string>
+  <string name="settings_demo_mode">시연 모드</string>
+  <string name="settings_demo_mode_desc">권한 없이 가상 기록으로 모든 화면을 보여 줘요</string>
+  <string name="settings_section_display">화면</string>
+  <string name="settings_show_melt">녹는 각설탕 보기</string>
+  <string name="settings_show_melt_desc">오늘 본 만큼 캐릭터가 조금씩 녹아요</string>
+  <string name="settings_theme_system">시스템 설정 따르기</string>
+  <string name="settings_theme_light">라이트</string>
+  <string name="settings_theme_dark">다크</string>
+  <string name="settings_demo_pattern_night_owl">밤형 (기본)</string>
+  <string name="settings_demo_pattern_commuter">출퇴근형</string>
+  <string name="settings_demo_pattern_domino">알림 도미노형</string>
+  <string name="settings_demo_reseed">2주치 가상 기록 넣기</string>
+  <string name="settings_demo_seeding">가상 기록 넣는 중…</string>
+  <string name="settings_demo_clear">가상 기록 지우기</string>
+</resources>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="report_title">리포트</string>
+  <string name="report_empty_body">일주일 시계와 맥락별 합계가 여기에 나와요.</string>
+</resources>

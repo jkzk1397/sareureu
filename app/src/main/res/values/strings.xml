@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_tab_today">오늘</string>
+  <string name="app_tab_report">리포트</string>
+  <string name="app_tab_coach">코치</string>
+  <string name="app_tab_friends">친구</string>
+  <string name="app_tab_settings">설정</string>
+</resources>

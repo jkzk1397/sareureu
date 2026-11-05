@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 맥락 아이콘(06 문서 2.2절). 선 아이콘, 색은 코드에서 틴트한다. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+  android:width="24dp"
+  android:height="24dp"
+  android:viewportWidth="24"
+  android:viewportHeight="24">
+  <path
+    android:pathData="M3,12h18a9,7 0 0,1 -18,0z M8,9c0,-2 1,-2 1,-4 M12,9c0,-2 1,-2 1,-4 M16,9c0,-2 1,-2 1,-4"
+    android:strokeWidth="1.8"
+    android:strokeColor="#FF000000"
+    android:strokeLineCap="round"
+    android:strokeLineJoin="round" />
+</vector>

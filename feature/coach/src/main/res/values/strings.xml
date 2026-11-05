@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="coach_title">코치</string>
+  <string name="coach_empty_body">AI 친구와 이야기하는 곳이에요.</string>
+</resources>

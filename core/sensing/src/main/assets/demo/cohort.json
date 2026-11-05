@@ -1,0 +1,16 @@
+{
+  "note": "시연용 가상 분포. 실제 통계가 아니다. 화면에 '시연용 가상 데이터'를 함께 표시한다.",
+  "isDemo": true,
+  "unit": "minutesPerDay",
+  "groups": [
+    { "ageBand": "AGE_18_24", "occupation": "UNIVERSITY", "n": 120, "p50": 118, "p75": 152 },
+    { "ageBand": "AGE_18_24", "occupation": "GRAD_OR_JOBSEEKER", "n": 64, "p50": 126, "p75": 160 },
+    { "ageBand": "AGE_18_24", "occupation": "OFFICE_WORKER", "n": 41, "p50": 92, "p75": 121 },
+    { "ageBand": "AGE_25_29", "occupation": "UNIVERSITY", "n": 37, "p50": 104, "p75": 138 },
+    { "ageBand": "AGE_25_29", "occupation": "OFFICE_WORKER", "n": 98, "p50": 84, "p75": 112 },
+    { "ageBand": "AGE_25_29", "occupation": "GRAD_OR_JOBSEEKER", "n": 52, "p50": 110, "p75": 144 },
+    { "ageBand": "AGE_30_39", "occupation": "OFFICE_WORKER", "n": 110, "p50": 71, "p75": 98 },
+    { "ageBand": "AGE_30_39", "occupation": "SHIFT_OR_FREELANCE", "n": 33, "p50": 88, "p75": 120 },
+    { "ageBand": "AGE_40_PLUS", "occupation": "OFFICE_WORKER", "n": 75, "p50": 58, "p75": 84 }
+  ]
+}

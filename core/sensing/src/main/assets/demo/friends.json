@@ -1,0 +1,14 @@
+{
+  "note": "시연용 가상 친구. 실제 사람이 아니다. 친구에게는 감소율·기록률만 보인다.",
+  "friends": [
+    { "id": "demo_haeun", "nickname": "하은", "reductionRate": 0.31, "coverage": 0.94 },
+    { "id": "demo_minji", "nickname": "민지", "reductionRate": 0.27, "coverage": 0.88 },
+    { "id": "demo_junho", "nickname": "준호", "reductionRate": 0.12, "coverage": 0.71 }
+  ],
+  "pokes": [
+    { "id": "demo_poke_minji", "fromId": "demo_minji", "fromNickname": "민지", "text": "또 쇼츠야? 내일 1교시다 😴 얼른 자!", "validDays": 7 }
+  ],
+  "plans": [
+    { "context": "PRE_SLEEP", "ifText": "누우면", "thenText": "폰은 책상 충전기에" }
+  ]
+}

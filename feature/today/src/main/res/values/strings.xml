@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="today_title">오늘</string>
+  <string name="today_empty_body">오늘 본 숏폼이 하루 시계에 나와요.</string>
+  <string name="today_date">%1$d월 %2$d일 %3$s · %4$s</string>
+  <string name="today_time">%1$s %2$d:%3$02d</string>
+  <string name="today_hour">%1$s %2$d시</string>
+  <string name="today_period_dawn">새벽</string>
+  <string name="today_period_morning">오전</string>
+  <string name="today_period_afternoon">오후</string>
+  <string name="today_period_evening">저녁</string>
+  <string name="today_period_night">밤</string>
+  <string name="today_messages">%1$s 메시지 보기</string>
+  <string name="today_greeting_nothing">오늘은 아직 숏폼 0분이야. 좋은 출발!</string>
+  <string name="today_greeting_stopped">오늘 알림 %1$d번 중 %2$d번 멈췄어!</string>
+  <string name="today_greeting_stopped_none">오늘 알림 %1$d번 받았어. 다음엔 같이 멈춰 보자</string>
+  <string name="today_greeting_watched">오늘 숏폼 %1$s 봤어. 지금까지 괜찮아</string>
+  <string name="today_clock_title">오늘 하루 시계</string>
+  <string name="today_clock_caption">오늘 숏폼</string>
+  <string name="today_vs_yesterday">%1$s 어제보다</string>
+  <string name="today_same_as_yesterday">어제와 같아</string>
+  <string name="today_live_title">지금 %1$s 보는 중 · %2$s</string>
+  <string name="today_live_elapsed">%1$d분째</string>
+  <string name="today_live_left">기준 %1$d분까지 %2$d분 남았어</string>
+  <string name="today_live_over">기준 %1$d분을 %2$d분 넘었어</string>
+  <string name="today_live_stop">지금 그만할래</string>
+  <string name="today_app_youtube">유튜브</string>
+  <string name="today_app_instagram">인스타그램</string>
+  <string name="today_app_tiktok">틱톡</string>
+  <string name="today_app_other">숏폼</string>
+  <string name="today_risk_title">%1$s부터가 제일 위험해</string>
+  <string name="today_risk_body">지난 2주 %1$s %2$s 평균 %3$s</string>
+  <string name="today_poke_title">맡겨 둔 잔소리</string>
+  <string name="today_poke_body_ga">%1$s가 잔소리를 맡겨 뒀어. 숏폼 오래 보면 도착해</string>
+  <string name="today_poke_body_i">%1$s이 잔소리를 맡겨 뒀어. 숏폼 오래 보면 도착해</string>
+  <string name="today_plan_title">내 계획</string>
+  <string name="today_plan_body">%1$s %2$s</string>
+  <string name="today_demo_hint">설정에서 시연 모드를 켜면 가상 기록으로 모든 화면을 볼 수 있어요.</string>
+</resources>

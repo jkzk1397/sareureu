@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 생성: 르르 기본 얼굴(66dp 기준, 06 문서 8절). 몸 그림과 같은 0~100 좌표. 손으로 고치지 않는다. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+  android:width="66dp"
+  android:height="66dp"
+  android:viewportWidth="100"
+  android:viewportHeight="100">
+  <path
+    android:fillColor="#FF141416"
+    android:pathData="M30.90,78.00a1.22,1.97 0,1 0,2.44,0a1.22,1.97 0,1 0,-2.44,0zM46.05,78.00a1.22,1.97 0,1 0,2.44,0a1.22,1.97 0,1 0,-2.44,0z" />
+  <path
+    android:pathData="M37.73,80.58Q39.70,82.39 41.67,80.58"
+    android:strokeWidth="1.67"
+    android:strokeColor="#FF141416"
+    android:strokeLineCap="round"
+    android:strokeLineJoin="round" />
+</vector>

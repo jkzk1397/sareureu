@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- 브랜드 이름은 이 두 줄에만 둔다(AGENTS.md 0절). 모든 모듈이 designsystem의 R로 읽는다. -->
+  <string name="app_name">사르르</string>
+  <string name="buddy_name">르르</string>
+  <string name="designsystem_demo_badge">시연 데이터</string>
+
+  <!-- 르르 표정 -->
+  <string name="designsystem_buddy_description">%1$s, %2$s</string>
+  <string name="designsystem_buddy_expr_neutral">기본</string>
+  <string name="designsystem_buddy_expr_watching">보는 중</string>
+  <string name="designsystem_buddy_expr_calling">말 걸기</string>
+  <string name="designsystem_buddy_expr_worried">걱정</string>
+  <string name="designsystem_buddy_expr_cheer">칭찬</string>
+  <string name="designsystem_buddy_expr_sleepy">졸림</string>
+
+  <!-- 맥락 -->
+  <string name="designsystem_ctx_wake_up">기상 직후</string>
+  <string name="designsystem_ctx_commute">이동</string>
+  <string name="designsystem_ctx_class_work">수업·업무</string>
+  <string name="designsystem_ctx_meal">식사</string>
+  <string name="designsystem_ctx_break">쉬는 시간</string>
+  <string name="designsystem_ctx_pre_sleep">자기 전</string>
+  <string name="designsystem_ctx_late_night">한밤중</string>
+  <string name="designsystem_ctx_other">기타</string>
+
+  <!-- 하루 시계 -->
+  <string name="designsystem_clock_label_0">0시</string>
+  <string name="designsystem_clock_label_6">6</string>
+  <string name="designsystem_clock_label_12">12시</string>
+  <string name="designsystem_clock_label_18">18</string>
+  <string name="designsystem_clock_now">지금</string>
+  <string name="designsystem_clock_risk">위험 시간대</string>
+  <string name="designsystem_clock_night">위 반은 밤</string>
+  <string name="designsystem_clock_a11y">%1$s %2$s. %3$s</string>
+  <string name="designsystem_clock_a11y_item">%1$s %2$d분</string>
+  <string name="designsystem_clock_toggle_clock">시계</string>
+  <string name="designsystem_clock_toggle_table">표</string>
+  <string name="designsystem_minutes">%1$d분</string>
+
+  <!-- 히트맵 -->
+  <string name="designsystem_heatmap_less">적음</string>
+  <string name="designsystem_heatmap_more">많음</string>
+  <string name="designsystem_heatmap_a11y">요일별 시간대 표. 진할수록 많이 본 칸, 테두리 칸은 위험 시간대</string>
+
+  <!-- 변화 표시 -->
+  <string name="designsystem_change_down">▼ %1$s</string>
+  <string name="designsystem_change_up">▲ %1$s</string>
+
+  <!-- 가설·근거 -->
+  <string name="designsystem_confidence_high">확신 높음</string>
+  <string name="designsystem_confidence_medium">확신 중간</string>
+  <string name="designsystem_confidence_low">확신 낮음</string>
+  <string name="designsystem_verdict_yes">맞아</string>
+  <string name="designsystem_verdict_partly">반쯤</string>
+  <string name="designsystem_verdict_no">아니야</string>
+  <string name="designsystem_strategy_if">만약 %1$s</string>
+  <string name="designsystem_strategy_then">→ %1$s</string>
+  <string name="designsystem_strategy_pick">고르기</string>
+  <string name="designsystem_strategy_picked">골랐어</string>
+
+  <!-- 랭킹 -->
+  <string name="designsystem_rank_me">나</string>
+  <string name="designsystem_rank_coverage">기록 %1$d%%</string>
+  <string name="designsystem_rank_measuring">측정 중</string>
+
+  <!-- 권한 고지 -->
+  <string name="designsystem_permission_what">무엇을 보나요</string>
+  <string name="designsystem_permission_why">왜 필요해요</string>
+  <string name="designsystem_permission_not">하지 않는 것</string>
+  <string name="designsystem_permission_if_denied">거절하면</string>
+
+  <!-- 흐름도 -->
+  <string name="designsystem_flow_a11y">진입 경로에서 숏폼 앱을 거쳐 이탈 경로로 가는 흐름</string>
+  <string name="designsystem_histogram_a11y">세션 길이 분포</string>
+  <string name="designsystem_trend_a11y">주별 하루 평균과 기준선</string>
+  <string name="designsystem_rhythm_a11y">하루 리듬 미리보기</string>
+  <!-- 시간 길이 -->
+  <string name="designsystem_duration_hm">%1$d시간 %2$d분</string>
+  <string name="designsystem_duration_h">%1$d시간</string>
+</resources>

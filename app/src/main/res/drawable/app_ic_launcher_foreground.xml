@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 적응형 아이콘 전경: 108dp 안 가운데 66dp에 르르 몸 + 기본 얼굴 -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+  <item
+    android:width="66dp"
+    android:height="66dp"
+    android:gravity="center"
+    android:drawable="@drawable/designsystem_buddy_body" />
+  <item
+    android:width="66dp"
+    android:height="66dp"
+    android:gravity="center"
+    android:drawable="@drawable/app_ic_launcher_face" />
+</layer-list>
