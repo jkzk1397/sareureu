@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
@@ -35,6 +36,7 @@ internal fun DetectionModeRows() {
         stringResource(R.string.settings_detection_title),
         style = PauseTheme.type.label,
         color = PauseTheme.colors.ink,
+        modifier = Modifier.padding(top = PauseTheme.spacing.sm),
     )
     ModeRow(
         label = stringResource(R.string.settings_detection_app),
@@ -86,6 +88,7 @@ internal fun TrackedAppRows(apps: List<TrackedApp>, onToggle: (String, Boolean) 
                 Text(app.label, style = PauseTheme.type.body, color = colors.ink)
                 Text(app.packageName, style = PauseTheme.type.caption, color = colors.ink3)
             }
+            Spacer(Modifier.width(PauseTheme.spacing.sm))
             Switch(
                 checked = app.enabled,
                 onCheckedChange = null,
@@ -132,7 +135,9 @@ internal fun PrivacyRows(state: PrivacyUiState, onExport: () -> Unit, onAction: 
     TextButton(
         onClick = { onAction(PrivacyAction.AskErase) },
         enabled = !state.erasing,
-        modifier = Modifier.heightIn(min = PauseTheme.spacing.minTouch),
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = PauseTheme.spacing.minTouch),
     ) {
         Text(
             stringResource(if (state.erasing) R.string.settings_erase_running else R.string.settings_erase),

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="report_title">리포트</string>
-  <string name="report_empty_body">일주일 시계와 맥락별 합계가 여기에 나와요.</string>
   <string name="report_week_range">%1$d.%2$d – %3$d.%4$d</string>
   <string name="report_stat_avg">하루 평균</string>
   <string name="report_stat_reduction">기준선 대비</string>

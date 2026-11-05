@@ -209,10 +209,10 @@ sequenceDiagram
 ## 7. 폴더 구조
 ```
 .
-├── AGENTS.md  CLAUDE.md  GEMINI.md  ONE_SHOT_PROMPT.md  KIT_GUIDE.md
+├── AGENTS.md  CLAUDE.md  GEMINI.md  README.md
 ├── app/
 ├── build-logic/convention/          # pause.android.application / pause.android.library / pause.android.library.compose / pause.android.feature / pause.android.hilt / pause.jvm.library
-├── core/{model,common,testing,database,data,sensing,insights,intervention,ai-engine,ai,social,designsystem}/
+├── core/{model,common,database,data,sensing,insights,intervention,ai-engine,ai,social,designsystem}/
 │   └── <모듈>/AGENTS.md             # 10줄: 역할·하는 일·공개 API·의존 가능·금지
 ├── feature/{onboarding,today,report,coach,friends,settings}/
 ├── core/ai-engine/src/main/resources/prompts/ # weekly_report_v1.md …
@@ -222,7 +222,7 @@ sequenceDiagram
 ├── core/designsystem/src/main/res/drawable-nodpi/  # designsystem_buddy_body.webp (+ melt_1~3)
 ├── core/data/src/main/assets/       # copy/default_pack.json, strategies.json
 ├── firebase/                        # firestore.rules, (P1) functions/
-├── docs/ …
+├── docs/                            # 문서(01~07, decisions/, design/, brand/, research/, archive/ = 처음 세팅 때 문서)
 └── .github/ …
 ```
 

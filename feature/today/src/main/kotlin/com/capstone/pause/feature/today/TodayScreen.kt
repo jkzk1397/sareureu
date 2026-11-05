@@ -5,9 +5,12 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
@@ -109,12 +112,15 @@ fun TodayScreen(uiState: TodayUiState, onAction: (TodayAction) -> Unit, modifier
                     ready.plan?.let { PlanCard(it, Modifier.fillMaxWidth()) }
                 }
             } else {
+                // 두 카드 높이를 맞춘다(키 큰 쪽에 맞춤).
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.sm),
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(IntrinsicSize.Min),
                 ) {
-                    ready.poke?.let { PokeCard(it, Modifier.weight(1f)) }
-                    ready.plan?.let { PlanCard(it, Modifier.weight(1f)) }
+                    ready.poke?.let { PokeCard(it, Modifier.weight(1f).fillMaxHeight()) }
+                    ready.plan?.let { PlanCard(it, Modifier.weight(1f).fillMaxHeight()) }
                 }
             }
         }

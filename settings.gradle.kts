@@ -30,7 +30,6 @@ include(":core:intervention")
 include(":core:model")
 include(":core:sensing")
 include(":core:social")
-include(":core:testing")
 
 include(":feature:coach")
 include(":feature:friends")

@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="onboarding_welcome_body">숏폼을 막지 않아요. 볼 때 옆에서 말 걸어 주는 친구예요.</string>
-  <string name="onboarding_start">시작하기</string>
   <string name="onboarding_next">다음</string>
   <string name="onboarding_later">나중에 할게</string>
   <string name="onboarding_back">이전</string>
@@ -50,7 +48,6 @@
   <string name="onboarding_rhythm_body">숏폼을 본 때가 출근길인지, 밥 먹을 때인지, 자기 전인지 나눠 볼게. 모르면 비워 둬도 돼.</string>
   <string name="onboarding_rhythm_weekday">평일</string>
   <string name="onboarding_rhythm_weekend">주말</string>
-  <string name="onboarding_rhythm_preview">미리보기</string>
   <string name="onboarding_rhythm_wake">일어나는 시간</string>
   <string name="onboarding_rhythm_sleep">자는 시간</string>
   <string name="onboarding_rhythm_commute_morning">통학·출근</string>

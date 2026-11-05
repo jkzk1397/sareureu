@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -21,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.capstone.pause.core.designsystem.R
 import com.capstone.pause.core.designsystem.buddy.BuddyAvatar
@@ -53,7 +55,14 @@ fun RankRow(
             .background(if (isMe) colors.accentContainer else colors.surface, PauseTheme.shapes.small)
             .padding(horizontal = PauseTheme.spacing.sm, vertical = PauseTheme.spacing.xs),
     ) {
-        Text(text = rank?.toString() ?: "–", style = PauseTheme.type.title, color = colors.ink)
+        // 순위 칸 폭을 고정해 줄마다 아바타·이름 시작점이 같게.
+        Text(
+            text = rank?.toString() ?: "–",
+            style = PauseTheme.type.title,
+            color = colors.ink,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.width(PauseSizes.listIdColumn),
+        )
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier

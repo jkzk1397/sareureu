@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="today_title">오늘</string>
-  <string name="today_empty_body">오늘 본 숏폼이 하루 시계에 나와요.</string>
   <string name="today_date">%1$d월 %2$d일 %3$s · %4$s</string>
   <string name="today_time">%1$s %2$d:%3$02d</string>
   <string name="today_hour">%1$s %2$d시</string>

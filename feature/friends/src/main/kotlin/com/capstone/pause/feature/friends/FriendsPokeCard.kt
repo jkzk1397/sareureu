@@ -23,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import com.capstone.pause.core.designsystem.component.ChoicePill
 import com.capstone.pause.core.designsystem.component.PauseCard
 import com.capstone.pause.core.designsystem.theme.PauseSizes
@@ -97,6 +98,9 @@ internal fun PokeCard(overview: FriendsOverview, poke: PokeDraftState, onAction:
                 Text(
                     text = stringResource(R.string.friends_poke_counter, poke.text.trim().length, PokeRules.MAX_LENGTH),
                     color = if (over) colors.nudgeText else colors.ink3,
+                    style = PauseTheme.type.caption,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.fillMaxWidth(),
                 )
             },
             modifier = Modifier.fillMaxWidth(),

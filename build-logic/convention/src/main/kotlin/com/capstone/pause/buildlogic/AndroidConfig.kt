@@ -8,7 +8,7 @@ import org.gradle.api.tasks.testing.Test
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.withType
 
-/** 프로젝트 공통 SDK 값 (ONE_SHOT_PROMPT 0절, ADR-0007). */
+/** 프로젝트 공통 SDK 값 (ADR-0007, 03 문서 6절). */
 object PauseSdk {
     const val MIN = 29
     const val TARGET = 36

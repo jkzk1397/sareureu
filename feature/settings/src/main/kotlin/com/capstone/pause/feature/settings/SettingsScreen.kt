@@ -184,7 +184,9 @@ private fun DemoRows(uiState: SettingsUiState, onAction: (SettingsAction) -> Uni
         TextButton(
             onClick = { onAction(SettingsAction.ClearDemo) },
             enabled = !uiState.seeding,
-            modifier = Modifier.heightIn(min = PauseTheme.spacing.minTouch),
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = PauseTheme.spacing.minTouch),
         ) {
             Text(text = stringResource(R.string.settings_demo_clear), color = PauseTheme.colors.ink2)
         }
@@ -236,6 +238,7 @@ private fun SwitchRow(label: String, description: String, checked: Boolean, onCh
             Text(text = label, style = PauseTheme.type.body, color = colors.ink)
             Text(text = description, style = PauseTheme.type.bodySmall, color = colors.ink2)
         }
+        Spacer(Modifier.width(PauseTheme.spacing.sm))
         Switch(
             checked = checked,
             onCheckedChange = null,

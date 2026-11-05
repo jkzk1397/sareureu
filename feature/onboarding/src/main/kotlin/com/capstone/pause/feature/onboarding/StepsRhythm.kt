@@ -4,8 +4,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
@@ -129,6 +131,7 @@ private fun RangeRow(label: Int, field: RhythmField, range: TimeRange?, onAction
             ),
     ) {
         Text(text = name, style = PauseTheme.type.body, color = PauseTheme.colors.ink, modifier = Modifier.weight(1f))
+        Spacer(Modifier.width(PauseTheme.spacing.sm))
         Switch(checked = range != null, onCheckedChange = null)
     }
     if (range == null) {

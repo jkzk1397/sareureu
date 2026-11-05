@@ -239,7 +239,9 @@ class OverlayController @Inject constructor(
     private companion object {
         const val TAG = "OverlayController"
         const val ACTION_BUFFER = 8
-        const val INPUT_LEVEL = 3
+
+        // 1단계부터 문장을 따라 써야 해서(ADR-0010) 모든 카드 창이 키보드를 받는다.
+        const val INPUT_LEVEL = 1
         const val BUBBLE_Y_RATIO = 0.55f
         const val PRAISE_MS = 3_000L
     }

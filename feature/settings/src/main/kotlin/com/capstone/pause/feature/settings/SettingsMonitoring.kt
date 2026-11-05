@@ -84,7 +84,12 @@ internal fun ReminderRows(
         }
     }
     if (reminders.size < max) {
-        TextButton(onClick = onAdd, modifier = Modifier.heightIn(min = PauseTheme.spacing.minTouch)) {
+        TextButton(
+            onClick = onAdd,
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = PauseTheme.spacing.minTouch),
+        ) {
             Text(stringResource(R.string.settings_reminder_add), color = colors.ink)
         }
     }

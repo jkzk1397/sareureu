@@ -28,6 +28,9 @@ object PauseSizes {
     /** 칩 최소 높이. */
     val chipMinHeight = 32.dp
 
+    /** 목록 앞 짧은 번호·ID 칸(예: 관찰 o1~o12). 두 자리여도 본문이 같은 줄에서 시작하게. */
+    val listIdColumn = 28.dp
+
     /** 랭킹 아바타. */
     val rankAvatar = 36.dp
 

@@ -57,8 +57,8 @@ data class FixedTexts(
     val contextLabels: Map<ContextSlot, String>,
     /** 이유 칩: 키 → 표시 문구(순서대로). */
     val reasonChips: List<ReasonChip>,
-    /** 3단계에서 그대로 입력해야 하는 문장. */
-    val typeToExtend: String,
+    /** 단계(1~3) → 연장하려면 그대로 입력해야 하는 문장. 단계가 오를수록 길어진다. */
+    val typeToExtend: Map<Int, String>,
 )
 
 /** 친구가 맡긴 잔소리 하나(아직 안 쓴 것). */
@@ -97,8 +97,8 @@ class CopyNudgeWriter(
             text = text,
             copyId = line?.id,
             reasonChips = if (level == 2) texts.reasonChips else emptyList(),
-            breathSeconds = if (level == 3) NudgeEngine.BREATH_SECONDS else 0,
-            typeToExtend = if (level == 3) texts.typeToExtend else null,
+            breathSeconds = FrictionLadder.breathSeconds(level),
+            typeToExtend = if (level < NudgeEngine.MAX_LEVEL) texts.typeToExtend[level] else null,
             question = if (level >= NudgeEngine.MAX_LEVEL) text else null,
             extendMinutes = if (level >=
                 NudgeEngine.MAX_LEVEL

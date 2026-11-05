@@ -81,6 +81,7 @@ fun PraiseCard(text: String, onClose: () -> Unit, modifier: Modifier = Modifier)
 
 @Composable
 private fun LevelOneCard(card: CardContent, onAction: (NudgeUserAction) -> Unit, modifier: Modifier) {
+    var typed by rememberSaveable(card.copyId, card.level) { mutableStateOf("") }
     Column(modifier = modifier, horizontalAlignment = Alignment.End) {
         BuddyAvatar(
             expression = BuddyExpression.CALLING,
@@ -97,7 +98,10 @@ private fun LevelOneCard(card: CardContent, onAction: (NudgeUserAction) -> Unit,
             CardHeadline(card)
             CardBody(card.text)
             StopButton(card, onAction)
-            ExtendButton(card, enabled = true) { onAction(NudgeUserAction.Extend(card.level)) }
+            TypeToExtendField(card, breathLeft = 0, typed = typed, onTyped = { typed = it })
+            ExtendButton(card, enabled = FrictionGate.canExtendTyped(0, typed, card.typeToExtend)) {
+                onAction(NudgeUserAction.Extend(card.level, answer = typed))
+            }
         }
     }
 }
@@ -106,6 +110,8 @@ private fun LevelOneCard(card: CardContent, onAction: (NudgeUserAction) -> Unit,
 @Composable
 private fun LevelTwoCard(card: CardContent, onAction: (NudgeUserAction) -> Unit, modifier: Modifier) {
     var chip by rememberSaveable(card.copyId, card.level) { mutableStateOf<String?>(null) }
+    var typed by rememberSaveable(card.copyId, card.level) { mutableStateOf("") }
+    val left = rememberBreathLeft(card)
     NudgeCardSurface(modifier = modifier) {
         LevelBadge(card)
         Row(
@@ -141,8 +147,11 @@ private fun LevelTwoCard(card: CardContent, onAction: (NudgeUserAction) -> Unit,
             )
         }
         StopButton(card, onAction)
-        ExtendButton(card, enabled = chip != null || card.reasonChips.isEmpty()) {
-            onAction(NudgeUserAction.Extend(card.level, reasonChip = chip))
+        val chosen = chip != null || card.reasonChips.isEmpty()
+        if (chosen && card.breathSeconds > 0 && left > 0) BreathRing(left = left, total = card.breathSeconds)
+        if (chosen) TypeToExtendField(card, breathLeft = left, typed = typed, onTyped = { typed = it })
+        ExtendButton(card, enabled = chosen && FrictionGate.canExtendTyped(left, typed, card.typeToExtend)) {
+            onAction(NudgeUserAction.Extend(card.level, reasonChip = chip, answer = typed))
         }
         SnoozeLink(card, onAction)
     }
@@ -150,14 +159,8 @@ private fun LevelTwoCard(card: CardContent, onAction: (NudgeUserAction) -> Unit,
 
 @Composable
 private fun LevelThreeCard(card: CardContent, onAction: (NudgeUserAction) -> Unit, modifier: Modifier) {
-    var left by rememberSaveable(card.copyId, card.level) { mutableIntStateOf(card.breathSeconds) }
+    val left = rememberBreathLeft(card)
     var typed by rememberSaveable(card.copyId, card.level) { mutableStateOf("") }
-    LaunchedEffect(card.copyId, card.level) {
-        while (left > 0) {
-            delay(SECOND_MS)
-            left -= 1
-        }
-    }
     NudgeCardSurface(modifier = modifier) {
         LevelBadge(card)
         Row(
@@ -181,33 +184,9 @@ private fun LevelThreeCard(card: CardContent, onAction: (NudgeUserAction) -> Uni
         }
         BreathRing(left = left, total = card.breathSeconds)
         CardBody(card.text)
-        val target = card.typeToExtend
-        if (target != null) {
-            Text(
-                text = stringResource(R.string.intervention_l3_type_label),
-                style = PauseTheme.type.label,
-                color = PauseTheme.colors.ink,
-            )
-            OutlinedTextField(
-                value = typed,
-                onValueChange = { typed = it },
-                enabled = FrictionGate.inputEnabled(left),
-                placeholder = { Text(text = target, color = PauseTheme.colors.ink3) },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Text(
-                text = if (FrictionGate.inputEnabled(left)) {
-                    stringResource(R.string.intervention_l3_hint_open, card.extendMinutes)
-                } else {
-                    stringResource(R.string.intervention_l3_hint_locked, card.extendMinutes)
-                },
-                style = PauseTheme.type.caption,
-                color = PauseTheme.colors.ink2,
-            )
-        }
         StopButton(card, onAction)
-        ExtendButton(card, enabled = FrictionGate.canExtendTyped(left, typed, target)) {
+        TypeToExtendField(card, breathLeft = left, typed = typed, onTyped = { typed = it })
+        ExtendButton(card, enabled = FrictionGate.canExtendTyped(left, typed, card.typeToExtend)) {
             onAction(NudgeUserAction.Extend(card.level, answer = typed))
         }
         SnoozeLink(card, onAction)
@@ -217,6 +196,7 @@ private fun LevelThreeCard(card: CardContent, onAction: (NudgeUserAction) -> Uni
 @Composable
 private fun LevelFourCard(card: CardContent, onAction: (NudgeUserAction) -> Unit, modifier: Modifier) {
     var answer by rememberSaveable(card.copyId, card.level) { mutableStateOf("") }
+    val left = rememberBreathLeft(card)
     NudgeCardSurface(modifier = modifier) {
         LevelBadge(card)
         Row(
@@ -233,19 +213,21 @@ private fun LevelFourCard(card: CardContent, onAction: (NudgeUserAction) -> Unit
             color = PauseTheme.colors.ink,
             modifier = Modifier.semantics { heading() },
         )
+        if (card.breathSeconds > 0) BreathRing(left = left, total = card.breathSeconds)
         OutlinedTextField(
             value = answer,
             onValueChange = { answer = it },
+            enabled = FrictionGate.inputEnabled(left),
             label = { Text(stringResource(R.string.intervention_l4_answer_label)) },
             modifier = Modifier.fillMaxWidth(),
         )
         Text(
-            text = stringResource(R.string.intervention_l4_hint, card.extendMinutes),
+            text = stringResource(R.string.intervention_l4_hint, card.extendMinutes, FrictionGate.MIN_ANSWER_CHARS),
             style = PauseTheme.type.caption,
             color = PauseTheme.colors.ink2,
         )
         StopButton(card, onAction)
-        ExtendButton(card, enabled = FrictionGate.canExtendAnswered(answer)) {
+        ExtendButton(card, enabled = FrictionGate.canExtendAnswered(answer, left)) {
             onAction(NudgeUserAction.Extend(card.level, answer = answer.trim()))
         }
         SnoozeLink(card, onAction)
@@ -356,5 +338,3 @@ private fun SnoozeLink(card: CardContent, onAction: (NudgeUserAction) -> Unit) {
         )
     }
 }
-
-private const val SECOND_MS = 1_000L

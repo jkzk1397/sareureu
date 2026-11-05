@@ -48,9 +48,11 @@ object BuddyFaceGeometry {
     private const val AY = 78.0f
     private const val G0 = 11.3f
     private const val G_MAX = 32f
-    private const val MIN_GAP_DP = 10f
-    private const val MIN_EYE_DP = 1.3f
-    private const val MIN_STROKE_DP = 1.1f
+
+    // 작은 크기(28~56dp)에서도 눈코입이 또렷하게 보이도록 최솟값을 키웠다(06 문서 8절).
+    private const val MIN_GAP_DP = 14f
+    private const val MIN_EYE_DP = 2f
+    private const val MIN_STROKE_DP = 1.6f
 
     /** 표정 [expression]을 [sizePx] 정사각형에 그릴 도형들. [density]는 1dp당 px. */
     fun shapes(expression: BuddyExpression, sizePx: Float, density: Float): List<FaceShape> {
@@ -96,8 +98,8 @@ object BuddyFaceGeometry {
                 FaceShape.Ellipse(
                     cx = x(0f),
                     cy = y(0.24f),
-                    rx = px(maxOf(0.075f * g, 1.3f * unitPerDp)),
-                    ry = px(maxOf(0.09f * g, 1.5f * unitPerDp)),
+                    rx = px(maxOf(0.075f * g, 1.5f * unitPerDp)),
+                    ry = px(maxOf(0.09f * g, 1.7f * unitPerDp)),
                 )
 
             BuddyExpression.WORRIED -> eyes() +
@@ -113,7 +115,7 @@ object BuddyFaceGeometry {
             BuddyExpression.SLEEPY -> {
                 val z = 0.22f
                 arcEyes(up = false) +
-                    FaceShape.Circle(x(0f), y(0.24f), px(maxOf(0.05f * g, 0.9f * unitPerDp)), px(sw * 0.85f)) +
+                    FaceShape.Circle(x(0f), y(0.24f), px(maxOf(0.05f * g, 1.3f * unitPerDp)), px(sw * 0.85f)) +
                     FaceShape.Polyline(
                         listOf(
                             x(0.9f) to y(-0.72f),
@@ -123,6 +125,25 @@ object BuddyFaceGeometry {
                         ),
                         px(sw),
                     )
+            }
+        }
+    }
+
+    /**
+     * 녹아서 몸이 바닥 기준으로 [scaleY]배 눌렸을 때, 얼굴은 눌린 몸을 따라 내려가되 모양은 그대로 둔다
+     * (눈이 납작해져 안 보이지 않게). y만 `바닥 - (바닥 - y) × scaleY`로 옮긴다.
+     */
+    fun squashed(shapes: List<FaceShape>, sizePx: Float, scaleY: Float): List<FaceShape> {
+        if (scaleY == 1f) return shapes
+        fun m(y: Float) = sizePx - (sizePx - y) * scaleY
+        return shapes.map { s ->
+            when (s) {
+                is FaceShape.Ellipse -> s.copy(cy = m(s.cy))
+                is FaceShape.QuadStroke -> s.copy(y0 = m(s.y0), cy = m(s.cy), y1 = m(s.y1))
+                is FaceShape.LineStroke -> s.copy(y0 = m(s.y0), y1 = m(s.y1))
+                is FaceShape.Polyline -> s.copy(points = s.points.map { (x, y) -> x to m(y) })
+                is FaceShape.Sparkle -> s.copy(cy = m(s.cy))
+                is FaceShape.Circle -> s.copy(cy = m(s.cy))
             }
         }
     }

@@ -22,7 +22,7 @@ fun main(args: Array<String>) {
     val pack = AiJson.decodeFromString(CopyPack.serializer(), File(DEFAULT_PACK).readText(Charsets.UTF_8))
     val strategies = AiJson.decodeFromString(
         ListSerializer(Strategy.serializer()),
-        File(dataDir, "strategies.json").readText(Charsets.UTF_8),
+        File(STRATEGIES).readText(Charsets.UTF_8),
     )
     val mock = MockLlmClient(pack, strategies)
     val buddy = buddyName()
@@ -52,4 +52,7 @@ private fun buddyName(): String {
 }
 
 private const val DEFAULT_PACK = "../data/src/main/assets/copy/default_pack.json"
+
+// 앱이 쓰는 전략 라이브러리 원본(복사본을 두지 않는다).
+private const val STRATEGIES = "../data/src/main/assets/strategies.json"
 private const val STRINGS = "../designsystem/src/main/res/values/strings.xml"

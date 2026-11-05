@@ -231,7 +231,11 @@ class NudgeCoordinator @Inject constructor(
                 ReasonChip("FUN", context.getString(R.string.intervention_chip_fun)),
                 ReasonChip("JUST", context.getString(R.string.intervention_chip_just)),
             ),
-            typeToExtend = context.getString(R.string.intervention_type_to_extend),
+            typeToExtend = mapOf(
+                1 to context.getString(R.string.intervention_type_to_extend_l1),
+                2 to context.getString(R.string.intervention_type_to_extend_l2),
+                3 to context.getString(R.string.intervention_type_to_extend_l3),
+            ),
         )
     }
 

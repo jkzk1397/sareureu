@@ -38,11 +38,3 @@ fun PauseScreenColumn(title: String?, modifier: Modifier = Modifier, content: @C
         content()
     }
 }
-
-/** 아직 내용이 없는 탭(0단계 자리). */
-@Composable
-fun PauseEmptyState(title: String, body: String, modifier: Modifier = Modifier) {
-    PauseScreenColumn(title = title, modifier = modifier) {
-        Text(text = body, style = PauseTheme.type.body, color = PauseTheme.colors.ink2)
-    }
-}

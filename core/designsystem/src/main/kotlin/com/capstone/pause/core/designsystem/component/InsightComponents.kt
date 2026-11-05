@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -22,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.capstone.pause.core.designsystem.R
 import com.capstone.pause.core.designsystem.buddy.BuddyAvatar
@@ -85,6 +87,7 @@ fun HypothesisCard(
     onVerdict: (Verdict) -> Unit,
     modifier: Modifier = Modifier,
     onEvidenceClick: (Int) -> Unit = {},
+    footer: (@Composable () -> Unit)? = null,
 ) {
     PauseCard(modifier = modifier) {
         Text(
@@ -106,24 +109,44 @@ fun HypothesisCard(
                 )
             }
         }
+        footer?.invoke()
     }
 }
 
-/** 고를 수 있는 알약 버튼(선택되면 라임 바탕). */
+/** 카드 아래쪽 한 줄: 보조 문장(왼쪽) + 작은 동작(오른쪽, 예: '신고'). 카드 안 [footer] 슬롯에 쓴다. */
+@Composable
+fun CardFooter(text: String?, modifier: Modifier = Modifier, action: @Composable () -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.fillMaxWidth()) {
+        Text(
+            text = text.orEmpty(),
+            style = PauseTheme.type.bodySmall,
+            color = PauseTheme.colors.ink2,
+            modifier = Modifier.weight(1f),
+        )
+        action()
+    }
+}
+
+/** 고를 수 있는 알약 버튼(선택되면 라임 바탕). 글자는 알약 가운데. */
 @Composable
 fun ChoicePill(text: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val colors = PauseTheme.colors
-    Text(
-        // 고른 상태를 색만으로 알리지 않는다(AGENTS.md 6절): 체크 표시를 함께 붙인다.
-        text = if (selected) stringResource(R.string.designsystem_selected_prefix, text) else text,
-        style = PauseTheme.type.label,
-        color = if (selected) colors.onAccentContainer else colors.ink,
+    Box(
+        contentAlignment = Alignment.Center,
         modifier = modifier
             .heightIn(min = PauseTheme.spacing.minTouch)
             .background(if (selected) colors.accentContainer else colors.surfaceAlt, PauseTheme.shapes.pill)
             .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
-            .padding(horizontal = PauseTheme.spacing.md, vertical = PauseTheme.spacing.sm),
-    )
+            .padding(horizontal = PauseTheme.spacing.md, vertical = PauseTheme.spacing.xs),
+    ) {
+        Text(
+            // 고른 상태를 색만으로 알리지 않는다(AGENTS.md 6절): 체크 표시를 함께 붙인다.
+            text = if (selected) stringResource(R.string.designsystem_selected_prefix, text) else text,
+            style = PauseTheme.type.label,
+            color = if (selected) colors.onAccentContainer else colors.ink,
+            textAlign = TextAlign.Center,
+        )
+    }
 }
 
 /** 대처 전략 카드: 맥락 아이콘 + 만약~하면 + 고르기. */
@@ -135,6 +158,7 @@ fun StrategyCard(
     selected: Boolean,
     onToggle: () -> Unit,
     modifier: Modifier = Modifier,
+    footer: (@Composable () -> Unit)? = null,
 ) {
     val colors = PauseTheme.colors
     PauseCard(modifier = modifier, containerColor = if (selected) colors.accentContainer else colors.surface) {
@@ -170,6 +194,7 @@ fun StrategyCard(
             selected = selected,
             onClick = onToggle,
         )
+        footer?.invoke()
     }
 }
 
