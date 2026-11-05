@@ -82,7 +82,10 @@ internal fun previewReport(withAi: Boolean) = WeeklyReportState(
 @Composable
 private fun ReportScreenPreview() {
     PauseTheme {
-        ReportScreen(uiState = ReportUiState.Ready(previewReport(withAi = true), ReportLocal()), onAction = {})
+        ReportScreen(
+            uiState = ReportUiState.Ready(previewReport(withAi = true), ReportLocal(), previewCharts()),
+            onAction = {},
+        )
     }
 }
 

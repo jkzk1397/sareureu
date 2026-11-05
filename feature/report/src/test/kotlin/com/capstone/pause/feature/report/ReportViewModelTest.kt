@@ -8,6 +8,8 @@ import com.capstone.pause.core.ai.report.WeeklyReportGenerator
 import com.capstone.pause.core.ai.report.WeeklyReportState
 import com.capstone.pause.core.common.AppClock
 import com.capstone.pause.core.data.demo.DemoPattern
+import com.capstone.pause.core.data.insight.WeekChartData
+import com.capstone.pause.core.data.insight.WeekChartRepository
 import com.capstone.pause.core.data.plan.PlanRepository
 import com.capstone.pause.core.data.settings.AiMode
 import com.capstone.pause.core.data.settings.AppSettings
@@ -91,6 +93,9 @@ class ReportViewModelTest {
         settingsRepository,
         logger,
         AppClock(Clock.fixed(Instant.EPOCH, ZoneId.of("Asia/Seoul"))),
+        object : WeekChartRepository {
+            override fun observeWeek(): Flow<WeekChartData?> = flowOf(null)
+        },
     )
 
     @Test

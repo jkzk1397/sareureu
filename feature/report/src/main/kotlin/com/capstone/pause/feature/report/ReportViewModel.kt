@@ -8,6 +8,8 @@ import com.capstone.pause.core.ai.report.GenerateResult
 import com.capstone.pause.core.ai.report.WeeklyReportGenerator
 import com.capstone.pause.core.ai.report.WeeklyReportState
 import com.capstone.pause.core.common.AppClock
+import com.capstone.pause.core.data.insight.WeekChartData
+import com.capstone.pause.core.data.insight.WeekChartRepository
 import com.capstone.pause.core.data.plan.PlanRepository
 import com.capstone.pause.core.data.settings.SettingsRepository
 import com.capstone.pause.core.model.ContextSlot
@@ -43,7 +45,12 @@ sealed interface ReportUiState {
     data object Loading : ReportUiState
 
     /** 표시. */
-    data class Ready(val report: WeeklyReportState, val local: ReportLocal) : ReportUiState
+    data class Ready(
+        val report: WeeklyReportState,
+        val local: ReportLocal,
+        /** 차트 값(지난 7일). 기록이 없으면 null. */
+        val charts: WeekChartData? = null,
+    ) : ReportUiState
 }
 
 /** 리포트 탭 동작. */
@@ -78,13 +85,18 @@ class ReportViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val logger: AiCallLogger,
     private val clock: AppClock,
+    weekChartRepository: WeekChartRepository,
 ) : ViewModel() {
 
     private val local = MutableStateFlow(ReportLocal())
 
     /** 화면 상태. */
-    val uiState: StateFlow<ReportUiState> = combine(generator.observe(), local) { report, l ->
-        ReportUiState.Ready(report, l)
+    val uiState: StateFlow<ReportUiState> = combine(
+        generator.observe(),
+        local,
+        weekChartRepository.observeWeek(),
+    ) { report, l, charts ->
+        ReportUiState.Ready(report, l, charts)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), ReportUiState.Loading)
 
     init {
