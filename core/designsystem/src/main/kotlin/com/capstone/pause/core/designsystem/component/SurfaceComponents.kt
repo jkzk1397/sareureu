@@ -31,7 +31,7 @@ import com.capstone.pause.core.model.BuddyExpression
 
 /**
  * 랭킹 한 줄: 순위·아바타(첫 글자)·이름·감소율·기록률 배지. "나"는 `accentContainer`.
- * [coveragePercent]가 null이면 '측정 중'.
+ * [coveragePercent]가 null이면 '측정 중'. 줄었으면([reductionDirection] DOWN) `success`, 늘었으면 `ink2`(빨갛게 칠하지 않는다, 06 문서 2.3절).
  */
 @Composable
 fun RankRow(
@@ -41,6 +41,7 @@ fun RankRow(
     coveragePercent: Int?,
     isMe: Boolean,
     modifier: Modifier = Modifier,
+    reductionDirection: ChangeDirection = ChangeDirection.DOWN,
 ) {
     val colors = PauseTheme.colors
     Row(
@@ -78,7 +79,11 @@ fun RankRow(
                 color = colors.ink2,
             )
         }
-        Text(text = reductionLabel, style = PauseTheme.type.title, color = colors.success)
+        Text(
+            text = reductionLabel,
+            style = PauseTheme.type.title,
+            color = if (reductionDirection == ChangeDirection.DOWN) colors.success else colors.ink2,
+        )
     }
 }
 

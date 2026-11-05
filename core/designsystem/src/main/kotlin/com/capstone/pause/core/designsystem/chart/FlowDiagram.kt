@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -87,7 +88,9 @@ fun FlowDiagram(
                 val box = boxes[n.id] ?: return@forEach
                 drawRect(colors.ink, Offset(xs[col], box.top), Size(nodeW, box.height))
                 val textX = if (col == 0) 0f else xs[col] + nodeW + labelGap
-                drawLabel(measurer, n.label, labelStyle, textX, box.top + box.height / 2f, labelW - labelGap)
+                // 가운데 열(앱) 라벨은 띠 위에 놓이므로 바탕을 깔아 읽히게 한다(BUILD_REPORT TODO#6).
+                val backing = if (col == 1) colors.surface else null
+                drawLabel(measurer, n.label, labelStyle, textX, box.top + box.height / 2f, labelW - labelGap, backing)
             }
         }
     }
@@ -147,15 +150,27 @@ private fun DrawScope.drawLabel(
     x: Float,
     cy: Float,
     maxW: Float,
+    backing: Color? = null,
 ) {
+    // 길면 두 줄까지 줄바꿈한다("알림 뒤 멈춤 12%"가 잘리지 않게).
     val m = measurer.measure(
         text,
         style,
         overflow = TextOverflow.Ellipsis,
-        maxLines = 1,
+        maxLines = 2,
         constraints = Constraints(maxWidth = maxW.toInt().coerceAtLeast(1)),
     )
-    drawText(m, topLeft = Offset(x, cy - m.size.height / 2f))
+    val topLeft = Offset(x, cy - m.size.height / 2f)
+    if (backing != null) {
+        val pad = PauseSizes.chartStroke.toPx()
+        drawRoundRect(
+            color = backing,
+            topLeft = Offset(topLeft.x - pad, topLeft.y - pad),
+            size = Size(m.size.width + pad * 2, m.size.height + pad * 2),
+            cornerRadius = CornerRadius(pad * 2, pad * 2),
+        )
+    }
+    drawText(m, topLeft = topLeft)
 }
 
 @Preview(name = "light")
