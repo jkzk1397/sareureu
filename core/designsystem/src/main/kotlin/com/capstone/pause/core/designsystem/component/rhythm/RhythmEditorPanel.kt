@@ -102,7 +102,7 @@ private fun TimeRow(label: Int, time: LocalTime, onShift: (Int) -> Unit) {
     val name = stringResource(label)
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
         Text(text = name, style = PauseTheme.type.body, color = PauseTheme.colors.ink, modifier = Modifier.weight(1f))
-        TimeStepper(label = name, time = time, onShift = onShift)
+        RhythmTimeStepper(label = name, time = time, onShift = onShift)
     }
 }
 
@@ -136,13 +136,13 @@ private fun RangeRow(
         )
     } else {
         Column {
-            TimeStepper(
+            RhythmTimeStepper(
                 caption = stringResource(R.string.designsystem_rhythm_range_start_short),
                 label = stringResource(R.string.designsystem_rhythm_range_start, name),
                 time = range.start,
                 onShift = { onShift(field, false, it) },
             )
-            TimeStepper(
+            RhythmTimeStepper(
                 caption = stringResource(R.string.designsystem_rhythm_range_end_short),
                 label = stringResource(R.string.designsystem_rhythm_range_end, name),
                 time = range.end,
@@ -152,9 +152,9 @@ private fun RangeRow(
     }
 }
 
-/** 시각 하나를 −/+ 30분으로 고치는 칸(터치 48dp). [label]은 화면 읽기용 버튼 이름, [caption]은 보이는 짧은 이름(시작·끝). */
+/** 시각 하나를 −/+ 30분으로 고치는 칸(터치 48dp). [label]은 화면 읽기용 버튼 이름, [caption]은 보이는 짧은 이름(시작·끝). 온보딩 자는 시간에도 쓴다. */
 @Composable
-private fun TimeStepper(label: String, time: LocalTime, onShift: (Int) -> Unit, caption: String? = null) {
+fun RhythmTimeStepper(label: String, time: LocalTime, onShift: (Int) -> Unit, caption: String? = null) {
     val colors = PauseTheme.colors
     val earlier = stringResource(R.string.designsystem_rhythm_time_earlier, label)
     val later = stringResource(R.string.designsystem_rhythm_time_later, label)

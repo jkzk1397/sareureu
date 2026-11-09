@@ -34,7 +34,4 @@ internal object PermissionStatus {
     /** 이 앱 알림 설정(13 미만이나 거절 뒤). */
     fun notificationSettingsIntent(context: Context): Intent =
         Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
-
-    /** 배터리 최적화 목록 화면(직접 예외 요청은 하지 않는다, 03 문서 9절). */
-    fun batterySettingsIntent(): Intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
 }

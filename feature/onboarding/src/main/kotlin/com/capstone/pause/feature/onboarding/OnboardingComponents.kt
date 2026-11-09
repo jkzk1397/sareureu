@@ -21,6 +21,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -148,4 +152,23 @@ internal fun ChipFlow(content: @Composable () -> Unit) {
         horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xs),
         verticalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xs),
     ) { content() }
+}
+
+/** 접힌 전문. "자세히"를 누르면 [content]가 펼쳐진다(처음 보이는 글을 짧게 두려고). */
+@Composable
+internal fun MoreDetails(content: @Composable ColumnScope.() -> Unit) {
+    var open by rememberSaveable { mutableStateOf(false) }
+    Column(verticalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xs)) {
+        TextButton(
+            onClick = { open = !open },
+            modifier = Modifier.heightIn(min = PauseTheme.spacing.minTouch),
+        ) {
+            Text(
+                stringResource(if (open) R.string.onboarding_less else R.string.onboarding_more),
+                style = PauseTheme.type.label,
+                color = PauseTheme.colors.ink2,
+            )
+        }
+        if (open) content()
+    }
 }

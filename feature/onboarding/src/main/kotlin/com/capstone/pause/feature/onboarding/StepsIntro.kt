@@ -2,33 +2,36 @@ package com.capstone.pause.feature.onboarding
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.capstone.pause.core.designsystem.buddy.BuddyAvatar
 import com.capstone.pause.core.designsystem.component.ChoicePill
 import com.capstone.pause.core.designsystem.component.PauseCard
+import com.capstone.pause.core.designsystem.component.rhythm.RhythmTimeStepper
 import com.capstone.pause.core.designsystem.theme.PauseSizes
 import com.capstone.pause.core.designsystem.theme.PauseTheme
 import com.capstone.pause.core.model.AgeBand
 import com.capstone.pause.core.model.BuddyExpression
 import com.capstone.pause.core.model.Occupation
 
-/** 1단계: 연령대(만 18세 미만이면 안내 후 종료, 저장 안 함). */
+/** 1. 시작: 연령대(만 18세 미만이면 안내, 저장 안 함) + 약관·개인정보 동의. 전문은 '자세히'. */
 @Composable
-internal fun AgeStep(state: OnboardingUiState, onAction: (OnboardingAction) -> Unit) {
+internal fun StartStep(state: OnboardingUiState, onAction: (OnboardingAction) -> Unit) {
     OnboardingFrame(
         step = state.step,
         onBack = null,
-        primaryText = stringResource(R.string.onboarding_next),
+        primaryText = stringResource(R.string.onboarding_terms_accept),
         primaryEnabled = state.ageBand != null,
-        onPrimary = { onAction(OnboardingAction.Next) },
+        onPrimary = { onAction(OnboardingAction.AcceptTerms) },
     ) {
         BuddyAvatar(BuddyExpression.NEUTRAL, PauseSizes.bubbleBuddy)
-        StepHeader(stringResource(R.string.onboarding_age_title), stringResource(R.string.onboarding_age_body))
+        StepHeader(stringResource(R.string.onboarding_age_title), stringResource(R.string.onboarding_start_body))
         Column(verticalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xs)) {
             AgeBand.entries.forEach { band ->
                 ChoicePill(
@@ -43,6 +46,21 @@ internal fun AgeStep(state: OnboardingUiState, onAction: (OnboardingAction) -> U
                 selected = false,
                 onClick = { onAction(OnboardingAction.SelectAge(null)) },
                 modifier = Modifier.fillMaxWidth(),
+            )
+        }
+        Text(
+            stringResource(R.string.onboarding_terms_summary),
+            style = PauseTheme.type.body,
+            color = PauseTheme.colors.ink,
+        )
+        MoreDetails {
+            InfoCard(R.string.onboarding_terms_device_title, R.string.onboarding_terms_device_body)
+            InfoCard(R.string.onboarding_terms_cloud_title, R.string.onboarding_terms_cloud_body)
+            InfoCard(R.string.onboarding_terms_never_title, R.string.onboarding_terms_never_body)
+            Text(
+                text = stringResource(R.string.onboarding_terms_control),
+                style = PauseTheme.type.bodySmall,
+                color = PauseTheme.colors.ink2,
             )
         }
     }
@@ -65,27 +83,6 @@ internal fun UnderageStep(state: OnboardingUiState, onBack: () -> Unit, onClose:
     }
 }
 
-/** 약관·개인정보 처리 안내(무엇이 기기에 남고 무엇이 나가는지). */
-@Composable
-internal fun TermsStep(state: OnboardingUiState, onAction: (OnboardingAction) -> Unit) {
-    OnboardingFrame(
-        step = state.step,
-        onBack = { onAction(OnboardingAction.Back) },
-        primaryText = stringResource(R.string.onboarding_terms_accept),
-        onPrimary = { onAction(OnboardingAction.AcceptTerms) },
-    ) {
-        StepHeader(stringResource(R.string.onboarding_terms_title), null)
-        InfoCard(R.string.onboarding_terms_device_title, R.string.onboarding_terms_device_body)
-        InfoCard(R.string.onboarding_terms_cloud_title, R.string.onboarding_terms_cloud_body)
-        InfoCard(R.string.onboarding_terms_never_title, R.string.onboarding_terms_never_body)
-        Text(
-            text = stringResource(R.string.onboarding_terms_control),
-            style = PauseTheme.type.bodySmall,
-            color = PauseTheme.colors.ink2,
-        )
-    }
-}
-
 /** 제목·본문 카드. */
 @Composable
 internal fun InfoCard(title: Int, body: Int) {
@@ -94,9 +91,9 @@ internal fun InfoCard(title: Int, body: Int) {
     }
 }
 
-/** 2단계: 닉네임·신분. */
+/** 2. 나: 별명·신분·평일 자는 시간. 나머지 리듬은 신분 기본값([DefaultRhythms]), 설정 › 하루 리듬에서 고친다. */
 @Composable
-internal fun ProfileStep(state: OnboardingUiState, onAction: (OnboardingAction) -> Unit) {
+internal fun MeStep(state: OnboardingUiState, onAction: (OnboardingAction) -> Unit) {
     OnboardingFrame(
         step = state.step,
         onBack = { onAction(OnboardingAction.Back) },
@@ -111,10 +108,7 @@ internal fun ProfileStep(state: OnboardingUiState, onAction: (OnboardingAction) 
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
         )
-        StepHeader(
-            stringResource(R.string.onboarding_occupation_title),
-            stringResource(R.string.onboarding_occupation_hint),
-        )
+        StepHeader(stringResource(R.string.onboarding_occupation_title), null)
         ChipFlow {
             Occupation.entries.forEach { occ ->
                 ChoicePill(
@@ -124,6 +118,21 @@ internal fun ProfileStep(state: OnboardingUiState, onAction: (OnboardingAction) 
                 )
             }
         }
+        StepHeader(stringResource(R.string.onboarding_sleep_title), stringResource(R.string.onboarding_sleep_hint))
+        val label = stringResource(R.string.onboarding_sleep_label)
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            Text(label, style = PauseTheme.type.body, color = PauseTheme.colors.ink, modifier = Modifier.weight(1f))
+            RhythmTimeStepper(
+                label = label,
+                time = state.shownSleep,
+                onShift = { onAction(OnboardingAction.ShiftSleep(it)) },
+            )
+        }
+        Text(
+            stringResource(R.string.onboarding_local_only),
+            style = PauseTheme.type.bodySmall,
+            color = PauseTheme.colors.ink2,
+        )
     }
 }
 
