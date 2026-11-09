@@ -17,42 +17,6 @@
 
 ---
 
-## 작업 2. 리포트 기간, 평균, 유형 기준 바로잡기
-
-**왜**
-- 리포트가 "지난 7일(오늘 제외)"이라 설치 첫날엔 오늘 본 것도 안 보인다
-- 하루 평균을 기록한 날 수와 상관없이 항상 7로 나눈다. 쓴 지 3일 된 사용자의 평균이 실제의 절반 아래로 나온다
-- 유형: 하루 30분 넘게 봐도 패턴이 기준에 못 미치면 '균형형'이 된다. 정해진 순서대로 먼저 맞는 것을 고르니 더 뚜렷한 패턴이 뒤에 있으면 놓친다. 하루치 기록에도 유형을 붙인다
-- AI 리포트가 기록 2일치로도 돈다
-
-**할 일**
-1. 기간: 차트, 관찰, AI 모두 **최근 7일(오늘 포함)**
-   - `core/ai/.../report/WeekMath.kt`: `WeekWindow.lastSevenDays(today)` → `WeekWindow(today, today.minusDays(6), today.plusDays(1))`. `RiskWindows.compute`에 넘기는 날짜는 `window.today`
-   - `core/data/.../insight/WeekChartRepository.kt`: `dates = (6 downTo 0)`, 읽는 끝 `DayBoundary.endOf(today)`. 지금은 `flowOf(clock.now())`로 한 번만 세니 `InsightRepository`처럼 1분 틱으로 다시 세게
-   - 리포트는 주 시작일(`window.start`)로 저장·조회하므로 날짜가 바뀌면 그날 처음 열 때 새로 만든다(하루 1회). 따로 바꿀 것 없음
-   - 문구 "지난 7일" → "최근 7일"(`report_loading`, `report_no_data_body` 등)
-2. 평균을 나누는 날 수 = 기록이 시작된 날부터 센 날 수(최소 1, 최대 7)
-   - 기록 시작일 = 읽어 온 세션(기준선 탐색 범위 포함) 중 가장 이른 세션의 논리적 날짜(새벽 4시 경계)
-   - `core:insights`에 순수 함수 하나(예: `ObservedDays.count(sessions, window...)`)를 만들고 `WeekMath.compute`의 `days`와 `WeekChartRepository`의 `avg = total / WEEK`가 같이 쓴다
-3. 유형: `core/insights/.../ViewerTypeClassifier.kt` (05 문서 5.6절도 같이 고친다)
-   - 하루 평균 30분 이하 → BALANCED (그대로)
-   - 30분 넘으면 패턴마다 `값 / 기준`을 구해 가장 큰 유형. 기준을 못 넘어도 가장 가까운 유형을 준다(많이 보는 사람이 균형형이 되지 않게). 같으면 지금 순서(밤 > 통학 > 식사 > 도미노 > 자투리 > 아침)
-     - 밤 = 자기 전 + 한밤중 비율 / 0.40, 통학 / 0.35, 식사 / 0.30, 도미노 = 메신저·SNS에서 넘어온 비율 / 0.40, 자투리 = 수업/업무 + 쉬는 시간 비율 / 0.50(중앙값 8분 이하일 때만), 아침 / 0.25
-     - 모든 값이 0이면(전부 '기타' 맥락) BALANCED
-   - `WeeklyObservations`에 `typeReady`(기록한 날 3일 이상 + 세션 5개 이상) 추가. 아니면 리포트 유형 카드 대신 "3일쯤 쓰면 유형이 나와" 한 줄
-   - 새 유형은 만들지 않는다(사용자가 분류가 많다고 느낀다)
-4. AI 게이트: `enoughForAi`에 `typeReady` 조건 추가(기록 3일 미만이면 AI를 부르지 않음)
-5. 실제 사용자 화면에서 시연 모드 권유 빼기(시연 모드는 설정에만): `report_no_data_body`, `onboarding_perm_usage_denied`, `onboarding_done_body`, `friends_unavailable_body`. "(시연용)" 같은 출처 표시는 그대로 둔다
-
-**테스트**
-- 기록 3일 사용자: 하루 평균 = 합계 / 3. 오늘 04:00 이후 세션이 리포트에 들어간다
-- 유형: 하루 3시간인데 뚜렷한 패턴 없음 → BALANCED가 아님. 밤 0.38, 통학 0.20 → NIGHT_OWL. 기록 2일 → `typeReady == false`, `enoughForAi == false`
-- 기존 `WeeklyInsightsTest`, `WeekMathTest`의 기대값은 새 규칙에 맞게 고친다(지우지 않는다)
-
-**폰에서 확인**: 새로 깔고 쇼츠 10분 → 리포트에 오늘 10분이 보이고 유형 카드 대신 "3일쯤 쓰면" 안내
-
----
-
 ## 작업 3. 온보딩 12단계를 5단계로
 
 **왜**: 지금 연령, 약관, 프로필, 하루 리듬(칸 9개), 목표, 추적 앱, 권한 3개 따로, AI, 배터리, 완료 순서라 깔고 나서 지친다. 필수(나이 확인, 약관, 권한 고지, AI 국외 이전 고지)는 남기고 긴 글은 접는다.

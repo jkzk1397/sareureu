@@ -65,7 +65,15 @@ fun ReportScreen(uiState: ReportUiState, onAction: (ReportAction) -> Unit, modif
             return@PauseScreenColumn
         }
         StatRow(report)
-        ViewerTypeCard(report = report, local = ready.local, onAction = onAction)
+        if (report.typeReady) {
+            ViewerTypeCard(report = report, local = ready.local, onAction = onAction)
+        } else {
+            Text(
+                stringResource(R.string.report_type_not_ready),
+                style = PauseTheme.type.bodySmall,
+                color = PauseTheme.colors.ink2,
+            )
+        }
         ready.charts?.let { ReportCharts(it) }
         ObservationsCard(report)
         AiSection(report = report, local = ready.local, onAction = onAction)

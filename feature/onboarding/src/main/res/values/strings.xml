@@ -104,7 +104,7 @@
   <string name="onboarding_perm_usage_what">어떤 앱이 언제 열리고 닫혔는지(앱 이름과 시각만). 다른 앱 사용 기록이라 민감한 정보야.</string>
   <string name="onboarding_perm_usage_why">숏폼을 본 시간, 어디서 넘어왔는지, 언제 많이 보는지 세려고. 이 기록은 이 폰 안에만 저장돼.</string>
   <string name="onboarding_perm_usage_not">화면 글자·영상 제목은 읽지 않아. 기록을 밖으로 보내지 않아. 다른 앱을 조작하지 않아.</string>
-  <string name="onboarding_perm_usage_denied">켜지 않아도 설정 › 시연 모드로 모든 화면을 둘러볼 수 있어.</string>
+  <string name="onboarding_perm_usage_denied">나중에 설정 › 감지에서 언제든 켤 수 있어.</string>
   <string name="onboarding_perm_usage_steps">설정에서 이 앱을 찾아 \'사용 기록 접근 허용\'을 켜고 돌아오면 돼.</string>
   <string name="onboarding_perm_noti_title">알림을 보내도 될까?</string>
   <string name="onboarding_perm_noti_what">AI 친구가 보내는 메신저형 알림, 내가 정한 예약 알림, 친구가 맡긴 잔소리.</string>
@@ -140,7 +140,7 @@
 
   <!-- 끝 -->
   <string name="onboarding_done_title">준비 끝!</string>
-  <string name="onboarding_done_body">이제 숏폼을 볼 때 옆에서 말 걸게. 사용 기록 권한이 없으면 설정 › 시연 모드로 먼저 둘러봐.</string>
+  <string name="onboarding_done_body">이제 숏폼을 볼 때 옆에서 말 걸게.</string>
   <string name="onboarding_done_start">시작하기</string>
   <string name="onboarding_done_permissions">권한 %2$d개 중 %1$d개 허용됨 (나중에 설정에서 바꿀 수 있어)</string>
   <string name="onboarding_range_start_short">시작</string>

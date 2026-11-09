@@ -12,6 +12,7 @@ import com.capstone.pause.core.data.settings.SettingsRepository
 import com.capstone.pause.core.insights.Baseline
 import com.capstone.pause.core.insights.DayStat
 import com.capstone.pause.core.insights.LengthBucket
+import com.capstone.pause.core.insights.ObservedDays
 import com.capstone.pause.core.insights.RiskWindows
 import com.capstone.pause.core.insights.SessionStats
 import com.capstone.pause.core.insights.ShortformMinutes
@@ -26,17 +27,18 @@ import javax.inject.Singleton
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
 /** 리포트 차트 값 저장소. */
 interface WeekChartRepository {
-    /** 지난 7일 차트 값. 기록이 하나도 없으면 null. */
+    /** 최근 7일(오늘 포함) 차트 값. 1분마다 다시 센다. 기록이 하나도 없으면 null. */
     fun observeWeek(): Flow<WeekChartData?>
 }
 
@@ -66,12 +68,19 @@ internal class DefaultWeekChartRepository @Inject constructor(
         }.onFailure { log.w(TAG, "cohort asset missing", it) }.getOrNull()
     }
 
-    override fun observeWeek(): Flow<WeekChartData?> = flowOf(clock.now()).flatMapLatest { now ->
+    private val minuteTicks: Flow<Instant> = flow {
+        while (true) {
+            emit(clock.now())
+            delay(TICK_MS)
+        }
+    }
+
+    override fun observeWeek(): Flow<WeekChartData?> = minuteTicks.flatMapLatest { now ->
         val zone = clock.zone
         val today = DayBoundary.logicalDate(now, zone)
         // 기준선을 찾으려고 리포트 주 앞 28일까지 읽는다(AI 주간 분석과 같은 규칙).
         val from = DayBoundary.startOf(today.minusDays(WEEK + BASELINE_LOOKBACK), zone)
-        val to = DayBoundary.startOf(today, zone)
+        val to = DayBoundary.endOf(today, zone)
         combine(
             sessionRepository.observeSessions(from, to),
             settingsRepository.settings,
@@ -89,9 +98,9 @@ internal class DefaultWeekChartRepository @Inject constructor(
         profile: Profile?,
     ): WeekChartData? {
         val zone = clock.zone
-        val dates = (WEEK downTo 1L).map { today.minusDays(it) }
+        val dates = (WEEK - 1 downTo 0L).map { today.minusDays(it) }
         val weekStart = DayBoundary.startOf(dates.first(), zone)
-        val weekEnd = DayBoundary.startOf(today, zone)
+        val weekEnd = DayBoundary.endOf(today, zone)
         val week = all.filter { !it.start.isBefore(weekStart) && it.start.isBefore(weekEnd) }
         if (week.isEmpty()) return null
         val clockBins = WeekCharts.weekClock(week, dates, zone, now)
@@ -99,7 +108,7 @@ internal class DefaultWeekChartRepository @Inject constructor(
         val risks = RiskWindows.compute(all, today, zone, now)
         val total = clockBins.totalMinutes
         val flow = WeekCharts.flowChart(week)
-        val avg = total.toDouble() / WEEK
+        val avg = total.toDouble() / ObservedDays.count(all, dates.first(), dates.last(), zone)
         return WeekChartData(
             weekStart = dates.first(),
             weekEndInclusive = dates.last(),
@@ -164,6 +173,7 @@ internal class DefaultWeekChartRepository @Inject constructor(
         const val TAG = "WeekChart"
         const val COHORT_ASSET = "demo/cohort.json"
         const val WEEK = 7L
+        const val TICK_MS = 60_000L
         const val BASELINE_LOOKBACK = 28L
         const val MIN_GROUP = 10
         const val HOUR = 60

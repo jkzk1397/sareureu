@@ -110,6 +110,7 @@ internal class DefaultWeeklyReportGenerator @Inject constructor(
                     sessionCount = week.sessionCount,
                     viewerType = week.viewerType.name,
                     enoughForAi = week.enoughForAi,
+                    typeReady = week.typeReady,
                     ai = saved?.let { WeekMath.toAiReport(it, window.start, hyps, strategies, settings.thresholds) },
                     status = st,
                     regenerationsLeft = quota.reportRegenerationsPerDay - (regenerations[window.today] ?: 0),

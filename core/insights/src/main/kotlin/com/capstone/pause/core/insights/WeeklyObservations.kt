@@ -34,7 +34,7 @@ data class Observation(
     val id: String get() = kind.id
 }
 
-/** 주간 관찰 계산 입력. [sessions]·[nudges]는 그 주(논리적 날짜 [days]일)만. */
+/** 주간 관찰 계산 입력. [sessions]·[nudges]는 그 주만, [days]는 하루 평균을 낼 날 수([ObservedDays]). */
 data class WeekInput(
     val sessions: List<ShortformSession>,
     val nudges: List<NudgeEvent>,
@@ -59,6 +59,8 @@ data class WeeklyObservations(
     val nudges: NudgeOutcome,
     val viewerType: ViewerType,
     val sessionCount: Int,
+    /** 하루 평균을 낸 날 수([WeekInput.days]). */
+    val observedDays: Int,
 ) {
     /** ID로 찾기. */
     operator fun get(id: String): Observation? = observations.firstOrNull { it.id == id }
@@ -69,6 +71,12 @@ data class WeeklyObservations(
 
         /** AI를 부르는 최소 기록률. */
         const val MIN_COVERAGE_FOR_AI = 0.5
+
+        /** 유형·AI에 필요한 최소 기록 일수. */
+        const val MIN_DAYS_FOR_TYPE = 3
+
+        /** 유형·AI에 필요한 최소 세션 수. */
+        const val MIN_SESSIONS_FOR_TYPE = 5
 
         /** 관찰 계산. 데이터가 없는 관찰은 빠진다. */
         fun compute(input: WeekInput): WeeklyObservations {
@@ -191,6 +199,7 @@ data class WeeklyObservations(
                 nudges = outcome,
                 viewerType = ViewerTypeClassifier.classify(sessions, input.days, now),
                 sessionCount = sessions.size,
+                observedDays = input.days,
             )
         }
 
@@ -208,8 +217,13 @@ data class WeeklyObservations(
         private const val LONG_SESSION_MIN = 20.0
     }
 
-    /** AI를 불러도 되는지(관찰 3개 이상, 기록률 50% 이상). */
+    /** 유형을 보여 줄 만큼 쌓였는지(기록한 날 3일 이상 + 세션 5개 이상). 아니면 리포트는 유형 대신 안내 한 줄. */
+    val typeReady: Boolean
+        get() = observedDays >= MIN_DAYS_FOR_TYPE && sessionCount >= MIN_SESSIONS_FOR_TYPE
+
+    /** AI를 불러도 되는지(관찰 3개 이상, 기록률 50% 이상, [typeReady]). */
     val enoughForAi: Boolean
-        get() = observations.size >= MIN_FOR_AI &&
+        get() = typeReady &&
+            observations.size >= MIN_FOR_AI &&
             (this[ObservationKind.COVERAGE.id]?.numbers?.get("coverage") ?: 1.0) >= MIN_COVERAGE_FOR_AI
 }

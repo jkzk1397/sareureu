@@ -27,7 +27,7 @@ import org.junit.Test
 class WeekMathTest {
     private val zone = ZoneId.of("Asia/Seoul")
     private val today = LocalDate.of(2026, 11, 3)
-    private val weekStart = LocalDate.of(2026, 10, 27)
+    private val weekStart = LocalDate.of(2026, 10, 28)
 
     private fun saved(provider: Provider = Provider.CLOUD, outcome: CallOutcome = CallOutcome.PASSED) =
         SavedWeeklyReport(
@@ -57,10 +57,10 @@ class WeekMathTest {
     private val thresholds = mapOf(ContextSlot.PRE_SLEEP to 15, ContextSlot.LATE_NIGHT to 10)
 
     @Test
-    fun windowIsLastSevenDaysExcludingToday() {
+    fun windowIsLastSevenDaysIncludingToday() {
         val w = WeekWindow.lastSevenDays(today)
         assertEquals(weekStart, w.start)
-        assertEquals(today, w.endExclusive)
+        assertEquals(today.plusDays(1), w.endExclusive)
         assertEquals(weekStart.minusDays(28), w.historyStart)
     }
 
@@ -123,17 +123,43 @@ class WeekMathTest {
                     extensions = 0, stoppedByNudge = false, checkIn = null, source = DataSource.DEMO,
                 )
             }
-        val baselineDays = (8L..14L).map { s(today.minusDays(it), 100) }
-        val weekDays = (1L..7L).map { s(today.minusDays(it), 50) }
-        val todays = listOf(s(today, 500))
+        val baselineDays = (7L..13L).map { s(today.minusDays(it), 100) }
+        val weekDays = (0L..6L).map { s(today.minusDays(it), 50) }
+        val tomorrow = listOf(s(today.plusDays(1), 500))
         val week = WeekMath.compute(
             WeekWindow.lastSevenDays(today),
-            baselineDays + weekDays + todays,
+            baselineDays + weekDays + tomorrow,
             emptyList(),
             zone,
-            LocalDateTime.of(today, java.time.LocalTime.of(23, 59)).atZone(zone).toInstant(),
+            LocalDateTime.of(today.plusDays(1), java.time.LocalTime.of(23, 59)).atZone(zone).toInstant(),
         )
         assertEquals(350, week.totalMinutes)
         assertEquals(0.5, week.reductionRate)
+    }
+
+    @Test
+    fun threeDayUserAveragesOverThreeDaysAndTodayCounts() {
+        fun s(day: LocalDate, hour: Int, minutes: Long) =
+            LocalDateTime.of(day, java.time.LocalTime.of(hour, 0)).atZone(zone).toInstant().let {
+                ShortformSession(
+                    id = 0, start = it, end = it.plusSeconds(minutes * 60), segments = emptyList(),
+                    context = ContextSlot.PRE_SLEEP, contextConfidence = MEDIUM, contextConfirmed = false,
+                    entry = EntryPoint.Unknown, exit = null, interaction = null, maxFrictionLevel = 0,
+                    extensions = 0, stoppedByNudge = false, checkIn = null, source = DataSource.REAL,
+                )
+            }
+        // 그제·어제·오늘(04:00 이후) 30분씩, 오늘 세션은 아침 5시.
+        val sessions = listOf(s(today.minusDays(2), 22, 30), s(today.minusDays(1), 22, 30), s(today, 5, 30))
+        val week = WeekMath.compute(
+            WeekWindow.lastSevenDays(today),
+            sessions,
+            emptyList(),
+            zone,
+            LocalDateTime.of(today, java.time.LocalTime.of(12, 0)).atZone(zone).toInstant(),
+        )
+        assertEquals(90, week.totalMinutes)
+        assertEquals(30.0, week.avgMinPerDay)
+        assertFalse(week.typeReady, "세션 3개는 유형을 보이기에 적다")
+        assertFalse(week.enoughForAi)
     }
 }

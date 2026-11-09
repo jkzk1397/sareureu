@@ -55,7 +55,7 @@ enum class GenerationStatus { IDLE, RUNNING, FAILED }
 
 /**
  * 리포트 화면 상태. 관찰은 코드, [ai]는 AI(없을 수 있음). 화면은 둘을 나눠 그린다.
- * 주는 '지난 7일'(오늘-7 ~ 어제, 새벽 4시 경계)이다.
+ * 주는 '최근 7일'(오늘-6 ~ 오늘, 새벽 4시 경계)이다.
  */
 data class WeeklyReportState(
     val weekStart: LocalDate,
@@ -70,6 +70,8 @@ data class WeeklyReportState(
     /** 코드가 정한 유형(`ViewerType` 이름). */
     val viewerType: String,
     val enoughForAi: Boolean,
+    /** 유형을 보여 줄 만큼 쌓였는지(기록 3일 이상 + 세션 5개 이상). 아니면 유형 카드 대신 안내 한 줄. */
+    val typeReady: Boolean,
     val ai: AiReport?,
     val status: GenerationStatus,
     val regenerationsLeft: Int,
