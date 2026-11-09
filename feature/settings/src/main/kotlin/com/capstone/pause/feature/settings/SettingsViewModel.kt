@@ -9,6 +9,7 @@ import com.capstone.pause.core.data.session.SessionRepository
 import com.capstone.pause.core.data.settings.DefaultThresholds
 import com.capstone.pause.core.data.settings.SettingsRepository
 import com.capstone.pause.core.data.settings.ThemeMode
+import com.capstone.pause.core.data.settings.ThresholdGroup
 import com.capstone.pause.core.intervention.reminder.ReminderScheduler
 import com.capstone.pause.core.intervention.service.MonitoringController
 import com.capstone.pause.core.model.ContextSlot
@@ -62,8 +63,8 @@ sealed interface SettingsAction {
     /** 르르 녹는 표시. */
     data class SetShowMelt(val enabled: Boolean) : SettingsAction
 
-    /** 맥락별 임계값(분). */
-    data class SetThreshold(val slot: ContextSlot, val minutes: Int) : SettingsAction
+    /** 알림 기준 묶음(평소·밤)의 임계값(분). 묶음 안 맥락에 같은 값을 쓴다. */
+    data class SetThresholdGroup(val group: ThresholdGroup, val minutes: Int) : SettingsAction
 
     /** 감지 켜기·끄기(사용자 탭에서만 서비스를 시작한다). */
     data class SetMonitoring(val enabled: Boolean) : SettingsAction
@@ -138,7 +139,8 @@ class SettingsViewModel @Inject constructor(
 
                 is SettingsAction.SetShowMelt -> settingsRepository.setShowMelt(action.enabled)
 
-                is SettingsAction.SetThreshold -> settingsRepository.setThreshold(action.slot, action.minutes)
+                is SettingsAction.SetThresholdGroup ->
+                    settingsRepository.setThresholds(DefaultThresholds.slotsOf(action.group), action.minutes)
 
                 is SettingsAction.SetMonitoring -> if (action.enabled) {
                     needsUsageAccess.value = !monitoringController.start()

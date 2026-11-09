@@ -11,6 +11,7 @@ import com.capstone.pause.core.common.AppClock
 import com.capstone.pause.core.data.insight.WeekChartData
 import com.capstone.pause.core.data.insight.WeekChartRepository
 import com.capstone.pause.core.data.plan.PlanRepository
+import com.capstone.pause.core.data.settings.DefaultThresholds
 import com.capstone.pause.core.data.settings.SettingsRepository
 import com.capstone.pause.core.model.ContextSlot
 import com.capstone.pause.core.model.DataSource
@@ -130,7 +131,11 @@ class ReportViewModel @Inject constructor(
                 ReportAction.SavePlans -> savePlans()
 
                 is ReportAction.AcceptThreshold -> {
-                    settingsRepository.setThreshold(action.slot, action.minutes)
+                    // 제안 맥락이 속한 묶음(평소·밤) 전체에 적용한다(설정 화면과 같은 단위).
+                    settingsRepository.setThresholds(
+                        DefaultThresholds.slotsOf(DefaultThresholds.groupOf(action.slot)),
+                        action.minutes,
+                    )
                     local.update { it.copy(acceptedThresholds = it.acceptedThresholds + action.slot) }
                 }
 

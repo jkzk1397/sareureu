@@ -128,6 +128,7 @@
 | 진입 경로 / 이탈 경로 | `EntryPoint` / `ExitPoint` |
 | 화면 위 카드 | `NudgeCard` |
 | 5분만 더 / 단계별 어려움 | `Extension` / `FrictionLevel` |
+| 알림 기준 묶음(평소 / 밤 = 자기 전·한밤중) | `ThresholdGroup` (NORMAL, NIGHT) |
 | 르르 메시지(캐릭터가 보내는 메신저형 알림) | `BuddyMessage` |
 | 잔소리(친구가 미리 맡겨 두는 메시지) | `FriendPoke` |
 | 르르 표정 / 녹은 정도 | `BuddyExpression` (NEUTRAL, WATCHING, CALLING, WORRIED, CHEER, SLEEPY) / `MeltStage` (NONE, SOFT, PUDDLE, MELTED = 0~3) |

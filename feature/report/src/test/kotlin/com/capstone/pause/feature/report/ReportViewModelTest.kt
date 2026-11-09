@@ -69,7 +69,7 @@ class ReportViewModelTest {
         override suspend fun setAiMode(mode: AiMode) = Unit
         override suspend fun setThreshold(slot: ContextSlot, minutes: Int) {
             this@ReportViewModelTest.settings.value =
-                this@ReportViewModelTest.settings.value.copy(thresholds = mapOf(slot to minutes))
+                this@ReportViewModelTest.settings.value.let { it.copy(thresholds = it.thresholds + (slot to minutes)) }
         }
         override suspend fun reset() = Unit
     }
@@ -137,8 +137,19 @@ class ReportViewModelTest {
         val vm = vm()
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
         vm.onAction(ReportAction.SetVerdict("h1", Verdict.YES))
-        vm.onAction(ReportAction.AcceptThreshold(ContextSlot.PRE_SLEEP, 10))
+        vm.onAction(ReportAction.AcceptThreshold(ContextSlot.PRE_SLEEP, 20))
         assertEquals(listOf<Pair<String, Verdict?>>("h1" to Verdict.YES), verdicts)
-        assertEquals(10, settings.value.thresholds[ContextSlot.PRE_SLEEP])
+        assertEquals(20, settings.value.thresholds[ContextSlot.PRE_SLEEP])
+    }
+
+    @Test
+    fun acceptingPreSleepAppliesToWholeNightGroup() = runTest {
+        val vm = vm()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        vm.onAction(ReportAction.AcceptThreshold(ContextSlot.PRE_SLEEP, 5))
+        val t = settings.value.thresholds
+        assertEquals(5, t[ContextSlot.PRE_SLEEP])
+        assertEquals(5, t[ContextSlot.LATE_NIGHT])
+        assertEquals(15, t[ContextSlot.COMMUTE])
     }
 }

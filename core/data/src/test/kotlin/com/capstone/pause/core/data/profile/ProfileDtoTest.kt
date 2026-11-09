@@ -50,7 +50,8 @@ class ProfileDtoTest {
     fun defaultThresholdsFollowPrd() {
         val settings = AppSettings()
         assertEquals(10, settings.thresholdFor(ContextSlot.LATE_NIGHT))
-        assertEquals(15, settings.thresholdFor(ContextSlot.PRE_SLEEP))
+        assertEquals(10, settings.thresholdFor(ContextSlot.PRE_SLEEP))
+        assertEquals(15, settings.thresholdFor(ContextSlot.COMMUTE))
         assertEquals(ContextSlot.entries.size, DefaultThresholds.ALL.size)
     }
 }
