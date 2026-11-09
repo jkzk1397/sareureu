@@ -128,4 +128,10 @@
   <string name="settings_export_file_name" translatable="false">pause_export.json</string>
   <string name="settings_threshold_normal">평소</string>
   <string name="settings_threshold_night">밤 (자기 전·한밤중)</string>
+  <string name="settings_section_rhythm">하루 리듬</string>
+  <string name="settings_rhythm_title">하루 리듬</string>
+  <string name="settings_rhythm_hint">이 시간으로 기상, 통학, 수업, 식사, 자기 전을 나눠.</string>
+  <string name="settings_rhythm_open">하루 리듬 고치기</string>
+  <string name="settings_rhythm_back">‹ 설정</string>
+  <string name="settings_rhythm_no_profile">프로필을 만든 뒤에 고칠 수 있어.</string>
 </resources>

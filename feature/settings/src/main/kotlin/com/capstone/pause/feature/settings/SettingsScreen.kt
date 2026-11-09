@@ -41,6 +41,7 @@ import com.capstone.pause.core.designsystem.theme.PauseTheme
 /** 설정 탭 진입점. */
 @Composable
 fun SettingsRoute(
+    onOpenRhythm: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel(),
     aiViewModel: AiSettingsViewModel = hiltViewModel(),
     privacyViewModel: PrivacySettingsViewModel = hiltViewModel(),
@@ -66,6 +67,7 @@ fun SettingsRoute(
         onPrivacyAction = privacyViewModel::onAction,
         onExport = { exportLauncher.launch(exportName) },
         versionName = versionName,
+        onOpenRhythm = onOpenRhythm,
         onOpenUsageAccess = {
             viewModel.onAction(SettingsAction.UsageAccessHandled)
             context.startActivity(
@@ -76,7 +78,7 @@ fun SettingsRoute(
 }
 
 /**
- * 설정 탭(상태 없음). 묶음 순서: 감지 → 알림 → 맥락별 기준 → 추적 앱 → AI → 개인정보 → 화면 → 시연 → 개발자 → 정보.
+ * 설정 탭(상태 없음). 묶음 순서: 감지 → 하루 리듬 → 알림 → 알림 기준 → 추적 앱 → AI → 개인정보 → 화면 → 시연 → 개발자 → 정보.
  */
 @Composable
 fun SettingsScreen(
@@ -90,6 +92,7 @@ fun SettingsScreen(
     onPrivacyAction: (PrivacyAction) -> Unit = {},
     onExport: () -> Unit = {},
     versionName: String = "",
+    onOpenRhythm: () -> Unit = {},
 ) {
     PauseScreenColumn(title = stringResource(R.string.settings_title), modifier = modifier) {
         SettingsSection(title = stringResource(R.string.settings_section_monitoring)) {
@@ -106,6 +109,21 @@ fun SettingsScreen(
                 )
             }
             DetectionModeRows()
+        }
+        SettingsSection(title = stringResource(R.string.settings_section_rhythm)) {
+            Text(
+                stringResource(R.string.settings_rhythm_hint),
+                style = PauseTheme.type.bodySmall,
+                color = PauseTheme.colors.ink2,
+            )
+            TextButton(
+                onClick = onOpenRhythm,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = PauseTheme.spacing.minTouch),
+            ) {
+                Text(stringResource(R.string.settings_rhythm_open), color = PauseTheme.colors.ink)
+            }
         }
         SettingsSection(title = stringResource(R.string.settings_section_reminder)) {
             ReminderRows(

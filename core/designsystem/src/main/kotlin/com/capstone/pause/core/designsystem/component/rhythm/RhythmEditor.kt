@@ -1,11 +1,11 @@
-package com.capstone.pause.feature.onboarding
+package com.capstone.pause.core.designsystem.component.rhythm
 
 import com.capstone.pause.core.designsystem.chart.RhythmSegment
 import com.capstone.pause.core.model.ContextSlot
 import java.time.LocalTime
 
 /** 리듬 초안 고치기와 링 미리보기 계산(순수 함수, 화면 밖). */
-internal object RhythmEditor {
+object RhythmEditor {
     /** 칸 하나를 [delta]분 옮긴다. 기상·취침은 [weekend]에 따라 평일/주말 값을 고친다. */
     fun shift(draft: RhythmDraft, field: RhythmField, weekend: Boolean, end: Boolean, delta: Int): RhythmDraft {
         fun LocalTime.move() = plusMinutes(delta.toLong())

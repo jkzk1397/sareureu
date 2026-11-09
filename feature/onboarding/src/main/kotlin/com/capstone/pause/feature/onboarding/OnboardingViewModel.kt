@@ -9,6 +9,7 @@ import com.capstone.pause.core.data.profile.ProfileRepository
 import com.capstone.pause.core.data.settings.AiMode
 import com.capstone.pause.core.data.settings.SettingsRepository
 import com.capstone.pause.core.data.trackedapp.TrackedAppRepository
+import com.capstone.pause.core.designsystem.component.rhythm.RhythmEditor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow

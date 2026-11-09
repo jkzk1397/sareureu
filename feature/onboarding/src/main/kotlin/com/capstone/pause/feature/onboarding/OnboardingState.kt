@@ -1,17 +1,14 @@
 package com.capstone.pause.feature.onboarding
 
 import com.capstone.pause.core.data.settings.AiMode
+import com.capstone.pause.core.designsystem.component.rhythm.RhythmDraft
+import com.capstone.pause.core.designsystem.component.rhythm.RhythmField
 import com.capstone.pause.core.model.AgeBand
-import com.capstone.pause.core.model.DailyWindow
-import com.capstone.pause.core.model.DayRhythm
 import com.capstone.pause.core.model.Goal
 import com.capstone.pause.core.model.Occupation
 import com.capstone.pause.core.model.Profile
 import com.capstone.pause.core.model.Tone
 import com.capstone.pause.core.model.TrackedApp
-import com.capstone.pause.core.model.WeeklyBlock
-import java.time.DayOfWeek
-import java.time.LocalTime
 
 /** 온보딩 단계. [section]은 진행 표시(1~6)의 칸. */
 enum class OnboardingStep(val section: Int) {
@@ -35,47 +32,6 @@ enum class OnboardingStep(val section: Int) {
         const val SECTIONS = 6
     }
 }
-
-/** 시작~끝 시각. */
-data class TimeRange(val start: LocalTime, val end: LocalTime)
-
-/** 하루 리듬 초안. 구간이 null이면 '없음'. */
-data class RhythmDraft(
-    val weekdayWake: LocalTime = LocalTime.of(8, 0),
-    val weekdaySleep: LocalTime = LocalTime.of(1, 0),
-    val weekendWake: LocalTime = LocalTime.of(10, 0),
-    val weekendSleep: LocalTime = LocalTime.of(2, 0),
-    val commuteMorning: TimeRange? = TimeRange(LocalTime.of(8, 15), LocalTime.of(9, 0)),
-    val commuteEvening: TimeRange? = TimeRange(LocalTime.of(18, 0), LocalTime.of(18, 50)),
-    val work: TimeRange? = TimeRange(LocalTime.of(9, 0), LocalTime.of(17, 30)),
-    val lunch: TimeRange? = TimeRange(LocalTime.of(12, 0), LocalTime.of(13, 0)),
-    val dinner: TimeRange? = TimeRange(LocalTime.of(19, 0), LocalTime.of(20, 0)),
-) {
-    /** 계약 타입으로. 수업·근무·통학은 평일(월~금)만. */
-    fun toRhythm(): DayRhythm = DayRhythm(
-        weekdayWake = weekdayWake,
-        weekdaySleep = weekdaySleep,
-        weekendWake = weekendWake,
-        weekendSleep = weekendSleep,
-        classOrWork = listOfNotNull(work).map { WeeklyBlock(WEEKDAYS, it.start, it.end) },
-        commute = listOfNotNull(commuteMorning, commuteEvening).map { WeeklyBlock(WEEKDAYS, it.start, it.end) },
-        meals = listOfNotNull(lunch, dinner).map { DailyWindow(it.start, it.end) },
-    )
-
-    companion object {
-        /** 월~금. */
-        val WEEKDAYS: Set<DayOfWeek> = setOf(
-            DayOfWeek.MONDAY,
-            DayOfWeek.TUESDAY,
-            DayOfWeek.WEDNESDAY,
-            DayOfWeek.THURSDAY,
-            DayOfWeek.FRIDAY,
-        )
-    }
-}
-
-/** 리듬 화면에서 고칠 수 있는 칸. */
-enum class RhythmField { WAKE, SLEEP, COMMUTE_MORNING, COMMUTE_EVENING, WORK, LUNCH, DINNER }
 
 /** 권한 상태(설정에서 돌아올 때마다 다시 읽는다). */
 data class PermissionStates(
