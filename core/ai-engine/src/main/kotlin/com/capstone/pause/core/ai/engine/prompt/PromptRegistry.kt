@@ -72,7 +72,7 @@ class PromptRegistry(private val loader: (String) -> String? = ::readResource) {
     companion object {
         /** 기능별 현재 프롬프트 버전. 바꿀 땐 새 파일 + 평가 결과를 같은 PR에. */
         val CURRENT: Map<AiFeature, Int> = mapOf(
-            AiFeature.WEEKLY_REPORT to 1,
+            AiFeature.WEEKLY_REPORT to 2,
             AiFeature.COPY_PACK to 1,
             AiFeature.CONTEXT_CHECK to 1,
             AiFeature.COACH_CHAT to 1,
