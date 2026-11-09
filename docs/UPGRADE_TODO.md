@@ -17,40 +17,6 @@
 
 ---
 
-## 작업 1. 알림 기준을 2줄로, 1분 단위로
-
-**왜**: 설정 '맥락별 알림 기준'이 맥락 8개(기상, 통학, 수업/업무, 식사, 쉬는 시간, 자기 전, 한밤중, 기타)마다 따로 있고 5, 10, 15, 20, 30분만 고를 수 있다. 사용자는 어느 시간이 어느 맥락인지 모르니 너무 많다고 느끼고, 더 잘게 맞추고 싶어 한다.
-
-**정한 것**
-- 화면에는 두 줄만 둔다. **평소**(기본 15분), **밤 = 자기 전 + 한밤중**(기본 10분)
-- 1~60분, 1분 단위. 슬라이더로 크게 움직이고 −/+로 1분씩
-- 저장 형식은 그대로 둔다(`AppSettings.thresholds: Map<ContextSlot, Int>`). '평소'를 바꾸면 PRE_SLEEP, LATE_NIGHT를 뺀 6개에, '밤'을 바꾸면 그 2개에 같은 값을 쓴다
-- 분석용 맥락 8개는 그대로 둔다(리포트, AI, 유형이 쓴다). 사용자가 직접 만지는 곳만 줄인다
-- 카드의 '5분만 더'는 단계별 어려움 규칙(PRD 7.2)이라 이번에 바꾸지 않는다
-
-**할 일**
-1. `core/data/src/main/kotlin/com/capstone/pause/core/data/settings/SettingsRepository.kt`
-   - `DefaultThresholds`: `CHOICES` 삭제 → `RANGE = 1..60`, `NIGHT_SLOTS = setOf(PRE_SLEEP, LATE_NIGHT)`, `NIGHT_MIN = 10`, `DEFAULT_MIN = 15`. `ALL`은 NIGHT_SLOTS면 10, 나머지 15 (자기 전 기본값이 15 → 10으로 바뀐다)
-   - `enum class ThresholdGroup { NORMAL, NIGHT }`와 `slotsOf(group)`, `groupOf(slot)` 도우미
-   - 인터페이스에 `suspend fun setThresholds(slots: Set<ContextSlot>, minutes: Int)` 추가. 기본 구현을 `slots.forEach { setThreshold(it, minutes) }`로 둬서 테스트의 가짜 구현이 안 깨지게 한다
-2. `DataStoreSettingsRepository.kt`: `require(minutes in DefaultThresholds.RANGE)`, `setThresholds`는 `store.edit` 한 번으로
-3. `feature/settings/.../SettingsSections.kt` `ThresholdRows` → 두 줄. 줄마다 이름, 값, `Slider(valueRange = 1f..60f, steps = 58)`, −/+ 버튼(48dp, `contentDescription`)
-   - 드래그 중에는 화면 상태만 바꾸고 `onValueChangeFinished`에서 저장한다(DataStore를 매 프레임 쓰지 않게)
-   - 표시값은 그룹 안 최솟값(예전에 맥락별로 다르게 저장한 사용자 대비)
-4. `SettingsViewModel`: `SetThreshold(slot, minutes)` → `SetThresholdGroup(group, minutes)`
-5. `feature/settings/src/main/res/values/strings.xml`(끝에 추가, 안 쓰는 키는 삭제): 섹션 제목 "알림 기준", `settings_threshold_normal` "평소", `settings_threshold_night` "밤 (자기 전·한밤중)", 안내 "숏폼을 이만큼 보면 첫 카드가 떠."
-6. `feature/report/.../ReportViewModel.kt` `AcceptThreshold`: AI가 제안한 맥락이 속한 그룹 전체에 적용
-7. `docs/01_PRD.md` 7.2의 기본값 문장, `AGENTS.md` 9절 용어집에 `ThresholdGroup` 한 줄
-8. AI 제안 값(`WeeklyReportValidator`의 `ALLOWED_MINUTES` 5·10·15·20·30)은 그대로. 새 범위 안이다
-
-**테스트**: 평소 7분 저장 → 6개 맥락이 7이고 밤 2개는 그대로. 0, 61은 거절. `ReportViewModelTest`에서 자기 전 제안 수락 → 한밤중도 같은 값
-
-**폰에서 확인**: 설정 > 알림 기준이 두 줄. 평소를 1분으로 → 낮에 쇼츠 1분 뒤 카드. 밤을 3분으로 → 밤에 3분 뒤 카드
-
-**주의**: `SettingsRepository`는 공개 인터페이스, 용어집도 계약이다. 브랜치 `contract/settings-threshold-groups`, PR에 `contract` 라벨
-
----
-
 ## 작업 2. 리포트 기간, 평균, 유형 기준 바로잡기
 
 **왜**

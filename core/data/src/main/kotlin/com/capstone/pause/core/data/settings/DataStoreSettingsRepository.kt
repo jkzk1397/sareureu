@@ -54,8 +54,17 @@ internal class DataStoreSettingsRepository @Inject constructor(
     }
 
     override suspend fun setThreshold(slot: ContextSlot, minutes: Int) {
-        require(minutes in DefaultThresholds.CHOICES) { "threshold must be one of ${DefaultThresholds.CHOICES}" }
+        requireInRange(minutes)
         store.edit { it[thresholdKey(slot)] = minutes }
+    }
+
+    override suspend fun setThresholds(slots: Set<ContextSlot>, minutes: Int) {
+        requireInRange(minutes)
+        store.edit { prefs -> slots.forEach { prefs[thresholdKey(it)] = minutes } }
+    }
+
+    private fun requireInRange(minutes: Int) {
+        require(minutes in DefaultThresholds.RANGE) { "threshold must be in ${DefaultThresholds.RANGE}" }
     }
 
     override suspend fun reset() {

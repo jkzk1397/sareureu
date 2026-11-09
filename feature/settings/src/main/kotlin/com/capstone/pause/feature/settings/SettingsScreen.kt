@@ -117,7 +117,9 @@ fun SettingsScreen(
             )
         }
         SettingsSection(title = stringResource(R.string.settings_section_threshold)) {
-            ThresholdRows(uiState.thresholds, onSet = { slot, m -> onAction(SettingsAction.SetThreshold(slot, m)) })
+            ThresholdRows(uiState.thresholds, onSet = { group, m ->
+                onAction(SettingsAction.SetThresholdGroup(group, m))
+            })
         }
         SettingsSection(title = stringResource(R.string.settings_section_tracked)) {
             TrackedAppRows(privacyState.trackedApps) { pkg, on -> onPrivacyAction(PrivacyAction.SetTracked(pkg, on)) }

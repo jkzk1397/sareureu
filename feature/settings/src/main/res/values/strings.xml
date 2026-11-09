@@ -16,8 +16,8 @@
   <string name="settings_demo_reseed">2주치 가상 기록 넣기</string>
   <string name="settings_demo_seeding">가상 기록 넣는 중…</string>
   <string name="settings_demo_clear">가상 기록 지우기</string>
-  <string name="settings_section_threshold">맥락별 알림 기준</string>
-  <string name="settings_threshold_hint">숏폼을 이만큼 보면 첫 카드가 떠. 한밤중은 기본 10분, 나머지는 15분.</string>
+  <string name="settings_section_threshold">알림 기준</string>
+  <string name="settings_threshold_hint">숏폼을 이만큼 보면 첫 카드가 떠.</string>
   <string name="settings_threshold_less">%1$s 기준 줄이기</string>
   <string name="settings_threshold_more">%1$s 기준 늘리기</string>
   <string name="settings_minutes">%1$d분</string>
@@ -126,4 +126,6 @@
   <string name="settings_about_font">글꼴: Pretendard (SIL Open Font License 1.1)</string>
   <string name="settings_about_ai">AI 문장은 코드가 센 숫자를 근거로 만들고, 검증을 통과한 것만 보여 줘.</string>
   <string name="settings_export_file_name" translatable="false">pause_export.json</string>
+  <string name="settings_threshold_normal">평소</string>
+  <string name="settings_threshold_night">밤 (자기 전·한밤중)</string>
 </resources>
