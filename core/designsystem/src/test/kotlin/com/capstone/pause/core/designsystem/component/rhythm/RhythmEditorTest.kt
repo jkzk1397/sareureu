@@ -1,4 +1,4 @@
-package com.capstone.pause.feature.onboarding
+package com.capstone.pause.core.designsystem.component.rhythm
 
 import com.capstone.pause.core.model.ContextSlot
 import java.time.LocalTime
@@ -46,12 +46,13 @@ class RhythmEditorTest {
         assertEquals(RhythmDraft().work, RhythmEditor.toggle(off, RhythmField.WORK, enabled = true).work)
         assertTrue(off.toRhythm().classOrWork.isEmpty())
     }
+}
 
+class RhythmDraftTest {
     @Test
-    fun flowSkipsUnderageAndBackGoesToAge() {
-        assertEquals(OnboardingStep.TERMS, OnboardingFlow.next(OnboardingStep.AGE))
-        assertEquals(OnboardingStep.AGE, OnboardingFlow.previous(OnboardingStep.UNDERAGE))
-        assertEquals(OnboardingStep.AGE, OnboardingFlow.previous(OnboardingStep.AGE))
-        assertEquals(OnboardingStep.DONE, OnboardingFlow.next(OnboardingStep.DONE))
+    fun roundTripThroughProfileRhythm() {
+        val draft = RhythmDraft(dinner = null, commuteEvening = null)
+        assertEquals<RhythmDraft>(draft, RhythmDraft.from(draft.toRhythm()))
+        assertEquals<RhythmDraft>(RhythmDraft(), RhythmDraft.from(RhythmDraft().toRhythm()))
     }
 }

@@ -46,22 +46,6 @@
   <!-- 3. 하루 리듬 -->
   <string name="onboarding_rhythm_title">하루 리듬을 알려 줘</string>
   <string name="onboarding_rhythm_body">숏폼을 본 때가 출근길인지, 밥 먹을 때인지, 자기 전인지 나눠 볼게. 모르면 비워 둬도 돼.</string>
-  <string name="onboarding_rhythm_weekday">평일</string>
-  <string name="onboarding_rhythm_weekend">주말</string>
-  <string name="onboarding_rhythm_wake">일어나는 시간</string>
-  <string name="onboarding_rhythm_sleep">자는 시간</string>
-  <string name="onboarding_rhythm_commute_morning">통학·출근</string>
-  <string name="onboarding_rhythm_commute_evening">하교·퇴근</string>
-  <string name="onboarding_rhythm_work">수업·근무 (월~금)</string>
-  <string name="onboarding_rhythm_lunch">점심</string>
-  <string name="onboarding_rhythm_dinner">저녁</string>
-  <string name="onboarding_rhythm_weekend_note">주말에는 통학·수업을 빼고 계산해.</string>
-  <string name="onboarding_time_earlier">%1$s 30분 앞당기기</string>
-  <string name="onboarding_time_later">%1$s 30분 미루기</string>
-  <string name="onboarding_range_start">%1$s 시작</string>
-  <string name="onboarding_range_end">%1$s 끝</string>
-  <string name="onboarding_range_off">없음</string>
-  <string name="onboarding_time">%1$02d:%2$02d</string>
 
   <!-- 4. 목표·관심사·말투 -->
   <string name="onboarding_goals_title">뭘 바꾸고 싶어?</string>
@@ -143,6 +127,4 @@
   <string name="onboarding_done_body">이제 숏폼을 볼 때 옆에서 말 걸게.</string>
   <string name="onboarding_done_start">시작하기</string>
   <string name="onboarding_done_permissions">권한 %2$d개 중 %1$d개 허용됨 (나중에 설정에서 바꿀 수 있어)</string>
-  <string name="onboarding_range_start_short">시작</string>
-  <string name="onboarding_range_end_short">끝</string>
 </resources>

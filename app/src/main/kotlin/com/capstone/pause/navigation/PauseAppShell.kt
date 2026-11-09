@@ -41,6 +41,7 @@ import com.capstone.pause.feature.onboarding.navigation.onboardingEntries
 import com.capstone.pause.feature.report.navigation.ReportKey
 import com.capstone.pause.feature.report.navigation.reportEntries
 import com.capstone.pause.feature.settings.navigation.SettingsKey
+import com.capstone.pause.feature.settings.navigation.SettingsRhythmKey
 import com.capstone.pause.feature.settings.navigation.settingsEntries
 import com.capstone.pause.feature.today.navigation.TodayKey
 import com.capstone.pause.feature.today.navigation.todayEntries
@@ -112,7 +113,11 @@ fun PauseAppShell(needsOnboarding: Boolean, openTabRequest: String? = null, onTa
             reportEntries()
             coachEntries()
             friendsEntries()
-            settingsEntries()
+            val settingsStack = stacks.getValue(TopTab.SETTINGS)
+            settingsEntries(
+                onOpenRhythm = { settingsStack.add(SettingsRhythmKey) },
+                onBack = { if (settingsStack.size > 1) settingsStack.removeAt(settingsStack.lastIndex) },
+            )
         }
     }
 }

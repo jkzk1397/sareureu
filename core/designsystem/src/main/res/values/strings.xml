@@ -80,4 +80,23 @@
   <string name="designsystem_duration_h">%1$d시간</string>
   <!-- 고른 칩 앞의 체크 표시(색만으로 알리지 않기) -->
   <string name="designsystem_selected_prefix">✓ %1$s</string>
+  <!-- 하루 리듬 편집기(온보딩·설정 공용) -->
+  <string name="designsystem_rhythm_weekday">평일</string>
+  <string name="designsystem_rhythm_weekend">주말</string>
+  <string name="designsystem_rhythm_wake">일어나는 시간</string>
+  <string name="designsystem_rhythm_sleep">자는 시간</string>
+  <string name="designsystem_rhythm_commute_morning">통학·출근</string>
+  <string name="designsystem_rhythm_commute_evening">하교·퇴근</string>
+  <string name="designsystem_rhythm_work">수업·근무 (월~금)</string>
+  <string name="designsystem_rhythm_lunch">점심</string>
+  <string name="designsystem_rhythm_dinner">저녁</string>
+  <string name="designsystem_rhythm_weekend_note">주말에는 통학·수업을 빼고 계산해.</string>
+  <string name="designsystem_rhythm_time_earlier">%1$s 30분 앞당기기</string>
+  <string name="designsystem_rhythm_time_later">%1$s 30분 미루기</string>
+  <string name="designsystem_rhythm_range_start">%1$s 시작</string>
+  <string name="designsystem_rhythm_range_end">%1$s 끝</string>
+  <string name="designsystem_rhythm_range_off">없음</string>
+  <string name="designsystem_rhythm_range_start_short">시작</string>
+  <string name="designsystem_rhythm_range_end_short">끝</string>
+  <string name="designsystem_rhythm_time">%1$02d:%2$02d</string>
 </resources>

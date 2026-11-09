@@ -19,19 +19,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
-import com.capstone.pause.core.designsystem.chart.RhythmRing
 import com.capstone.pause.core.designsystem.component.ChoicePill
 import com.capstone.pause.core.designsystem.component.PauseCard
+import com.capstone.pause.core.designsystem.component.rhythm.RhythmEditorPanel
 import com.capstone.pause.core.designsystem.theme.PauseTheme
 import com.capstone.pause.core.model.Goal
 import com.capstone.pause.core.model.Tone
 import java.time.LocalTime
 
-/** 3단계: 하루 리듬(목업 09). */
+/** 3단계: 하루 리듬(목업 09). 편집기는 `core:designsystem`의 [RhythmEditorPanel](설정과 공용). */
 @Composable
 internal fun RhythmStep(state: OnboardingUiState, onAction: (OnboardingAction) -> Unit) {
-    val r = state.rhythm
-    val weekend = state.showWeekend
     OnboardingFrame(
         step = state.step,
         onBack = { onAction(OnboardingAction.Back) },
@@ -41,120 +39,18 @@ internal fun RhythmStep(state: OnboardingUiState, onAction: (OnboardingAction) -
         onSecondary = { onAction(OnboardingAction.Next) },
     ) {
         StepHeader(stringResource(R.string.onboarding_rhythm_title), stringResource(R.string.onboarding_rhythm_body))
-        Row(horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xs)) {
-            ChoicePill(
-                text = stringResource(R.string.onboarding_rhythm_weekday),
-                selected = !weekend,
-                onClick = { onAction(OnboardingAction.ShowWeekend(false)) },
-                modifier = Modifier.weight(1f),
-            )
-            ChoicePill(
-                text = stringResource(R.string.onboarding_rhythm_weekend),
-                selected = weekend,
-                onClick = { onAction(OnboardingAction.ShowWeekend(true)) },
-                modifier = Modifier.weight(1f),
-            )
-        }
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
-            RhythmRing(segments = RhythmEditor.preview(r, weekend))
-        }
-        PauseCard {
-            val shift = { field: RhythmField, end: Boolean ->
-                { d: Int -> onAction(OnboardingAction.ShiftTime(field, end, d)) }
-            }
-            TimeRow(
-                R.string.onboarding_rhythm_wake,
-                if (weekend) r.weekendWake else r.weekdayWake,
-                shift(RhythmField.WAKE, false),
-            )
-            HorizontalDivider(color = PauseTheme.colors.line)
-            TimeRow(
-                R.string.onboarding_rhythm_sleep,
-                if (weekend) r.weekendSleep else r.weekdaySleep,
-                shift(RhythmField.SLEEP, false),
-            )
-            if (weekend) {
-                Text(
-                    stringResource(R.string.onboarding_rhythm_weekend_note),
-                    style = PauseTheme.type.bodySmall,
-                    color = PauseTheme.colors.ink2,
-                )
-            } else {
-                RangeRow(
-                    R.string.onboarding_rhythm_commute_morning,
-                    RhythmField.COMMUTE_MORNING,
-                    r.commuteMorning,
-                    onAction,
-                )
-                RangeRow(
-                    R.string.onboarding_rhythm_commute_evening,
-                    RhythmField.COMMUTE_EVENING,
-                    r.commuteEvening,
-                    onAction,
-                )
-                RangeRow(R.string.onboarding_rhythm_work, RhythmField.WORK, r.work, onAction)
-            }
-            RangeRow(R.string.onboarding_rhythm_lunch, RhythmField.LUNCH, r.lunch, onAction)
-            RangeRow(R.string.onboarding_rhythm_dinner, RhythmField.DINNER, r.dinner, onAction)
-        }
+        RhythmEditorPanel(
+            draft = state.rhythm,
+            weekend = state.showWeekend,
+            onWeekendChange = { onAction(OnboardingAction.ShowWeekend(it)) },
+            onShift = { field, end, d -> onAction(OnboardingAction.ShiftTime(field, end, d)) },
+            onToggle = { field, on -> onAction(OnboardingAction.ToggleRange(field, on)) },
+        )
         Text(
             stringResource(R.string.onboarding_local_only),
             style = PauseTheme.type.bodySmall,
             color = PauseTheme.colors.ink2,
         )
-    }
-}
-
-@Composable
-private fun TimeRow(label: Int, time: LocalTime, onShift: (Int) -> Unit) {
-    val name = stringResource(label)
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-        Text(text = name, style = PauseTheme.type.body, color = PauseTheme.colors.ink, modifier = Modifier.weight(1f))
-        TimeStepper(label = name, time = time, onShift = onShift)
-    }
-}
-
-@Composable
-private fun RangeRow(label: Int, field: RhythmField, range: TimeRange?, onAction: (OnboardingAction) -> Unit) {
-    val name = stringResource(label)
-    HorizontalDivider(color = PauseTheme.colors.line)
-    // 줄 전체를 스위치로 묶어 화면 읽기가 이름과 켜짐 상태를 함께 읽는다.
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = PauseTheme.spacing.minTouch)
-            .toggleable(
-                value = range != null,
-                role = Role.Switch,
-                onValueChange = { onAction(OnboardingAction.ToggleRange(field, it)) },
-            ),
-    ) {
-        Text(text = name, style = PauseTheme.type.body, color = PauseTheme.colors.ink, modifier = Modifier.weight(1f))
-        Spacer(Modifier.width(PauseTheme.spacing.sm))
-        Switch(checked = range != null, onCheckedChange = null)
-    }
-    if (range == null) {
-        Text(
-            stringResource(R.string.onboarding_range_off),
-            style = PauseTheme.type.bodySmall,
-            color = PauseTheme.colors.ink3,
-        )
-    } else {
-        Column {
-            TimeStepper(
-                caption = stringResource(R.string.onboarding_range_start_short),
-                label = stringResource(R.string.onboarding_range_start, name),
-                time = range.start,
-                onShift = { onAction(OnboardingAction.ShiftTime(field, false, it)) },
-            )
-            TimeStepper(
-                caption = stringResource(R.string.onboarding_range_end_short),
-                label = stringResource(R.string.onboarding_range_end, name),
-                time = range.end,
-                onShift = { onAction(OnboardingAction.ShiftTime(field, true, it)) },
-            )
-        }
     }
 }
 

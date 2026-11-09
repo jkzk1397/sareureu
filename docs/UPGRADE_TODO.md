@@ -40,20 +40,7 @@
 
 **폰에서 확인**: 새로 설치 → 5화면 안에 끝. 권한 화면에서 셋 다 허용하고 돌아오면 체크 표시. 시작하기 → 상태 알림(감지 중)
 
-**선행**: 작업 4(리듬 편집기를 공용으로 옮김)를 먼저 하면 편하다
-
----
-
-## 작업 4. 설정에 '하루 리듬' 편집
-
-**왜**: 온보딩에서 리듬 칸을 빼면 고칠 곳이 있어야 한다. 맥락(기상, 통학, 수업/업무, 식사, 자기 전) 분류가 이 값으로 정해진다.
-
-**할 일**
-- `feature/onboarding`의 `RhythmEditor`(순수 계산)와 리듬 입력 UI(`StepsRhythm.kt`)를 `core:designsystem`의 `component/rhythm/`으로 옮겨 온보딩과 설정이 같이 쓴다(feature끼리는 의존 금지, designsystem은 model만 의존하니 가능). 문자열 접두사는 `designsystem_`. R5 승인
-- 설정 > "하루 리듬" 화면. 경로 키는 `feature/settings/.../navigation/`, 백 스택 연결은 `app` 내비(R1). 저장은 `ProfileRepository.save`
-- 화면 위에 한 줄: "이 시간으로 기상, 통학, 수업, 식사, 자기 전을 나눠"
-
-**폰에서 확인**: 설정 > 하루 리듬에서 자는 시간을 바꾸면 그 뒤 세션의 맥락이 바뀐다(설정 > 개발자 > 최근 세션)
+**선행**: 작업 4 끝남 — 리듬 편집기는 `core:designsystem`의 `component/rhythm/RhythmEditorPanel`
 
 ---
 
