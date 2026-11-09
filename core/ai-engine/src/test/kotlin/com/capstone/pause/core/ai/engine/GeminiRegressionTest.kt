@@ -55,7 +55,7 @@ class GeminiRegressionTest {
 
     @Test
     fun reportPlaceholdersStillPass() {
-        val ok = "이번 주는 {topContext}에 {topContextMin}, 하루 평균 {avgMin}. {reduction} 줄었고 {stopRate}는 멈췄어"
+        val ok = "{topContext}에 {topContextMin}, 하루 평균 {avgMin}. {reduction} 줄고 {stopRate} 멈췄어"
         val allowed = WeeklyReportValidator.REPORT_PLACEHOLDERS
         val problems = TextRules.problems(ok, MAX, allowed)
         assertTrue(problems.isEmpty(), problems.toString())
