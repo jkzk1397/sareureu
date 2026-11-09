@@ -10,9 +10,9 @@
   <string name="report_stat_stop">알림 뒤 멈춤</string>
   <string name="report_stat_none">—</string>
   <string name="report_percent">%1$d%%</string>
-  <string name="report_loading">지난 7일을 세는 중…</string>
+  <string name="report_loading">최근 7일을 세는 중…</string>
   <string name="report_no_data_title">아직 기록이 부족해</string>
-  <string name="report_no_data_body">숏폼 기록이 며칠 쌓이면 지난 7일을 정리해 줄게. 설정 › 시연 모드로 먼저 둘러볼 수도 있어.</string>
+  <string name="report_no_data_body">숏폼을 보면 여기에 최근 7일을 정리해 줄게.</string>
 
   <!-- 관찰(코드가 센 것) -->
   <string name="report_obs_title">관찰 · 코드가 센 숫자</string>
@@ -55,7 +55,7 @@
   <string name="report_ai_regenerate">다시 만들기 (오늘 %1$d번 남음)</string>
   <string name="report_ai_quota">오늘은 다시 만들기를 다 썼어. 내일 다시 해 줘.</string>
   <string name="report_ai_failed">분석을 못 만들었어. 잠시 뒤 다시 해 줘.</string>
-  <string name="report_ai_not_enough">기록이 조금 더 쌓이면 AI 분석을 받을 수 있어.</string>
+  <string name="report_ai_not_enough">3일쯤 쓰면 AI 분석을 받을 수 있어.</string>
   <string name="report_ai_hypotheses">이런 이유일까?</string>
   <string name="report_ai_strategies">이번 주 해 볼 것 고르기</string>
   <string name="report_ai_save_plan">고른 것 계획으로 저장</string>
@@ -114,4 +114,5 @@
   <string name="report_flow_col_entry">들어온 곳</string>
   <string name="report_flow_col_app">본 앱</string>
   <string name="report_flow_col_exit">나간 곳</string>
+  <string name="report_type_not_ready">3일쯤 쓰면 유형이 나와.</string>
 </resources>

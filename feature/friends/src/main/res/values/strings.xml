@@ -6,7 +6,7 @@
   <string name="friends_invite_body">초대 코드로 서로 동의한 친구끼리 연결하는 기능은 친구 서버가 열리면 쓸 수 있어. 지금은 시연용 가상 친구로 미리 볼 수 있어.</string>
   <string name="friends_ok">알겠어</string>
   <string name="friends_unavailable_title">친구 기능은 준비 중이야</string>
-  <string name="friends_unavailable_body">설정 › 시연 모드를 켜면 가상 친구 셋과 랭킹·잔소리·챌린지를 미리 볼 수 있어.</string>
+  <string name="friends_unavailable_body">친구 서버가 열리면 친구와 랭킹·잔소리·챌린지를 쓸 수 있어.</string>
   <string name="friends_ranking_title">이번 주 감소율</string>
   <string name="friends_ranking_subtitle">내 기준선 대비 · 기록률 80% 넘는 날만 계산</string>
   <string name="friends_reduction_down">▼ %1$d%%</string>

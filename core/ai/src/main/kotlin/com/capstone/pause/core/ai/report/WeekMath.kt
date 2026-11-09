@@ -6,6 +6,7 @@ import com.capstone.pause.core.common.DayBoundary
 import com.capstone.pause.core.data.report.StoredHypothesis
 import com.capstone.pause.core.insights.Baseline
 import com.capstone.pause.core.insights.DayStat
+import com.capstone.pause.core.insights.ObservedDays
 import com.capstone.pause.core.insights.RiskWindows
 import com.capstone.pause.core.insights.ShortformMinutes
 import com.capstone.pause.core.insights.WeekInput
@@ -18,7 +19,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 
-/** 리포트 주: [start] ~ [endExclusive] 전날(논리적 날짜, 새벽 4시 경계). */
+/** 리포트 주: [start] ~ [endExclusive] 전날(논리적 날짜, 새벽 4시 경계). 지금은 최근 7일(오늘 포함). */
 data class WeekWindow(val today: LocalDate, val start: LocalDate, val endExclusive: LocalDate) {
     /** 주 첫날 0시가 아니라 04시. */
     fun startInstant(zone: ZoneId): Instant = DayBoundary.startOf(start, zone)
@@ -36,8 +37,8 @@ data class WeekWindow(val today: LocalDate, val start: LocalDate, val endExclusi
         /** 기준선 탐색 범위(리포트 주 이전). */
         const val HISTORY_DAYS = 28L
 
-        /** 지난 7일(오늘 제외). */
-        fun lastSevenDays(today: LocalDate) = WeekWindow(today, today.minusDays(DAYS), today)
+        /** 최근 7일(오늘 포함): 오늘-6 ~ 오늘. 설치 첫날에도 오늘 본 것이 보인다. */
+        fun lastSevenDays(today: LocalDate) = WeekWindow(today, today.minusDays(DAYS - 1), today.plusDays(1))
     }
 }
 
@@ -46,6 +47,7 @@ object WeekMath {
     /**
      * [sessions](기준선 탐색 범위부터 오늘까지)로 리포트 주 관찰을 계산한다.
      * 기준선은 리포트 주 이전에 기록이 처음 생긴 날부터 7일. 기록률은 아직 측정하지 않으므로 null(관찰 o11 없음).
+     * 하루 평균은 기록이 시작된 날부터 센 날 수([ObservedDays])로 나눈다.
      */
     fun compute(
         window: WeekWindow,
@@ -64,12 +66,13 @@ object WeekMath {
             .toList()
         val first = pastDays.indexOfFirst { it.minutes > 0 }
         val baseline = if (first < 0) null else Baseline.compute(pastDays.drop(first))
-        val risks = RiskWindows.compute(sessions, window.endExclusive, zone, now)
+        val risks = RiskWindows.compute(sessions, window.today, zone, now)
+        val days = ObservedDays.count(sessions, window.start, window.endExclusive.minusDays(1), zone)
         return WeeklyObservations.compute(
             WeekInput(
                 sessions = inWeek,
                 nudges = weekNudges,
-                days = WeekWindow.DAYS.toInt(),
+                days = days,
                 now = now,
                 baselineMinPerDay = baseline,
                 coverage = null,

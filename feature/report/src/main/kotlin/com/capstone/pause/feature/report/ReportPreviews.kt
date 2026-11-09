@@ -49,6 +49,7 @@ internal fun previewReport(withAi: Boolean) = WeeklyReportState(
     sessionCount = 58,
     viewerType = "NIGHT_OWL",
     enoughForAi = true,
+    typeReady = true,
     ai = if (!withAi) {
         null
     } else {
