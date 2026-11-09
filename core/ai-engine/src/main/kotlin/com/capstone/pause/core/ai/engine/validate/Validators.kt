@@ -1,5 +1,6 @@
 package com.capstone.pause.core.ai.engine.validate
 
+import com.capstone.pause.core.ai.engine.schema.AiJson
 import com.capstone.pause.core.ai.engine.schema.ContextCheckOut
 import com.capstone.pause.core.ai.engine.schema.PokeDraftOut
 import com.capstone.pause.core.ai.engine.schema.WeeklyReportInput
@@ -12,6 +13,8 @@ class WeeklyReportValidator(private val strategyIds: Set<String>) {
     fun validate(out: WeeklyReportOut, input: WeeklyReportInput): Validation<WeeklyReportOut> {
         val r = mutableListOf<String>()
         val ids = input.observationIds
+        val inputText = AiJson.encodeToString(WeeklyReportInput.serializer(), input)
+        fun sentence(text: String, field: String) = sentence(text, field, inputText)
         r += sentence(out.summaryLine, "summaryLine")
         r += sentence(out.viewerTypeLine, "viewerTypeLine")
         if (out.hypotheses.isEmpty()) r += "hypotheses: 비어 있음"
@@ -44,10 +47,12 @@ class WeeklyReportValidator(private val strategyIds: Set<String>) {
         return if (r.isEmpty()) Validation.Valid(out) else Validation.Invalid(r)
     }
 
-    // 리포트 문장 한 줄: 공통 규칙 + 리포트 화면이 채우는 자리표시자만 + 단위 중복("{avgMin}분" → "1시간 36분분").
-    private fun sentence(text: String, field: String): List<String> =
+    // 리포트 문장 한 줄: 공통 규칙 + 리포트 화면이 채우는 자리표시자만 + 단위 중복("{avgMin}분" → "1시간 36분분")
+    // + 리포트 전용 규칙([ReportRules]: {buddy}를 폰처럼, 평균을 줄어든 양처럼, 녹는 이야기, 입력에 없는 이유).
+    private fun sentence(text: String, field: String, inputText: String): List<String> =
         TextRules.problems(text, MAX_SENTENCE, REPORT_PLACEHOLDERS, field = field) +
-            UNIT_AFTER_PLACEHOLDER.findAll(text).map { "$field: 단위 중복 ${it.value}" }.toList()
+            UNIT_AFTER_PLACEHOLDER.findAll(text).map { "$field: 단위 중복 ${it.value}" }.toList() +
+            ReportRules.problems(text, field, inputText)
 
     /** 상수(05 문서 5.1절). */
     companion object {

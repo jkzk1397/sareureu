@@ -322,5 +322,85 @@
         }
       ]
     }
+  },
+  {
+    "name": "weekly_v3_buddy_as_phone",
+    "feature": "weekly_report",
+    "output": {
+      "summaryLine": "자기 전엔 {buddy} 내려놓기!",
+      "hypotheses": [
+        {
+          "text": "자기 전이 길어",
+          "confidence": "MEDIUM",
+          "evidence": [
+            "o3",
+            "o12"
+          ],
+          "confirmQuestion": "맞아?"
+        }
+      ],
+      "strategies": [],
+      "viewerTypeLine": "밤 산책형!"
+    }
+  },
+  {
+    "name": "weekly_v3_avg_as_saved",
+    "feature": "weekly_report",
+    "output": {
+      "summaryLine": "하루 평균 {avgMin}만큼 가벼워졌어",
+      "hypotheses": [
+        {
+          "text": "자기 전이 길어",
+          "confidence": "MEDIUM",
+          "evidence": [
+            "o3",
+            "o12"
+          ],
+          "confirmQuestion": "맞아?"
+        }
+      ],
+      "strategies": [],
+      "viewerTypeLine": "밤 산책형!"
+    }
+  },
+  {
+    "name": "weekly_v3_melting",
+    "feature": "weekly_report",
+    "output": {
+      "summaryLine": "이번 주엔 내가 좀 녹았어",
+      "hypotheses": [
+        {
+          "text": "자기 전이 길어",
+          "confidence": "MEDIUM",
+          "evidence": [
+            "o3",
+            "o12"
+          ],
+          "confirmQuestion": "맞아?"
+        }
+      ],
+      "strategies": [],
+      "viewerTypeLine": "밤 산책형!"
+    }
+  },
+  {
+    "name": "weekly_v3_invented_reason",
+    "feature": "weekly_report",
+    "output": {
+      "summaryLine": "시험 끝나서 해방감에 많이 봤나 봐",
+      "hypotheses": [
+        {
+          "text": "자기 전이 길어",
+          "confidence": "MEDIUM",
+          "evidence": [
+            "o3",
+            "o12"
+          ],
+          "confirmQuestion": "맞아?"
+        }
+      ],
+      "strategies": [],
+      "viewerTypeLine": "밤 산책형!"
+    }
   }
 ]
