@@ -12,6 +12,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import com.capstone.pause.core.data.monitoring.MonitoringState
 import com.capstone.pause.core.data.monitoring.MonitoringStatus
+import com.capstone.pause.core.data.monitoring.MonitoringSwitch
 import com.capstone.pause.core.intervention.di.MonitoringStore
 import com.capstone.pause.core.sensing.usage.UsageAccess
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -33,7 +34,8 @@ import kotlinx.coroutines.flow.map
 class MonitoringController @Inject constructor(
     @ApplicationContext private val context: Context,
     @MonitoringStore private val store: DataStore<Preferences>,
-) : MonitoringStatus {
+) : MonitoringStatus,
+    MonitoringSwitch {
 
     private val running = MutableStateFlow(false)
 
@@ -52,7 +54,19 @@ class MonitoringController @Inject constructor(
     }
 
     /** 사용 기록 권한이 있는지. 없으면 감지를 켤 수 없다. */
-    fun hasUsageAccess(): Boolean = UsageAccess.isGranted(context)
+    override fun hasUsageAccess(): Boolean = UsageAccess.isGranted(context)
+
+    /** 감지 켜기([start]와 같다). 오늘 탭·온보딩 끝에서 부른다. */
+    override suspend fun turnOn(): Boolean = start()
+
+    /**
+     * 앱을 열 때 부른다: 켜 두었는데 서비스가 멈춰 있으면(제조사 절전·프로세스 종료 등) 다시 켠다.
+     * 앱이 화면에 있으니 포그라운드 서비스를 시작할 수 있다. 시연 중이면 서비스가 실제 감지를 건너뛴다.
+     */
+    suspend fun ensureRunning() {
+        if (running.value || !userEnabled.first() || !hasUsageAccess()) return
+        runCatching { ContextCompat.startForegroundService(context, Intent(context, MonitorService::class.java)) }
+    }
 
     /** 사용 기록 설정 화면으로 가는 인텐트(고지 화면을 먼저 보여 준 뒤에 쓴다). */
     fun usageAccessIntent(): Intent = UsageAccess.settingsIntent()

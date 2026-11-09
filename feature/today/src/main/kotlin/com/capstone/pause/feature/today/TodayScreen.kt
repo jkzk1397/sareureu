@@ -1,6 +1,7 @@
 package com.capstone.pause.feature.today
 
 import android.content.Intent
+import android.provider.Settings
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.capstone.pause.core.designsystem.R as DesignR
 import com.capstone.pause.core.designsystem.buddy.BuddyAvatar
@@ -36,6 +38,7 @@ import com.capstone.pause.core.designsystem.component.ContextLegendRow
 import com.capstone.pause.core.designsystem.component.DemoBadge
 import com.capstone.pause.core.designsystem.component.PauseCard
 import com.capstone.pause.core.designsystem.component.PauseScreenColumn
+import com.capstone.pause.core.designsystem.component.PrimaryButton
 import com.capstone.pause.core.designsystem.component.Wordmark
 import com.capstone.pause.core.designsystem.component.durationLabel
 import com.capstone.pause.core.designsystem.theme.PauseSizes
@@ -49,11 +52,23 @@ import com.capstone.pause.core.model.MeltStage
 fun TodayRoute(onOpenMessages: () -> Unit, viewModel: TodayViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    LifecycleResumeEffect(Unit) {
+        viewModel.onResume()
+        onPauseOrDispose {}
+    }
     TodayScreen(uiState = uiState, onAction = { action ->
         when (action) {
             TodayAction.OpenMessages -> onOpenMessages()
 
             TodayAction.StartDemo, TodayAction.StopDemo -> viewModel.onDemoAction(action)
+
+            TodayAction.TurnOnMonitoring -> viewModel.turnOnMonitoring {
+                runCatching {
+                    context.startActivity(
+                        Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                    )
+                }
+            }
 
             TodayAction.StopNow -> context.startActivity(
                 Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
@@ -74,12 +89,16 @@ fun TodayScreen(uiState: TodayUiState, onAction: (TodayAction) -> Unit, modifier
             DemoBadge()
             DemoPlayButton(running = ready.demoRunning, onAction = onAction)
         }
-        if (ready.monitoringStopped) {
+        if (ready.monitoringOff) {
             PauseCard(title = stringResource(R.string.today_monitoring_off_title)) {
                 Text(
                     text = stringResource(R.string.today_monitoring_off_body),
                     style = PauseTheme.type.bodySmall,
                     color = PauseTheme.colors.ink2,
+                )
+                PrimaryButton(
+                    text = stringResource(R.string.today_monitoring_turn_on),
+                    onClick = { onAction(TodayAction.TurnOnMonitoring) },
                 )
             }
         }
@@ -123,13 +142,6 @@ fun TodayScreen(uiState: TodayUiState, onAction: (TodayAction) -> Unit, modifier
                     ready.plan?.let { PlanCard(it, Modifier.weight(1f).fillMaxHeight()) }
                 }
             }
-        }
-        if (!summary.isDemo && summary.totalMinutes == 0) {
-            Text(
-                text = stringResource(R.string.today_demo_hint),
-                style = PauseTheme.type.bodySmall,
-                color = PauseTheme.colors.ink2,
-            )
         }
     }
 }

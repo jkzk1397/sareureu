@@ -2,6 +2,7 @@ package com.capstone.pause.feature.onboarding
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.capstone.pause.core.data.monitoring.MonitoringSwitch
 import com.capstone.pause.core.data.profile.ConsentItem
 import com.capstone.pause.core.data.profile.ConsentRepository
 import com.capstone.pause.core.data.profile.ProfileRepository
@@ -23,6 +24,7 @@ class OnboardingViewModel @Inject constructor(
     private val consentRepository: ConsentRepository,
     private val settingsRepository: SettingsRepository,
     private val trackedAppRepository: TrackedAppRepository,
+    private val monitoringSwitch: MonitoringSwitch,
 ) : ViewModel() {
 
     private val state = MutableStateFlow(OnboardingUiState())
@@ -122,6 +124,8 @@ class OnboardingViewModel @Inject constructor(
         state.update { it.copy(saving = true) }
         viewModelScope.launch {
             profileRepository.save(state.value.toProfile(defaultNickname))
+            // 사용 기록 권한을 켰으면 바로 감지를 켠다(사용자가 '시작하기'를 누른 순간이라 앱이 화면에 있다).
+            if (monitoringSwitch.hasUsageAccess()) runCatching { monitoringSwitch.turnOn() }
             onDone()
         }
     }

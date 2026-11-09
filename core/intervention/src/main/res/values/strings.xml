@@ -55,4 +55,9 @@
   <string name="intervention_close">닫기</string>
   <string name="intervention_bubble_description">%1$s, 숏폼 %2$d분째. 누르면 자세히</string>
   <string name="intervention_preview_title">다른 앱 위 표시 권한이 없어서 앱 화면으로 보여 줄게</string>
+  <!-- ===== 버블 미니 패널 ===== -->
+  <string name="intervention_panel_next">%1$d분 뒤에 말 걸게</string>
+  <string name="intervention_panel_soon">곧 말 걸게</string>
+  <string name="intervention_panel_snoozed">오늘은 카드 없이 옆에만 있을게</string>
+  <string name="intervention_panel_keep">계속 볼게</string>
 </resources>

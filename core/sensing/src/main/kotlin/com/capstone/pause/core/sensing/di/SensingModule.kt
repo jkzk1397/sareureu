@@ -1,6 +1,8 @@
 package com.capstone.pause.core.sensing.di
 
 import com.capstone.pause.core.data.demo.DemoDataSeeder
+import com.capstone.pause.core.data.monitoring.LiveSessionSource
+import com.capstone.pause.core.sensing.SensingPipeline
 import com.capstone.pause.core.sensing.demo.AssetDemoDataSeeder
 import com.capstone.pause.core.sensing.device.AndroidDeviceSignalReader
 import com.capstone.pause.core.sensing.device.DayRhythmProvider
@@ -23,4 +25,7 @@ internal abstract class SensingModule {
 
     @Binds
     abstract fun dayRhythmProvider(impl: ProfileDayRhythmProvider): DayRhythmProvider
+
+    @Binds
+    abstract fun liveSessionSource(impl: SensingPipeline): LiveSessionSource
 }

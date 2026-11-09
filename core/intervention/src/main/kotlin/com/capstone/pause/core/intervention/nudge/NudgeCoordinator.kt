@@ -138,7 +138,8 @@ class NudgeCoordinator @Inject constructor(
             LiveInput(
                 sessionStart = s.start,
                 context = s.context,
-                appLabel = context.getString(appLabelRes(s.segments.firstOrNull()?.packageName)),
+                // 세션 안에서 앱을 옮겨 다니면 지금 보고 있는 앱(마지막 구간) 이름을 쓴다.
+                appLabel = context.getString(appLabelRes(s.segments.lastOrNull()?.packageName)),
                 thresholdMin = settings.thresholdFor(s.context),
                 melt = melt,
             )
@@ -148,7 +149,7 @@ class NudgeCoordinator @Inject constructor(
         scope.launch {
             ui.actions.collect { action ->
                 dispatch(engine.onAction(clock.now(), action, liveInput()), source, pokes)
-                if (action is NudgeUserAction.Stop) onStop(scope, mode)
+                if (action is NudgeUserAction.Stop || action is NudgeUserAction.StopNow) onStop(scope, mode)
             }
         }
         val tickMs = if (mode == NudgeMode.DEMO) DEMO_TICK_MS else TICK_MS

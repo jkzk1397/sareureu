@@ -45,9 +45,16 @@ class SessionTracker(
     )
 
     private val live = MutableStateFlow<ShortformSession?>(null)
+    private val current = MutableStateFlow<ShortformSession?>(null)
 
     /** 지금 숏폼 화면에 있는 진행 중 세션(`end = null`). 떠나 있는 동안은 null. */
     val liveSession: StateFlow<ShortformSession?> = live.asStateFlow()
+
+    /**
+     * 아직 끝나지 않은 세션 전체(저장 전). 숏폼 화면에 있으면 [liveSession]과 같고, 잠깐 떠나 있으면(60초 안)
+     * `end` = 떠난 시각. 오늘 합계에 바로 더하려고 쓴다.
+     */
+    val currentSession: StateFlow<ShortformSession?> = current.asStateFlow()
 
     private var foreground: String? = null
     private var lastUnlockAt: Instant? = null
@@ -176,6 +183,11 @@ class SessionTracker(
         } else {
             val open = AppSegment(pkg, surfaceOf(pkg), since, maxOf(since, now))
             build(a, end = null, exit = null).copy(segments = a.segments + open)
+        }
+        current.value = when {
+            a == null -> null
+            live.value != null -> live.value
+            else -> build(a, end = a.leftAt ?: a.segments.lastOrNull()?.end ?: a.start, exit = null)
         }
     }
 

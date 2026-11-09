@@ -1,5 +1,6 @@
 package com.capstone.pause.core.intervention.nudge
 
+import com.capstone.pause.core.model.BuddyExpression
 import com.capstone.pause.core.model.ContextSlot
 import com.capstone.pause.core.model.NudgeResponse
 import java.time.Instant
@@ -190,6 +191,49 @@ class NudgeEngineTest {
         e.tick(at(1.0), live())
         assertTrue(e.onAction(at(1.0), NudgeUserAction.Stop(1), live()).isEmpty())
         assertTrue(e.onAction(at(1.0), NudgeUserAction.BubbleTapped, live()).isEmpty())
+    }
+
+    @Test
+    fun bubbleRingRestartsFromZeroAfterExtension() {
+        val e = engine()
+        val before = e.tick(at(12.0), live()).single() as NudgeCommand.ShowBubble
+        assertEquals(0.8f, before.progress, 0.001f)
+        assertEquals(BuddyExpression.CALLING, before.expression, "close to the card the face calls")
+        e.tick(at(15.0), live())
+        val afterExtend = e.onAction(at(15.0), NudgeUserAction.Extend(1), live()).single() as NudgeCommand.ShowBubble
+        assertEquals(0f, afterExtend.progress, "ring restarts for the 5-minute extension")
+        assertEquals(5, afterExtend.minutesToNext)
+        val mid = e.tick(at(17.5), live()).single() as NudgeCommand.ShowBubble
+        assertEquals(0.5f, mid.progress, 0.001f)
+        assertEquals(17, (mid.elapsedSec / 60).toInt(), "bubble still knows the whole session length")
+        assertEquals(BuddyExpression.WATCHING, mid.expression)
+    }
+
+    @Test
+    fun snoozedBubbleSleepsWithEmptyRing() {
+        val e = engine()
+        e.tick(at(15.0), live())
+        e.onAction(at(15.1), NudgeUserAction.Extend(1), live())
+        e.tick(at(20.1), live())
+        val out = e.onAction(at(20.2), NudgeUserAction.SnoozeToday(2), live()).single() as NudgeCommand.ShowBubble
+        assertTrue(out.snoozed)
+        assertEquals(BuddyExpression.SLEEPY, out.expression)
+        assertEquals(0f, out.progress)
+    }
+
+    @Test
+    fun stopNowFromBubbleBeforeCardEndsSessionWithSelfStop() {
+        val e = engine()
+        e.tick(at(6.0), live())
+        val out = e.onAction(at(6.1), NudgeUserAction.StopNow, live())
+        assertEquals(NudgeCommand.Hide, out.first())
+        assertTrue(out.any { it is NudgeCommand.ShowPraise })
+        assertTrue(e.tick(at(20.0), live()).isEmpty(), "no card after stopping")
+        assertTrue(e.onAction(at(20.1), NudgeUserAction.StopNow, live()).isEmpty(), "second stop is ignored")
+        e.tick(at(21.0), null)
+        val event = e.drainFinished().single().events.single()
+        assertEquals(NudgeResponse.STOP, event.response)
+        assertEquals(NudgeEngine.SELF_STOP_LEVEL, event.level)
     }
 
     @Test

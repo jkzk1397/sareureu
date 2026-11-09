@@ -11,6 +11,7 @@ import com.capstone.pause.core.designsystem.theme.PauseTheme
 import com.capstone.pause.core.intervention.nudge.CardContent
 import com.capstone.pause.core.intervention.nudge.NudgeCommand
 import com.capstone.pause.core.intervention.nudge.ReasonChip
+import com.capstone.pause.core.model.BuddyExpression
 import com.capstone.pause.core.model.ContextSlot
 import com.capstone.pause.core.model.MeltStage
 
@@ -68,5 +69,21 @@ private fun PraisePreview() = PreviewFrame { PraiseCard(text = "멋지다! 15분
 @Preview(name = "bubble dark", uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun BubblePreview() = PreviewFrame {
-    FloatingBuddy(NudgeCommand.ShowBubble(elapsedSec = 540, thresholdSec = 900, melt = MeltStage.SOFT), onTap = {})
+    FloatingBuddy(sampleBubble, onTap = {})
 }
+
+@Preview(name = "bubble panel light")
+@Preview(name = "bubble panel dark", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun BubblePanelPreview() = PreviewFrame {
+    BubblePanel(sampleBubble, onStop = {}, onClose = {})
+}
+
+private val sampleBubble = NudgeCommand.ShowBubble(
+    elapsedSec = 1_140,
+    windowElapsedSec = 240,
+    windowSec = 300,
+    melt = MeltStage.SOFT,
+    expression = BuddyExpression.CALLING,
+    appLabel = "유튜브",
+)
