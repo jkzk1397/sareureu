@@ -1,0 +1,14 @@
+name = "sareureu"
+main = "src/index.mjs"
+compatibility_date = "2026-11-09"
+
+[vars]
+FIREBASE_PROJECT_ID = "sareureu"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "sareureu-db"
+database_id = "726d6949-5349-479b-b097-58fd611cf9fb"
+
+[triggers]
+crons = ["0 20 * * *"]
