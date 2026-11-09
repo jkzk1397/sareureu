@@ -33,7 +33,7 @@
 없으면 앱은 규칙 기반 모의 AI로 모든 AI 화면을 돌린다(화면에 "모의 AI" 표시).
 1. Firebase 프로젝트 → 안드로이드 앱 `com.capstone.pause` 등록 → `app/google-services.json`을 **로컬에만** 둔다(있으면 Gradle 플러그인이 자동 적용, 커밋 금지).
 2. Firebase AI Logic에서 Gemini Developer API 켜기.
-3. App Check: 디버그 빌드를 한 번 실행해 logcat의 디버그 토큰을 콘솔에 등록(커밋 금지). 릴리스는 Play Integrity.
+3. App Check(디버그): **공유 비밀 하나로 모든 폰** — UUID 하나를 만들어 콘솔 › App Check › 앱 › 디버그 토큰 관리에 등록하고, 같은 값을 `local.properties`에 `appCheckDebugSecret=<UUID>`로 둔다(커밋 금지). 그 PC에서 `./gradlew assembleDebug`로 만든 APK는 어느 폰에서나 통과한다. 이 APK에는 비밀이 들어 있으니 공개 아티팩트로 올리지 말고 비공개로 전달한다(CI APK는 값이 없어 지금처럼 모의 AI). 값이 없으면 예전처럼 폰마다 logcat의 디버그 토큰을 등록한다. 릴리스는 Play Integrity.
 4. 앱 설정 › AI 방식 › 클라우드 → 국외 이전 고지 확인 → 동의. 설정 › AI가 한 일에서 호출 기록을 본다.
 
 ## 시연 수용 테스트 (PRD 11절, 5분)

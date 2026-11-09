@@ -19,6 +19,8 @@
 
 ## 작업 5. 실제 AI를 모든 폰에서 (Firebase, 콘솔 작업 포함)
 
+> **코드 부분은 끝남**(PR `feat/ai-appcheck-shared-secret`): `local.properties`의 `appCheckDebugSecret`(UUID)을 debug `BuildConfig.APP_CHECK_DEBUG_SECRET`으로 넘기고, debug `AppCheckSetup`이 값이 있을 때만 공급자 설치 전에 SDK 저장소에 써 둔다(이름·키는 firebase-appcheck-debug 20.0.0 `StorageHelper`를 `javap`로 확인, `DebugSecretStore`). 값이 없으면 예전과 같다. **남은 것은 아래 콘솔 작업(사람)**.
+
 지금 CI APK는 `google-services.json`이 없어서 항상 모의 AI다. `app/build.gradle.kts`는 그 파일이 있을 때만 Firebase 플러그인을 켜므로 빌드 쪽 코드는 그대로 된다.
 
 1. **프로젝트**: 서버 팀원이 쓰는 Firebase 프로젝트(`server/wrangler.toml`의 `FIREBASE_PROJECT_ID = "sareureu"`)를 같이 쓴다. 요금제는 **Spark(무료) 그대로**. Blaze로 올리거나 결제 정보를 넣지 않는다
