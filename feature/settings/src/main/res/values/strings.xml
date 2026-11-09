@@ -134,4 +134,6 @@
   <string name="settings_rhythm_open">하루 리듬 고치기</string>
   <string name="settings_rhythm_back">‹ 설정</string>
   <string name="settings_rhythm_no_profile">프로필을 만든 뒤에 고칠 수 있어.</string>
+  <string name="settings_battery_body">일부 폰(특히 삼성)은 절전 때문에 감지를 멈춰. 이 앱을 \'제한 없음\'이나 \'최적화하지 않음\'으로 바꾸면 덜 끊겨.</string>
+  <string name="settings_battery_open">배터리 최적화 끄기</string>
 </resources>

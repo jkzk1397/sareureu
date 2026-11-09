@@ -74,6 +74,16 @@ fun SettingsRoute(
                 Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
             )
         },
+        onOpenBatterySettings = {
+            // 배터리 최적화 목록 화면만 연다. 예외를 직접 요청하지 않는다(03 문서 9절).
+            runCatching {
+                context.startActivity(
+                    Intent(
+                        Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS,
+                    ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                )
+            }
+        },
     )
 }
 
@@ -93,6 +103,7 @@ fun SettingsScreen(
     onExport: () -> Unit = {},
     versionName: String = "",
     onOpenRhythm: () -> Unit = {},
+    onOpenBatterySettings: () -> Unit = {},
 ) {
     PauseScreenColumn(title = stringResource(R.string.settings_title), modifier = modifier) {
         SettingsSection(title = stringResource(R.string.settings_section_monitoring)) {
@@ -109,6 +120,19 @@ fun SettingsScreen(
                 )
             }
             DetectionModeRows()
+            Text(
+                stringResource(R.string.settings_battery_body),
+                style = PauseTheme.type.bodySmall,
+                color = PauseTheme.colors.ink2,
+            )
+            TextButton(
+                onClick = onOpenBatterySettings,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = PauseTheme.spacing.minTouch),
+            ) {
+                Text(stringResource(R.string.settings_battery_open), color = PauseTheme.colors.ink)
+            }
         }
         SettingsSection(title = stringResource(R.string.settings_section_rhythm)) {
             Text(
