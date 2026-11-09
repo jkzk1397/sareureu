@@ -2,6 +2,8 @@ package com.capstone.pause.core.data.insight
 
 import com.capstone.pause.core.common.AppClock
 import com.capstone.pause.core.common.DayBoundary
+import com.capstone.pause.core.data.monitoring.LiveSessionSource
+import com.capstone.pause.core.data.monitoring.mergeLiveSession
 import com.capstone.pause.core.data.profile.ProfileRepository
 import com.capstone.pause.core.data.session.SessionRepository
 import com.capstone.pause.core.data.settings.AppSettings
@@ -12,6 +14,7 @@ import com.capstone.pause.core.insights.DayStat
 import com.capstone.pause.core.insights.MeltStageCalculator
 import com.capstone.pause.core.insights.RiskWindows
 import com.capstone.pause.core.insights.ShortformMinutes
+import com.capstone.pause.core.model.DataSource
 import com.capstone.pause.core.model.NudgeEvent
 import com.capstone.pause.core.model.ShortformSession
 import java.time.Duration
@@ -28,7 +31,7 @@ import kotlinx.coroutines.flow.flow
 
 /** 계산된 값 저장소. 숫자는 여기(= core:insights)서만 나온다. */
 interface InsightRepository {
-    /** 오늘 탭 요약. 1분마다 다시 계산한다. */
+    /** 오늘 탭 요약. 저장된 세션 + 지금 보고 있는 세션으로 계산하고, 보는 동안에도 30초마다 다시 센다. */
     fun observeToday(): Flow<TodaySummary>
 }
 
@@ -38,6 +41,7 @@ internal class DefaultInsightRepository @Inject constructor(
     private val sessionRepository: SessionRepository,
     private val settingsRepository: SettingsRepository,
     private val profileRepository: ProfileRepository,
+    private val liveSessionSource: LiveSessionSource,
     private val clock: AppClock,
 ) : InsightRepository {
 
@@ -57,8 +61,14 @@ internal class DefaultInsightRepository @Inject constructor(
             sessionRepository.observeNudges(DayBoundary.startOf(today, clock.zone), to),
             settingsRepository.settings,
             profileRepository.profile,
-        ) { sessions, nudges, settings, profile ->
-            summarize(now, sessions, nudges, settings, profile?.dailyGoalMinutes?.toDouble() ?: DEFAULT_DAILY_GOAL_MIN)
+            liveSessionSource.current,
+        ) { sessions, nudges, settings, profile, live ->
+            val source = if (settings.demoMode) DataSource.DEMO else DataSource.REAL
+            // 진행 중 세션은 아직 저장 전이라 따로 더한다(그래야 보는 중인 시간이 오늘 합계에 바로 들어간다).
+            val all = mergeLiveSession(sessions, live, source)
+            val goal = profile?.dailyGoalMinutes?.toDouble() ?: DEFAULT_DAILY_GOAL_MIN
+            // 틱 시각이 아니라 지금 시각으로 센다(보는 중 세션이 틱 사이에도 늘어나게).
+            summarize(maxOf(now, clock.now()), all, nudges, settings, goal)
         }
     }
 
@@ -140,7 +150,7 @@ internal class DefaultInsightRepository @Inject constructor(
     }
 
     private companion object {
-        const val TICK_MS = 60_000L
+        const val TICK_MS = 30_000L
         const val HISTORY_DAYS = 14L
         const val RISK_CELLS = 24 * 7
         const val MAX_RISK_HOURS = 3

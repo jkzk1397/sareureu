@@ -8,6 +8,7 @@ import com.capstone.pause.core.data.insight.InsightRepository
 import com.capstone.pause.core.data.insight.TodaySummary
 import com.capstone.pause.core.data.monitoring.MonitoringState
 import com.capstone.pause.core.data.monitoring.MonitoringStatus
+import com.capstone.pause.core.data.monitoring.MonitoringSwitch
 import com.capstone.pause.core.data.plan.PlanRepository
 import com.capstone.pause.core.data.plan.PokeRepository
 import com.capstone.pause.core.data.plan.ReceivedPoke
@@ -47,8 +48,8 @@ sealed interface TodayUiState {
         val showMelt: Boolean,
         /** 시연 숏폼이 재생 중인지(시연 모드에서만 버튼을 보인다). */
         val demoRunning: Boolean = false,
-        /** 켜 둔 감지를 사용자가 작업 관리자·알림 스와이프로 멈춤(실제 모드에서만). */
-        val monitoringStopped: Boolean = false,
+        /** 실제 모드인데 감지가 꺼져 있음(처음이거나, 작업 관리자 등으로 멈춤). 켜기 버튼을 보인다. */
+        val monitoringOff: Boolean = false,
     ) : TodayUiState
 }
 
@@ -65,6 +66,9 @@ sealed interface TodayAction {
 
     /** 시연 멈추기. */
     data object StopDemo : TodayAction
+
+    /** 감지 켜기(권한이 없으면 사용 기록 설정으로 안내). */
+    data object TurnOnMonitoring : TodayAction
 }
 
 /** 오늘 탭 ViewModel. 계산은 하지 않고 저장소 값을 묶기만 한다. */
@@ -77,7 +81,11 @@ class TodayViewModel @Inject constructor(
     clock: AppClock,
     private val demoController: DemoController,
     monitoringStatus: MonitoringStatus,
+    private val monitoringSwitch: MonitoringSwitch,
 ) : ViewModel() {
+
+    /** 권한 설정에 다녀오는 중이면 돌아왔을 때 감지를 켠다. */
+    private var turnOnAfterSettings = false
 
     /** 화면 상태. */
     val uiState: StateFlow<TodayUiState> = combine(
@@ -98,7 +106,7 @@ class TodayViewModel @Inject constructor(
             plan = plans.firstOrNull(),
             showMelt = settings.showMelt,
             demoRunning = demoRunning,
-            monitoringStopped = !settings.demoMode && monitoring == MonitoringState.STOPPED_BY_USER,
+            monitoringOff = !settings.demoMode && monitoring != MonitoringState.ON,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), TodayUiState.Loading)
 
@@ -111,6 +119,24 @@ class TodayViewModel @Inject constructor(
                 else -> Unit
             }
         }
+    }
+
+    /** 감지 켜기. 사용 기록 권한이 없으면 [openUsageSettings]로 안내하고, 돌아오면([onResume]) 다시 켠다. */
+    fun turnOnMonitoring(openUsageSettings: () -> Unit) {
+        viewModelScope.launch {
+            if (monitoringSwitch.turnOn()) {
+                turnOnAfterSettings = false
+            } else {
+                turnOnAfterSettings = true
+                openUsageSettings()
+            }
+        }
+    }
+
+    /** 화면으로 돌아왔을 때. */
+    fun onResume() {
+        if (!turnOnAfterSettings || !monitoringSwitch.hasUsageAccess()) return
+        viewModelScope.launch { if (monitoringSwitch.turnOn()) turnOnAfterSettings = false }
     }
 
     private companion object {

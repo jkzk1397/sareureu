@@ -1,6 +1,7 @@
 package com.capstone.pause.core.intervention.nudge
 
 import com.capstone.pause.core.common.DayBoundary
+import com.capstone.pause.core.model.BuddyExpression
 import com.capstone.pause.core.model.ContextSlot
 import com.capstone.pause.core.model.MeltStage
 import com.capstone.pause.core.model.NudgeEvent
@@ -47,6 +48,9 @@ class NudgeEngine(private val zone: ZoneId, private val writer: NudgeWriter, pri
     private class SessionState(val start: Instant, val thresholdSec: Long) {
         var level = 0
         var dueSec = thresholdSec
+
+        /** 이번 구간 시작(초). 연장·닫기·오늘은 그만 뒤에는 그 순간부터 다시 센다(버블 링이 0부터). */
+        var windowStartSec = 0L
         var card: CardContent? = null
         var stopped = false
         var messaged = false
@@ -119,7 +123,7 @@ class NudgeEngine(private val zone: ZoneId, private val writer: NudgeWriter, pri
                 out += NudgeCommand.PostBuddyMessage(writer.message(live, minutes))
             }
         } else {
-            out += NudgeCommand.ShowBubble(elapsed, s.thresholdSec, live.melt)
+            out += bubble(s, elapsed, live, now)
         }
         return out
     }
@@ -128,6 +132,7 @@ class NudgeEngine(private val zone: ZoneId, private val writer: NudgeWriter, pri
     fun onAction(now: Instant, action: NudgeUserAction, live: LiveInput?): List<NudgeCommand> {
         val s = current ?: return emptyList()
         if (action is NudgeUserAction.BubbleTapped) return emptyList()
+        if (action is NudgeUserAction.StopNow && s.card == null) return stopFromBubble(s, now, live)
         val card = s.card ?: return emptyList()
         val elapsed = elapsedSec(s.start, now)
         fun record(response: NudgeResponse, chip: String? = null) {
@@ -135,7 +140,7 @@ class NudgeEngine(private val zone: ZoneId, private val writer: NudgeWriter, pri
         }
         s.card = null
         return when (action) {
-            is NudgeUserAction.Stop -> {
+            is NudgeUserAction.Stop, NudgeUserAction.StopNow -> {
                 record(NudgeResponse.STOP)
                 s.stopped = true
                 val praise = live?.let(writer::praise)
@@ -145,24 +150,57 @@ class NudgeEngine(private val zone: ZoneId, private val writer: NudgeWriter, pri
             is NudgeUserAction.Extend -> {
                 record(NudgeResponse.EXTEND, action.reasonChip)
                 extensionsToday += 1
+                s.windowStartSec = elapsed
                 s.dueSec = elapsed + card.extendMinutes * SEC_PER_MIN
-                listOf(NudgeCommand.ShowBubble(elapsed, s.thresholdSec, live?.melt ?: MeltStage.NONE))
+                listOf(bubble(s, elapsed, live, now))
             }
 
             is NudgeUserAction.SnoozeToday -> {
                 record(NudgeResponse.SNOOZE_TODAY)
                 snoozeUntil = DayBoundary.endOf(DayBoundary.logicalDate(now, zone), zone)
-                listOf(NudgeCommand.ShowBubble(elapsed, s.thresholdSec, live?.melt ?: MeltStage.NONE))
+                s.windowStartSec = elapsed
+                listOf(bubble(s, elapsed, live, now))
             }
 
             is NudgeUserAction.Dismiss -> {
                 record(NudgeResponse.DISMISSED)
+                s.windowStartSec = elapsed
                 s.dueSec = elapsed + DEFAULT_EXTEND_MIN * SEC_PER_MIN
-                listOf(NudgeCommand.ShowBubble(elapsed, s.thresholdSec, live?.melt ?: MeltStage.NONE))
+                listOf(bubble(s, elapsed, live, now))
             }
 
             NudgeUserAction.BubbleTapped -> emptyList()
         }
+    }
+
+    /** 카드가 오기 전 버블 패널의 '그만 볼래'. 0단계(스스로 멈춤)로 기록하고 칭찬한다. */
+    private fun stopFromBubble(s: SessionState, now: Instant, live: LiveInput?): List<NudgeCommand> {
+        if (s.stopped) return emptyList()
+        s.events += NudgeEvent(0, now, SELF_STOP_LEVEL, null, NudgeResponse.STOP, null)
+        s.stopped = true
+        val praise = live?.let(writer::praise)
+        return listOfNotNull(NudgeCommand.Hide, praise?.let { NudgeCommand.ShowPraise(it) })
+    }
+
+    /** 버블: 이번 구간 진행과 표정(곧 말 걸 때는 부르는 얼굴, 오늘은 그만이면 조는 얼굴). */
+    private fun bubble(s: SessionState, elapsed: Long, live: LiveInput?, now: Instant): NudgeCommand.ShowBubble {
+        val snoozed = isSnoozed(now)
+        val windowSec = (s.dueSec - s.windowStartSec).coerceAtLeast(1)
+        val windowElapsed = (elapsed - s.windowStartSec).coerceIn(0, windowSec)
+        val expression = when {
+            snoozed -> BuddyExpression.SLEEPY
+            windowElapsed >= windowSec * CALLING_PERCENT / PERCENT -> BuddyExpression.CALLING
+            else -> BuddyExpression.WATCHING
+        }
+        return NudgeCommand.ShowBubble(
+            elapsedSec = elapsed,
+            windowElapsedSec = if (snoozed) 0 else windowElapsed,
+            windowSec = windowSec,
+            melt = live?.melt ?: MeltStage.NONE,
+            expression = expression,
+            appLabel = live?.appLabel.orEmpty(),
+            snoozed = snoozed,
+        )
     }
 
     /** 끝난 세션들의 개입 기록을 꺼낸다(꺼내면 비워진다). */
@@ -204,6 +242,13 @@ class NudgeEngine(private val zone: ZoneId, private val writer: NudgeWriter, pri
 
         /** 3단계 숨 고르기(초). */
         const val BREATH_SECONDS = 10
+
+        /** 버블 패널에서 카드 전에 스스로 멈춘 기록의 단계. */
+        const val SELF_STOP_LEVEL = 0
+
+        /** 이번 구간이 이만큼(%) 지나면 버블이 부르는 얼굴이 된다. */
+        private const val CALLING_PERCENT = 80L
+        private const val PERCENT = 100L
 
         private const val SEC_PER_MIN = 60L
         private val MERGE_GAP: Duration = Duration.ofSeconds(60)

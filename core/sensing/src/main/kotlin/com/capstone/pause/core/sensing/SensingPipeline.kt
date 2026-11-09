@@ -2,6 +2,7 @@ package com.capstone.pause.core.sensing
 
 import com.capstone.pause.core.common.AppClock
 import com.capstone.pause.core.common.AppLog
+import com.capstone.pause.core.data.monitoring.LiveSessionSource
 import com.capstone.pause.core.data.session.SessionRepository
 import com.capstone.pause.core.data.trackedapp.TrackedAppRepository
 import com.capstone.pause.core.model.DataSource
@@ -43,14 +44,18 @@ class SensingPipeline @Inject constructor(
     private val sessionRepository: SessionRepository,
     private val clock: AppClock,
     private val log: AppLog,
-) {
+) : LiveSessionSource {
     private val live = MutableStateFlow<ShortformSession?>(null)
+    private val pending = MutableStateFlow<ShortformSession?>(null)
     private val lock = Mutex()
     private var job: Job? = null
     private var tracker: SessionTracker? = null
 
     /** 지금 숏폼 화면에 있는 진행 중 세션. */
     val liveSession: StateFlow<ShortformSession?> = live.asStateFlow()
+
+    /** 저장 전 진행 중 세션(잠깐 다른 앱에 가 있는 동안 포함). 오늘 탭 합계용. */
+    override val current: StateFlow<ShortformSession?> = pending.asStateFlow()
 
     /** 감지 중인지. */
     val isRunning: Boolean get() = job?.isActive == true
@@ -92,6 +97,7 @@ class SensingPipeline @Inject constructor(
                     usageStatsSource.fastPolling = session != null
                 }
             }
+            launch { t.currentSession.collect { pending.value = it } }
             launch {
                 while (true) {
                     delay(TICK_MS)
@@ -108,6 +114,7 @@ class SensingPipeline @Inject constructor(
         job = null
         tracker = null
         live.value = null
+        pending.value = null
     }
 
     /** '그만'을 눌렀다고 알린다(이탈 경로 계산용). */

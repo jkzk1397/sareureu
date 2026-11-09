@@ -13,16 +13,22 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import com.capstone.pause.core.data.settings.ThemeMode
 import com.capstone.pause.core.designsystem.theme.PauseTheme
+import com.capstone.pause.core.intervention.service.MonitoringController
 import com.capstone.pause.navigation.PauseAppShell
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 
 /** 단일 액티비티. 온보딩 게이트와 하단 탭은 [PauseAppShell]이 맡는다. */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels()
+
+    @Inject lateinit var monitoringController: MonitoringController
 
     /** 알림에서 열 때 고를 탭("coach" 등). 한 번 쓰면 비운다. */
     private val openTab = MutableStateFlow<String?>(null)
@@ -58,6 +64,12 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // 켜 둔 감지가 제조사 절전 등으로 멈춰 있으면, 앱을 연 김에 다시 켠다(앱이 화면에 있을 때만 가능).
+        lifecycleScope.launch { monitoringController.ensureRunning() }
     }
 
     override fun onNewIntent(intent: Intent) {

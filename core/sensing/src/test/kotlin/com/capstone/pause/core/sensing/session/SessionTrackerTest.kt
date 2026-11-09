@@ -48,6 +48,22 @@ class SessionTrackerTest {
     private fun ShortformSession.minutes() = Duration.between(start, end).toMinutes()
 
     @Test
+    fun currentSessionStaysVisibleWhileBrieflyAwayThenClears() {
+        val t = tracker()
+        t.onEvent(AppForeground(YOUTUBE, at(0)))
+        t.onTick(at(600))
+        assertNull(t.currentSession.value?.end, "while watching the current session is open")
+        t.onEvent(AppForeground(KAKAO, at(610)))
+        assertNull(t.liveSession.value, "not on a shortform screen")
+        val away = assertNotNull(t.currentSession.value, "still counted for today before it is saved")
+        assertEquals(at(610), away.end)
+        assertEquals(at(0), away.start)
+        val done = t.onTick(at(671))
+        assertEquals(1, done.size)
+        assertNull(t.currentSession.value, "saved sessions are no longer pending")
+    }
+
+    @Test
     fun returningWithin60sIsSameSession() {
         val (_, done) = run(
             listOf(

@@ -59,6 +59,8 @@ class OverlayController @Inject constructor(
     private val bubbleState = mutableStateOf<NudgeCommand.ShowBubble?>(null)
     private var bubble: OverlayWindow? = null
     private var card: OverlayWindow? = null
+    private var panel: OverlayWindow? = null
+    private val closePanel = Runnable { removePanel() }
 
     override fun render(command: NudgeCommand) {
         if (Looper.myLooper() != Looper.getMainLooper()) {
@@ -81,7 +83,10 @@ class OverlayController @Inject constructor(
     fun emit(action: NudgeUserAction) {
         // 먼저 카드를 내리고 나서 보낸다. 받는 쪽(Main.immediate)이 tryEmit 안에서 바로 칭찬을 그릴 수 있어서,
         // 순서가 반대면 방금 띄운 칭찬 카드를 지워 버린다.
-        if (action !is NudgeUserAction.BubbleTapped) {
+        if (action is NudgeUserAction.BubbleTapped) {
+            togglePanel()
+        } else {
+            removePanel()
             removeCard()
             _current.value = null
         }
@@ -123,6 +128,37 @@ class OverlayController @Inject constructor(
         bubble = add(view, params)
     }
 
+    /** 버블을 누르면 아래에 작은 패널(지금 몇 분째·다음 카드까지·그만 볼래). 다시 누르거나 몇 초 지나면 닫힌다. */
+    private fun togglePanel() {
+        if (panel != null) {
+            removePanel()
+            return
+        }
+        if (!canDraw() || bubbleState.value == null || card != null) return
+        val params = baseParams(focusable = false).apply {
+            width = WindowManager.LayoutParams.MATCH_PARENT
+            height = WindowManager.LayoutParams.WRAP_CONTENT
+            gravity = Gravity.BOTTOM
+        }
+        val view = composeView {
+            val state = bubbleState.value ?: return@composeView
+            BubblePanel(
+                state = state,
+                onStop = { emit(NudgeUserAction.StopNow) },
+                onClose = { removePanel() },
+                modifier = Modifier.padding(OverlayDimens.cardOuterPadding),
+            )
+        }
+        panel = add(view, params)
+        mainHandler.postDelayed(closePanel, PANEL_MS)
+    }
+
+    private fun removePanel() {
+        mainHandler.removeCallbacks(closePanel)
+        panel?.let(::remove)
+        panel = null
+    }
+
     private fun snapToEdge(params: WindowManager.LayoutParams, size: Int) {
         val center = params.x + size / 2
         params.x = if (center < screenWidth() / 2) -size / 2 else screenWidth() - size / 2
@@ -131,6 +167,7 @@ class OverlayController @Inject constructor(
 
     private fun showCard(command: NudgeCommand) {
         _current.value = command
+        removePanel()
         removeCard()
         if (!canDraw()) {
             launchPreview()
@@ -181,6 +218,7 @@ class OverlayController @Inject constructor(
         bubbleState.value = null
         bubble?.let(::remove)
         bubble = null
+        removePanel()
         // '그만' 뒤 세션이 끝나며 오는 Hide가 칭찬을 바로 지우지 않게. 칭찬은 PRAISE_MS 뒤 스스로 내려간다.
         if (_current.value is NudgeCommand.ShowPraise) return
         removeCard()
@@ -244,5 +282,6 @@ class OverlayController @Inject constructor(
         const val INPUT_LEVEL = 1
         const val BUBBLE_Y_RATIO = 0.55f
         const val PRAISE_MS = 3_000L
+        const val PANEL_MS = 8_000L
     }
 }

@@ -1,5 +1,6 @@
 package com.capstone.pause.core.intervention.nudge
 
+import com.capstone.pause.core.model.BuddyExpression
 import com.capstone.pause.core.model.ContextSlot
 import com.capstone.pause.core.model.MeltStage
 
@@ -8,8 +9,31 @@ import com.capstone.pause.core.model.MeltStage
  * 엔진은 [NudgeCommand]만 내보내고, 화면은 [NudgeUserAction]만 돌려준다. AI는 여기에 끼지 않는다.
  */
 sealed interface NudgeCommand {
-    /** 플로팅 르르(경과 링). */
-    data class ShowBubble(val elapsedSec: Long, val thresholdSec: Long, val melt: MeltStage) : NudgeCommand
+    /**
+     * 플로팅 르르. 링은 '이번 구간'(처음 기준 시간, 또는 연장한 5분) 진행만 보여 준다. 연장하면 0부터 다시 찬다.
+     * [elapsedSec]는 세션 전체 경과, [windowElapsedSec]/[windowSec]는 이번 구간 경과·길이.
+     */
+    data class ShowBubble(
+        val elapsedSec: Long,
+        val windowElapsedSec: Long,
+        val windowSec: Long,
+        val melt: MeltStage,
+        val expression: BuddyExpression = BuddyExpression.WATCHING,
+        /** 표시용 앱 이름(문자열 리소스로 이미 바꾼 값). */
+        val appLabel: String = "",
+        /** '오늘은 그만 알려 줘' 상태라 카드가 오지 않음. */
+        val snoozed: Boolean = false,
+    ) : NudgeCommand {
+        /** 이번 구간 진행(0~1). */
+        val progress: Float get() = (windowElapsedSec.toFloat() / windowSec.coerceAtLeast(1)).coerceIn(0f, 1f)
+
+        /** 다음 카드까지 남은 분(올림). 이미 지났으면 0. */
+        val minutesToNext: Int
+            get() {
+                val left = (windowSec - windowElapsedSec).coerceAtLeast(0)
+                return ((left + SEC_PER_MIN - 1) / SEC_PER_MIN).toInt()
+            }
+    }
 
     /** 카드 1~4단계. */
     data class ShowCard(val card: CardContent) : NudgeCommand
@@ -78,7 +102,12 @@ sealed interface NudgeUserAction {
 
     /** 버블 탭(미니 패널 열기). */
     data object BubbleTapped : NudgeUserAction
+
+    /** 카드가 오기 전에 버블 패널에서 '그만 볼래'(스스로 멈춤, 홈으로). */
+    data object StopNow : NudgeUserAction
 }
+
+private const val SEC_PER_MIN = 60
 
 /**
  * 명령을 그리는 쪽. 오버레이 권한이 있으면 `OverlayController`, 없으면 `NudgePreviewActivity`를 띄우는 구현.
