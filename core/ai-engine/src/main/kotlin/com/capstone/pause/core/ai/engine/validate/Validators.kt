@@ -12,14 +12,14 @@ class WeeklyReportValidator(private val strategyIds: Set<String>) {
     fun validate(out: WeeklyReportOut, input: WeeklyReportInput): Validation<WeeklyReportOut> {
         val r = mutableListOf<String>()
         val ids = input.observationIds
-        r += TextRules.problems(out.summaryLine, MAX_SENTENCE, field = "summaryLine")
-        r += TextRules.problems(out.viewerTypeLine, MAX_SENTENCE, field = "viewerTypeLine")
+        r += sentence(out.summaryLine, "summaryLine")
+        r += sentence(out.viewerTypeLine, "viewerTypeLine")
         if (out.hypotheses.isEmpty()) r += "hypotheses: 비어 있음"
         if (out.hypotheses.size > MAX_HYPOTHESES) r += "hypotheses: ${MAX_HYPOTHESES}개 초과"
         out.hypotheses.forEachIndexed { i, h ->
             val f = "hypotheses[$i]"
-            r += TextRules.problems(h.text, MAX_SENTENCE, field = "$f.text")
-            r += TextRules.problems(h.confirmQuestion, MAX_SENTENCE, field = "$f.confirmQuestion")
+            r += sentence(h.text, "$f.text")
+            r += sentence(h.confirmQuestion, "$f.confirmQuestion")
             val evidence = h.evidence.distinct()
             if (evidence.size < MIN_EVIDENCE) r += "$f: 근거 ${MIN_EVIDENCE}개 미만"
             if (h.confidence == Confidence.HIGH &&
@@ -33,16 +33,21 @@ class WeeklyReportValidator(private val strategyIds: Set<String>) {
         out.strategies.forEachIndexed { i, s ->
             val f = "strategies[$i]"
             if (s.strategyId !in strategyIds) r += "$f: 라이브러리에 없는 전략 ${s.strategyId}"
-            r += TextRules.problems(s.personalizedThen, MAX_SENTENCE, field = "$f.personalizedThen")
-            r += TextRules.problems(s.why, MAX_SENTENCE, field = "$f.why")
+            r += sentence(s.personalizedThen, "$f.personalizedThen")
+            r += sentence(s.why, "$f.why")
         }
         out.thresholdSuggestions.forEachIndexed { i, t ->
             val f = "thresholdSuggestions[$i]"
             if (t.minutes !in ALLOWED_MINUTES) r += "$f: minutes는 ${ALLOWED_MINUTES.joinToString()} 중 하나"
-            r += TextRules.problems(t.why, MAX_SENTENCE, field = "$f.why")
+            r += sentence(t.why, "$f.why")
         }
         return if (r.isEmpty()) Validation.Valid(out) else Validation.Invalid(r)
     }
+
+    // 리포트 문장 한 줄: 공통 규칙 + 리포트 화면이 채우는 자리표시자만 + 단위 중복("{avgMin}분" → "1시간 36분분").
+    private fun sentence(text: String, field: String): List<String> =
+        TextRules.problems(text, MAX_SENTENCE, REPORT_PLACEHOLDERS, field = field) +
+            UNIT_AFTER_PLACEHOLDER.findAll(text).map { "$field: 단위 중복 ${it.value}" }.toList()
 
     /** 상수(05 문서 5.1절). */
     companion object {
@@ -63,6 +68,24 @@ class WeeklyReportValidator(private val strategyIds: Set<String>) {
 
         /** 임계값으로 고를 수 있는 분. */
         val ALLOWED_MINUTES = setOf(5, 10, 15, 20, 30)
+
+        /**
+         * 리포트 화면(`feature:report`)이 실제로 채우는 자리표시자.
+         * 그 밖의 것({nickname}, {app}, {timeRange}, {friend} 등)은 화면에서 지워져 문장이 깨지므로 막는다.
+         */
+        val REPORT_PLACEHOLDERS: Set<String> = setOf(
+            "buddy",
+            "avgMin",
+            "topContext",
+            "topContextMin",
+            "reduction",
+            "stopRate",
+        )
+
+        // 화면이 이미 단위를 붙여 채우는 자리표시자 뒤에 또 단위를 쓴 경우.
+        private val UNIT_AFTER_PLACEHOLDER = Regex(
+            "\\{(avgMin|topContextMin)\\}\\s*(분|시간)|\\{(reduction|stopRate)\\}\\s*(%|퍼센트)",
+        )
     }
 }
 

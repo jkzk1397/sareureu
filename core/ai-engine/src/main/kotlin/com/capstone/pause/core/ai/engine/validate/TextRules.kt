@@ -28,7 +28,10 @@ object TextRules {
     private val nativeNumeral = Regex(
         "(?<![가-힣])(한|두|세|네|다섯|여섯|일곱|여덟|아홉|열|스무|서른|마흔|쉰|예순)\\s*$UNIT",
     )
-    private val sinoNumeral = Regex("(?<![가-힣])(일|이|삼|사|오|육|칠|팔|구|십|백)\\s+$UNIT")
+    // 한자 수사는 '분'에만 붙인다("삼 분"). '시간'에 붙이면 "이 시간만 되면"(=this time)을 2시간으로 잘못 막는다.
+    // 실제 Gemini 출력에서 확인한 오탐이다(2026-11-09 검증). "두 시간"처럼 시간은 고유어 수사로 쓴다.
+    private const val MINUTE = "분(?![위석명량야리홍노류배])"
+    private val sinoNumeral = Regex("(?<![가-힣])(일|이|삼|사|오|육|칠|팔|구|십|백)\\s+$MINUTE")
     private val koreanTens = Regex("(이십|삼십|사십|오십|육십|스물)\\s*$UNIT")
 
     /** 자리표시자를 뺀 본문. */
@@ -59,13 +62,15 @@ object TextRules {
         return out
     }
 
-    /** 이모지 개수(보조 평면 기호 + 흔한 기호 블록). */
+    /** 이모지 개수(보조 평면 기호 + 흔한 기호 블록). ZWJ로 이어 붙인 한 이모지("🏃‍♂️")는 1개로 센다. */
     fun emojiCount(text: String): Int {
         var count = 0
         var i = 0
+        var joined = false
         while (i < text.length) {
             val cp = text.codePointAt(i)
-            if (cp >= EMOJI_PLANE_START || cp in MISC_SYMBOLS) count++
+            if ((cp >= EMOJI_PLANE_START || cp in MISC_SYMBOLS) && !joined) count++
+            joined = cp == ZWJ
             i += Character.charCount(cp)
         }
         return count
@@ -75,5 +80,6 @@ object TextRules {
     fun sentenceCount(text: String): Int = text.split(Regex("[.!?。\\n]+")).count { it.isNotBlank() }
 
     private const val EMOJI_PLANE_START = 0x1F000
+    private const val ZWJ = 0x200D
     private val MISC_SYMBOLS = 0x2600..0x27BF
 }

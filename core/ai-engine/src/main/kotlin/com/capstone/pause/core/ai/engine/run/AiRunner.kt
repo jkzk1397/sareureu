@@ -68,6 +68,8 @@ class AiRunner(
                 safeInput.pastHypotheses,
             ),
             "user_notes" to safeInput.userNotes,
+            // v2부터: 리포트 화면이 채울 수 있는 자리표시자만 알려 준다(검증기와 같은 목록).
+            "report_placeholders" to WeeklyReportValidator.REPORT_PLACEHOLDERS.joinToString(" ") { "{$it}" },
         )
         return run(client, AiFeature.WEEKLY_REPORT, safeInput, vars, WeeklyReportOut.serializer()) {
             weeklyValidator.validate(it, safeInput)
