@@ -1,0 +1,60 @@
+{
+  "observations": [
+    {
+      "id": "o1",
+      "kind": "WEEK_TOTAL",
+      "numbers": {
+        "avgMinPerDay": 31,
+        "totalMin": 62,
+        "sessions": 5,
+        "days": 2
+      }
+    },
+    {
+      "id": "o3",
+      "kind": "TOP_CONTEXT",
+      "numbers": {
+        "minutes": 41,
+        "share": 0.66,
+        "sessions": 3,
+        "medianMin": 12
+      },
+      "labels": {
+        "context": "PRE_SLEEP"
+      }
+    },
+    {
+      "id": "o7",
+      "kind": "TOP_ENTRY",
+      "numbers": {
+        "count": 3,
+        "share": 0.6
+      },
+      "labels": {
+        "entry": "FROM_APP:MESSENGER"
+      }
+    },
+    {
+      "id": "o11",
+      "kind": "COVERAGE",
+      "numbers": {
+        "coverage": 1.0
+      }
+    }
+  ],
+  "profile": {
+    "ageBand": "AGE_18_24",
+    "occupation": "UNIVERSITY",
+    "goals": [
+      "SLEEP"
+    ],
+    "interests": [
+      "기타 연습",
+      "러닝"
+    ],
+    "tone": "PLAYFUL"
+  },
+  "viewerType": "NIGHT_OWL",
+  "coverage": 1.0,
+  "userNotes": ""
+}
