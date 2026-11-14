@@ -31,7 +31,6 @@ class GeminiTimeMeaningTest {
     @Test
     fun v3OutputsWithWrongTimeMeaningAreRejected() {
         val wrongMeaning = mapOf(
-            "T-01_run3" to "{avgMin}을 '하루 평균' 없이",
             "T-03" to "{topContextMin}을 {topContext} 없이",
             "T-05" to "'밤마다' 양처럼",
             "T-06" to "'하루' 양처럼",
@@ -40,6 +39,12 @@ class GeminiTimeMeaningTest {
             val r = assertIs<Validation.Invalid>(judge("v3", run), run)
             assertTrue(r.reasons.any { reason in it }, "$run: $reason 없음 ${r.reasons}")
         }
+        // T-01 3회차는 JSON부터 깨졌지만(아래 시험) 뜻이 틀린 문장도 있었다. 그 문장은 규칙으로 잡힌다.
+        val run3 = "이동할 때도 {avgMin} 속에서 꽤 많은 시간을 보낸 것 같아."
+        assertTrue(run3 in raw("v3", "T-01_run3"))
+        assertTrue(ReportRules.problems(run3, "t", "").any { "{avgMin}을 '하루 평균' 없이" in it })
+        // 새 규칙이 '하루'가 빠진 문장도 막는 것(2회차, T-02)은 기록지에 '불필요한 차단'으로 적었다.
+        listOf("T-01_run2", "T-02").forEach { assertIs<Validation.Invalid>(judge("v3", it), it) }
         // 뜻이 맞는 v3 출력은 계속 통과한다. T-04의 "수업이나 과제 시간"은 CLASS_WORK 맥락이라 지어낸 이유가 아니다.
         listOf("T-01_run1", "T-04").forEach { assertIs<Validation.Valid<WeeklyReportOut>>(judge("v3", it), it) }
     }
@@ -88,21 +93,6 @@ class GeminiTimeMeaningTest {
         ).forEach { assertTrue(problems(it).isEmpty(), "$it ${problems(it)}") }
         assertTrue(problems("밤마다 {topContextMin}을 꽉 채우는 집중러").isNotEmpty())
         assertTrue(problems("이동할 때도 {avgMin} 속에서 꽤 보낸 것 같아").isNotEmpty())
-    }
-
-    /** 판정 결과를 시험 보고서에 남긴다(검증 기록지에 옮겨 적는 용도). */
-    @Test
-    fun printVerdicts() {
-        val runs = listOf("T-01_run1", "T-01_run2", "T-01_run3", "T-02", "T-03", "T-04", "T-05", "T-06")
-        listOf("v3", "v4").forEach { v ->
-            (runs + if (v == "v4") listOf("T-06_run2", "T-06_run3") else emptyList()).forEach { run ->
-                val verdict = runCatching { judge(v, run) }.fold(
-                    onSuccess = { if (it is Validation.Invalid) "실패 ${it.reasons}" else "통과" },
-                    onFailure = { "스키마 실패" },
-                )
-                println("GEMINI $v $run: $verdict")
-            }
-        }
     }
 
     private fun judge(version: String, run: String): Validation<WeeklyReportOut> {
