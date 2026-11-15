@@ -1,14 +1,17 @@
 package com.capstone.pause.feature.coach
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -29,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -156,11 +160,24 @@ private fun CoachHeader(usingRealAi: Boolean) {
                 color = colors.ink2,
             )
             if (!usingRealAi) {
+                // 누르면 어디서 켜는지 한 줄로 알려 준다.
+                var hint by rememberSaveable { mutableStateOf(false) }
                 Text(
                     text = stringResource(R.string.coach_mock_badge),
                     style = PauseTheme.type.caption,
-                    color = colors.ink3,
+                    color = colors.ink2,
+                    modifier = Modifier
+                        .heightIn(min = spacing.minTouch)
+                        .clickable(role = Role.Button) { hint = !hint }
+                        .wrapContentHeight(Alignment.CenterVertically),
                 )
+                if (hint) {
+                    Text(
+                        text = stringResource(R.string.coach_mock_hint),
+                        style = PauseTheme.type.caption,
+                        color = colors.ink,
+                    )
+                }
             }
         }
     }

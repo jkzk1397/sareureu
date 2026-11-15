@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="coach_header_sub">내 기록으로만 답해</string>
-  <string name="coach_mock_badge">모의 AI · 규칙으로 만든 답</string>
+  <string name="coach_mock_badge">기본 답변 (AI 꺼짐) ▾</string>
   <string name="coach_alert_caption">%1$s · 메시지 알림</string>
   <string name="coach_today">오늘</string>
   <string name="coach_yesterday">어제</string>
@@ -26,13 +26,13 @@
   <string name="coach_crisis_suicide">자살예방 상담전화 109 (24시간)</string>
   <string name="coach_crisis_mental">정신건강 위기상담 1577-0199 (24시간)</string>
   <string name="coach_crisis_close">닫기</string>
-  <string name="coach_ev_session">%1$s %2$d:%3$02d · %4$s %5$s</string>
-  <string name="coach_ev_summary">하루 평균 %1$s</string>
-  <string name="coach_ev_context">%1$s · %2$s</string>
-  <string name="coach_ev_flow">%1$s → %2$s · %3$d번</string>
-  <string name="coach_ev_risk">%1$s %2$d시 · 평균 %3$s</string>
-  <string name="coach_ev_peer">또래 %1$s · 나 %2$s</string>
-  <string name="coach_ev_peer_demo">또래 %1$s · 나 %2$s (시연용)</string>
+  <string name="coach_ev_session">%1$s요일 %2$d:%3$02d에 %4$s %5$s 봤어</string>
+  <string name="coach_ev_summary">하루 평균 %1$s 봤어</string>
+  <string name="coach_ev_context">%1$s에 %2$s 봤어</string>
+  <string name="coach_ev_flow">%1$s에서 %2$s로 넘어간 게 %3$d번</string>
+  <string name="coach_ev_risk">%1$s요일 %2$d시쯤에 평균 %3$s 봤어</string>
+  <string name="coach_ev_peer">또래는 하루 %1$s, 나는 %2$s</string>
+  <string name="coach_ev_peer_demo">또래는 하루 %1$s, 나는 %2$s (시연용 가상 숫자)</string>
   <string name="coach_ev_unknown">–</string>
   <string name="coach_app_youtube">유튜브</string>
   <string name="coach_app_instagram">인스타그램</string>
@@ -56,4 +56,9 @@
   <string name="coach_period_afternoon">오후</string>
   <string name="coach_period_evening">저녁</string>
   <string name="coach_period_night">밤</string>
+  <!-- 화면 쉽게 만들기: 근거는 눌러서 문장으로 -->
+  <string name="coach_evidence_show">왜 이렇게 답했어? ▾</string>
+  <string name="coach_evidence_hide">근거 접기 ▴</string>
+  <string name="coach_evidence_caption">이 폰이 직접 센 기록이야</string>
+  <string name="coach_mock_hint">설정 › AI에서 클라우드 AI를 켜면 더 똑똑하게 답해.</string>
 </resources>
