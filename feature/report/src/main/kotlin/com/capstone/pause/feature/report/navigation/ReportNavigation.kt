@@ -9,7 +9,10 @@ import kotlinx.serialization.Serializable
 @Serializable
 data object ReportKey : NavKey
 
-/** 리포트 탭 화면을 entry provider에 붙인다. */
-fun EntryProviderScope<NavKey>.reportEntries() {
-    entry<ReportKey> { ReportRoute() }
+/**
+ * 리포트 탭 화면을 entry provider에 붙인다. [focusPlans]가 true면 '이번 주에 해 볼 것'까지 내려가고
+ * [onFocusHandled]를 부른다(오늘 탭의 '내 계획' 카드에서 올 때).
+ */
+fun EntryProviderScope<NavKey>.reportEntries(focusPlans: Boolean = false, onFocusHandled: () -> Unit = {}) {
+    entry<ReportKey> { ReportRoute(focusPlans = focusPlans, onFocusHandled = onFocusHandled) }
 }

@@ -10,19 +10,27 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.dp
 import com.capstone.pause.core.ai.report.AiHypothesis
 import com.capstone.pause.core.ai.report.AiReport
 import com.capstone.pause.core.ai.report.GenerationStatus
@@ -57,7 +65,13 @@ internal fun AiSummary(report: WeeklyReportState, local: ReportLocal, onAction: 
 
 /** AI 주간 분석(추측) 묶음. 관찰 카드와 따로 그린다. 모든 AI 문장 옆에 '신고'가 있다. */
 @Composable
-internal fun AiSection(report: WeeklyReportState, local: ReportLocal, onAction: (ReportAction) -> Unit) {
+internal fun AiSection(
+    report: WeeklyReportState,
+    local: ReportLocal,
+    onAction: (ReportAction) -> Unit,
+    focusPlans: Boolean = false,
+    onFocusHandled: () -> Unit = {},
+) {
     val colors = PauseTheme.colors
     Column(verticalArrangement = Arrangement.spacedBy(PauseTheme.spacing.md)) {
         Row(
@@ -77,7 +91,7 @@ internal fun AiSection(report: WeeklyReportState, local: ReportLocal, onAction: 
         Text(stringResource(R.string.report_ai_caption), style = PauseTheme.type.bodySmall, color = colors.ink2)
         val ai = report.ai
         when {
-            ai != null -> AiBody(ai, report, local, onAction)
+            ai != null -> AiBody(ai, report, local, onAction, focusPlans, onFocusHandled)
 
             !report.enoughForAi -> Text(
                 stringResource(R.string.report_ai_not_enough),
@@ -108,7 +122,14 @@ internal fun AiSection(report: WeeklyReportState, local: ReportLocal, onAction: 
 }
 
 @Composable
-private fun AiBody(ai: AiReport, report: WeeklyReportState, local: ReportLocal, onAction: (ReportAction) -> Unit) {
+private fun AiBody(
+    ai: AiReport,
+    report: WeeklyReportState,
+    local: ReportLocal,
+    onAction: (ReportAction) -> Unit,
+    focusPlans: Boolean,
+    onFocusHandled: () -> Unit,
+) {
     val colors = PauseTheme.colors
     val hidden = local.reportedKeys
     val fill = rememberPlaceholderFiller(report)
@@ -125,8 +146,22 @@ private fun AiBody(ai: AiReport, report: WeeklyReportState, local: ReportLocal, 
             onReport = reportAction(h.id),
         )
     }
+    // 오늘 탭의 '내 계획' 카드에서 오면 '이번 주에 해 볼 것'이 보이는 곳까지 내려간다. 해 볼 것이 없어도 요청은 끝낸다.
+    val plansAnchor = remember { BringIntoViewRequester() }
+    // 제목만 보이게 하면 화면 맨 아래에 걸린다. 제목부터 화면 높이의 절반쯤까지를 보이게 해 제목이 위쪽에 오게 한다.
+    val focusHeightPx = with(LocalDensity.current) {
+        (LocalConfiguration.current.screenHeightDp * FOCUS_SCREEN_FRACTION).dp.toPx()
+    }
+    LaunchedEffect(focusPlans) {
+        if (focusPlans) {
+            if (ai.strategies.isNotEmpty()) plansAnchor.bringIntoView(Rect(0f, 0f, 1f, focusHeightPx))
+            onFocusHandled()
+        }
+    }
     if (ai.strategies.isNotEmpty()) {
-        SectionTitle(stringResource(R.string.report_ai_strategies))
+        Box(Modifier.bringIntoViewRequester(plansAnchor)) {
+            SectionTitle(stringResource(R.string.report_ai_strategies))
+        }
         ai.strategies.filter { "s:${it.id}" !in hidden }.forEach { s ->
             StrategyCard(
                 context = s.context,
@@ -250,6 +285,8 @@ private fun HypothesisItem(
         }
     }
 }
+
+private const val FOCUS_SCREEN_FRACTION = 0.6f
 
 private fun confidenceRes(confidence: Confidence): Int = when (confidence) {
     Confidence.HIGH -> R.string.report_confidence_high

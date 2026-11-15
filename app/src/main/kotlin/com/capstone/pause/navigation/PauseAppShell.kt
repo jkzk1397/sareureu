@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -75,6 +76,8 @@ fun PauseAppShell(needsOnboarding: Boolean, openTabRequest: String? = null, onTa
 
     val stacks: Map<TopTab, NavBackStack<NavKey>> = TopTab.entries.associateWith { rememberNavBackStack(it.root) }
     var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
+    // 오늘 탭의 '내 계획' 카드에서 리포트로 올 때만 true. 리포트가 '해 볼 것'까지 내려간 뒤 끈다.
+    var focusReportPlans by rememberSaveable { mutableStateOf(false) }
     val selected = TopTab.entries[selectedIndex]
     val stack = stacks.getValue(selected)
 
@@ -111,10 +114,13 @@ fun PauseAppShell(needsOnboarding: Boolean, openTabRequest: String? = null, onTa
         ) {
             todayEntries(
                 onOpenMessages = { selectedIndex = TopTab.COACH.ordinal },
-                onOpenReport = { selectedIndex = TopTab.REPORT.ordinal },
+                onOpenReport = {
+                    focusReportPlans = true
+                    selectedIndex = TopTab.REPORT.ordinal
+                },
                 onOpenFriends = { selectedIndex = TopTab.FRIENDS.ordinal },
             )
-            reportEntries()
+            reportEntries(focusPlans = focusReportPlans, onFocusHandled = { focusReportPlans = false })
             coachEntries()
             friendsEntries()
             val settingsStack = stacks.getValue(TopTab.SETTINGS)

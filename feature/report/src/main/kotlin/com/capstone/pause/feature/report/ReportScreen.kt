@@ -34,9 +34,18 @@ import kotlin.math.roundToInt
 
 /** 리포트 탭 진입점. */
 @Composable
-fun ReportRoute(viewModel: ReportViewModel = hiltViewModel()) {
+fun ReportRoute(
+    focusPlans: Boolean = false,
+    onFocusHandled: () -> Unit = {},
+    viewModel: ReportViewModel = hiltViewModel(),
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    ReportScreen(uiState = uiState, onAction = viewModel::onAction)
+    ReportScreen(
+        uiState = uiState,
+        onAction = viewModel::onAction,
+        focusPlans = focusPlans,
+        onFocusHandled = onFocusHandled,
+    )
 }
 
 /**
@@ -45,7 +54,13 @@ fun ReportRoute(viewModel: ReportViewModel = hiltViewModel()) {
  * 관찰과 추측은 다른 카드·다른 제목으로 나눈다(AGENTS: 관찰(코드)과 가설(AI)을 화면에서 분리).
  */
 @Composable
-fun ReportScreen(uiState: ReportUiState, onAction: (ReportAction) -> Unit, modifier: Modifier = Modifier) {
+fun ReportScreen(
+    uiState: ReportUiState,
+    onAction: (ReportAction) -> Unit,
+    modifier: Modifier = Modifier,
+    focusPlans: Boolean = false,
+    onFocusHandled: () -> Unit = {},
+) {
     PauseScreenColumn(title = stringResource(R.string.report_title), modifier = modifier) {
         val ready = uiState as? ReportUiState.Ready
         if (ready == null) {
@@ -75,7 +90,13 @@ fun ReportScreen(uiState: ReportUiState, onAction: (ReportAction) -> Unit, modif
                 color = PauseTheme.colors.ink2,
             )
         }
-        AiSection(report = report, local = ready.local, onAction = onAction)
+        AiSection(
+            report = report,
+            local = ready.local,
+            onAction = onAction,
+            focusPlans = focusPlans,
+            onFocusHandled = onFocusHandled,
+        )
         ready.charts?.let { ReportMainCharts(it) }
         var details by rememberSaveable { mutableStateOf(false) }
         TextButton(
