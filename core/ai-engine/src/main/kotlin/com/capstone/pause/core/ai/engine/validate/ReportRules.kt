@@ -29,8 +29,9 @@ object ReportRules {
     private val topContextMin = Regex("\\{topContextMin\\}")
     private val avgMin = Regex("\\{avgMin\\}")
 
-    // 이번 주 합계를 하루·밤 단위로 읽게 하는 말. "하루 평균"은 {avgMin}을 설명하는 말이라 넘어간다.
-    private val perPeriod = Regex("밤마다|날마다|매일|매번|하루(?!\\s*평균)")
+    // 이번 주 합계를 하루·밤·매번 단위로 읽게 하는 말. "하루 평균"은 {avgMin}을 설명하는 말이라 넘어간다.
+    // '때마다'는 "누를 때마다 {topContextMin}", "볼 때마다 {topContextMin}"처럼 한 주 합계를 한 번의 양으로 읽게 한다.
+    private val perPeriod = Regex("밤마다|날마다|매일|매번|때마다|하루(?!\\s*평균)")
     private val daily = Regex("하루|평균")
 
     // 입력의 맥락이 설명하는 낱말은 지어낸 이유가 아니다("수업이나 과제 시간" ← CLASS_WORK).

@@ -15,6 +15,7 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.ai.GenerativeModel
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.Content
+import com.google.firebase.ai.type.FinishReason
 import com.google.firebase.ai.type.FunctionCallPart
 import com.google.firebase.ai.type.FunctionResponsePart
 import com.google.firebase.ai.type.GenerativeBackend
@@ -74,14 +75,24 @@ class CloudLlmClient @Inject constructor(@ApplicationContext private val context
             val response = newModel(req.systemPrompt, tools = null, jsonOutput = true)
                 .generateContent(content("user") { text(req.userPrompt) })
             val text = response.text
-            if (text.isNullOrBlank()) {
-                LlmResult.Failure("empty_response")
-            } else {
-                LlmResult.Success(text, model, response.usageMetadata?.totalTokenCount)
+            val usage = response.usageMetadata
+            when {
+                // 출력 한도에서 끊긴 JSON은 읽을 수 없다. "JSON을 읽을 수 없음" 대신 끊겼다는 것과 토큰 수를 남겨
+                // 설정 › AI가 한 일에서 원인을 볼 수 있게 한다(생각 토큰도 출력 한도에 들어간다).
+                response.candidates.firstOrNull()?.finishReason == FinishReason.MAX_TOKENS -> LlmResult.Failure(
+                    "출력이 길어 중간에 끊김(출력 ${usage?.candidatesTokenCount ?: 0}, " +
+                        "생각 ${usage?.thoughtsTokenCount ?: 0} 토큰)",
+                )
+
+                text.isNullOrBlank() -> LlmResult.Failure("empty_response")
+
+                else -> LlmResult.Success(text, model, usage?.totalTokenCount)
             }
         }.getOrElse { e ->
             log.w(TAG, "cloud generate failed: ${e.javaClass.simpleName}")
-            LlmResult.Failure(e.javaClass.simpleName, e)
+            // 서버 오류는 종류만으로는 원인을 알 수 없어 메시지 앞부분을 함께 남긴다(사용 기록은 들어 있지 않다).
+            val detail = e.message?.lineSequence()?.firstOrNull()?.take(FAILURE_DETAIL_CHARS).orEmpty()
+            LlmResult.Failure(listOf(e.javaClass.simpleName, detail).filter { it.isNotBlank() }.joinToString(": "), e)
         }
     }
 
@@ -130,5 +141,6 @@ class CloudLlmClient @Inject constructor(@ApplicationContext private val context
     private companion object {
         const val TAG = "CloudLlmClient"
         const val JSON_MIME = "application/json"
+        const val FAILURE_DETAIL_CHARS = 80
     }
 }
