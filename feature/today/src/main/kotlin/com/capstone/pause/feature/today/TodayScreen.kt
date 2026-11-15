@@ -249,6 +249,8 @@ private fun ClockCard(ready: TodayUiState.Ready) {
                     caption = stringResource(R.string.today_clock_caption),
                     nowMinuteOfDay = summary.now.hour * MINUTES_PER_HOUR + summary.now.minute,
                     riskHours = summary.riskHours,
+                    // 오늘 본 시간은 화면 맨 위에 크게 있다. 시계 가운데에는 되풀이하지 않는다.
+                    showTotal = false,
                 ),
             )
         }
