@@ -50,6 +50,23 @@ class GeminiTimeMeaningTest {
     }
 
     @Test
+    fun weeklyTotalReadAsEveryTimeAmountIsRejected() {
+        // 폰에서 본 사례(2026-11-15): 한 주 합계를 "누를 때마다", "볼 때마다"의 양처럼 쓴 문장이 통과했다.
+        listOf(
+            "메신저 알림을 누를 때마다 {topContext}에 {topContextMin} 동안 보게 되나 봐.",
+            "{topContext}에 숏폼을 볼 때마다 {topContextMin}씩 흘러가네.",
+        ).forEach { line ->
+            assertTrue(ReportRules.problems(line, "t", "").any { "'때마다' 양처럼" in it }, line)
+        }
+        // 시간 자리표시자가 없는 '때마다'는 숫자를 틀리게 보이지 않으니 막지 않는다.
+        val noNumber = "메신저 알림을 누를 때마다 자연스럽게 숏폼으로 빠지는 것 같아."
+        assertTrue(ReportRules.problems(noNumber, "t", "").isEmpty(), noNumber)
+        // 합계를 합계로 쓴 문장은 그대로 통과한다.
+        val ok = "{topContext}에 이번 주 {topContextMin} 봤어."
+        assertTrue(ReportRules.problems(ok, "t", "").isEmpty(), ok)
+    }
+
+    @Test
     fun v4OutputsPassUnlessTheyBreakOtherRules() {
         val pass = listOf("T-01_run1", "T-01_run2", "T-01_run3", "T-02", "T-03", "T-04", "T-06", "T-06_run3")
         pass.forEach { assertIs<Validation.Valid<WeeklyReportOut>>(judge("v4", it), it) }
