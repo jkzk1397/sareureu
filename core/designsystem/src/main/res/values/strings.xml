@@ -30,7 +30,7 @@
   <string name="designsystem_clock_label_12">12시</string>
   <string name="designsystem_clock_label_18">18</string>
   <string name="designsystem_clock_now">지금</string>
-  <string name="designsystem_clock_risk">위험 시간대</string>
+  <string name="designsystem_clock_risk">자주 길어지는 시간</string>
   <string name="designsystem_clock_night">위 반은 밤</string>
   <string name="designsystem_clock_a11y">%1$s %2$s. %3$s</string>
   <string name="designsystem_clock_a11y_item">%1$s %2$d분</string>
@@ -41,7 +41,7 @@
   <!-- 히트맵 -->
   <string name="designsystem_heatmap_less">적음</string>
   <string name="designsystem_heatmap_more">많음</string>
-  <string name="designsystem_heatmap_a11y">요일별 시간대 표. 진할수록 많이 본 칸, 테두리 칸은 위험 시간대</string>
+  <string name="designsystem_heatmap_a11y">요일별 시간대 표. 진할수록 많이 본 칸, 테두리 칸은 자주 길어지는 시간</string>
 
   <!-- 변화 표시 -->
   <string name="designsystem_change_down">▼ %1$s</string>
@@ -59,7 +59,7 @@
   <!-- 랭킹 -->
   <string name="designsystem_rank_me">나</string>
   <string name="designsystem_rank_coverage">기록 %1$d%%</string>
-  <string name="designsystem_rank_measuring">측정 중</string>
+  <string name="designsystem_rank_measuring">재는 중</string>
 
   <!-- 권한 고지 -->
   <string name="designsystem_permission_what">무엇을 보나요</string>
@@ -68,8 +68,8 @@
   <string name="designsystem_permission_if_denied">거절하면</string>
 
   <!-- 흐름도 -->
-  <string name="designsystem_histogram_a11y">세션 길이 분포</string>
-  <string name="designsystem_trend_a11y">주별 하루 평균과 기준선</string>
+  <string name="designsystem_histogram_a11y">한 번 볼 때 길이 분포</string>
+  <string name="designsystem_trend_a11y">주별 하루 평균과 시작할 때 평균</string>
   <string name="designsystem_rhythm_a11y">하루 리듬 미리보기</string>
   <!-- 시간 길이 -->
   <string name="designsystem_duration_hm">%1$d시간 %2$d분</string>

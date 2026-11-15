@@ -29,6 +29,7 @@ import com.capstone.pause.core.designsystem.buddy.BuddyAvatar
 import com.capstone.pause.core.designsystem.theme.PauseColors
 import com.capstone.pause.core.designsystem.theme.PauseSizes
 import com.capstone.pause.core.designsystem.theme.PauseTheme
+import com.capstone.pause.core.designsystem.theme.isLargeFont
 import com.capstone.pause.core.model.BuddyExpression
 
 /**
@@ -46,6 +47,7 @@ fun RankRow(
     reductionDirection: ChangeDirection = ChangeDirection.DOWN,
 ) {
     val colors = PauseTheme.colors
+    val large = isLargeFont()
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.sm),
@@ -87,13 +89,20 @@ fun RankRow(
                 style = PauseTheme.type.caption,
                 color = colors.ink2,
             )
+            // 큰 글자: 줄어든 정도를 이름 아래로 내려 가운데 칸이 눌려 한 글자씩 꺾이지 않게.
+            if (large) ReductionText(reductionLabel, reductionDirection)
         }
-        Text(
-            text = reductionLabel,
-            style = PauseTheme.type.title,
-            color = if (reductionDirection == ChangeDirection.DOWN) colors.success else colors.ink2,
-        )
+        if (!large) ReductionText(reductionLabel, reductionDirection)
     }
+}
+
+@Composable
+private fun ReductionText(label: String, direction: ChangeDirection) {
+    Text(
+        text = label,
+        style = PauseTheme.type.title,
+        color = if (direction == ChangeDirection.DOWN) PauseTheme.colors.success else PauseTheme.colors.ink2,
+    )
 }
 
 /**

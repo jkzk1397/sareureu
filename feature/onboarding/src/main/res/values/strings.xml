@@ -5,7 +5,7 @@
   <string name="onboarding_back">이전</string>
   <string name="onboarding_progress">%1$d / %2$d</string>
   <string name="onboarding_progress_a11y">%2$d단계 중 %1$d단계</string>
-  <string name="onboarding_local_only">맥락을 나누는 데만 쓰고 기기 밖으로 보내지 않아.</string>
+  <string name="onboarding_local_only">어떤 때인지 나누는 데만 쓰고 기기 밖으로 보내지 않아.</string>
 
   <!-- 1. 연령 확인 (ADR-0009) -->
   <string name="onboarding_age_title">먼저 나이대를 알려 줘</string>
@@ -20,9 +20,9 @@
 
   <!-- 1. 약관·개인정보 처리 안내 -->
   <string name="onboarding_terms_device_title">이 폰 안에만 남는 것</string>
-  <string name="onboarding_terms_device_body">앱을 연 시각과 순서(사용 기록), 숏폼 세션, 알림에 대한 내 답, 채팅, 프로필. 세션은 90일, 원시 기록은 7일 뒤 지워져.</string>
+  <string name="onboarding_terms_device_body">앱을 열고 닫은 시각과 순서, 숏폼을 본 기록, 알림에 대한 내 답, 채팅, 프로필. 본 기록은 90일, 앱을 열고 닫은 기록은 7일 뒤 지워져.</string>
   <string name="onboarding_terms_cloud_title">동의하면 밖으로 나가는 것</string>
-  <string name="onboarding_terms_cloud_body">AI를 켜면: 코드가 계산한 요약(맥락별 시간, 감소율 등)과 연령대·신분·관심사. 친구 기능을 켜면: 하루 감소율과 기록률만.</string>
+  <string name="onboarding_terms_cloud_body">AI를 켜면: 앱이 센 요약 숫자(어떤 때 몇 분 봤는지, 얼마나 줄었는지 등)와 연령대·신분·관심사. 친구 기능을 켜면: 하루에 얼마나 줄었는지와 기록된 비율만.</string>
   <string name="onboarding_terms_never_title">절대 하지 않는 것</string>
   <string name="onboarding_terms_never_body">화면 글자·영상 제목·메시지를 저장하지 않아. 다른 앱을 대신 누르거나 닫지 않아. 설치 앱 목록·연락처·위치를 보내지 않아.</string>
   <string name="onboarding_terms_control">설정 › 개인정보에서 언제든 내보내고 모두 지울 수 있어.</string>
@@ -49,7 +49,7 @@
   <string name="onboarding_goal_mood">기분 챙기기</string>
   <string name="onboarding_goal_other">그냥 궁금해서</string>
   <string name="onboarding_daily_goal_title">하루 숏폼 목표</string>
-  <string name="onboarding_daily_goal_hint">기준선이 생기기 전(첫 7일)에 캐릭터가 녹는 기준이야.</string>
+  <string name="onboarding_daily_goal_hint">처음 7일 동안 캐릭터가 녹는 기준이야.</string>
   <string name="onboarding_minutes">%1$d분</string>
 
   <!-- 5. 권한 -->
@@ -59,7 +59,7 @@
   <string name="onboarding_perm_usage_denied">나중에 설정 › 감지에서 언제든 켤 수 있어.</string>
   <string name="onboarding_perm_usage_steps">설정에서 이 앱을 찾아 \'사용 기록 접근 허용\'을 켜고 돌아오면 돼.</string>
   <string name="onboarding_perm_noti_what">AI 친구가 보내는 메신저형 알림, 내가 정한 예약 알림, 친구가 맡긴 잔소리.</string>
-  <string name="onboarding_perm_noti_why">숏폼을 오래 볼 때 말 걸고, 위험 시간대 10분 전에 미리 알려 주려고.</string>
+  <string name="onboarding_perm_noti_why">숏폼을 오래 볼 때 말 걸고, 자주 길어지는 시간 10분 전에 미리 알려 주려고.</string>
   <string name="onboarding_perm_noti_not">짧은 간격으로 연달아 보내지 않아. 광고 알림은 없어.</string>
   <string name="onboarding_perm_noti_denied">켜지 않으면 화면 위 캐릭터 카드로만 말 걸어.</string>
   <string name="onboarding_perm_overlay_what">숏폼을 볼 때만 화면 가장자리에 작은 캐릭터와 카드를 띄워.</string>
@@ -70,14 +70,14 @@
   <!-- 6. AI 동의 -->
   <string name="onboarding_ai_title">AI 친구 쓸래?</string>
   <string name="onboarding_ai_sent_title">클라우드로 보내는 것</string>
-  <string name="onboarding_ai_sent_body">코드가 계산한 주간 요약(맥락별 분, 감소율, 기록률, 위험 시간대, 앱 종류), 연령대·신분·관심사·목표·말투, 채팅 중 내가 쓴 문장(전화번호·이메일은 가림).</string>
+  <string name="onboarding_ai_sent_body">앱이 센 요약 숫자(어떤 때 몇 분 봤는지, 시작할 때보다 얼마나 줄었는지, 기록된 비율, 자주 길어지는 시간, 앱 종류), 연령대·신분·관심사·목표·말투, 채팅 중 내가 쓴 문장(전화번호·이메일은 가림).</string>
   <string name="onboarding_ai_not_sent_title">보내지 않는 것</string>
-  <string name="onboarding_ai_not_sent_body">닉네임, 원시 사용 기록, 설치 앱 목록, 연락처, 정확한 위치, 친구 이름.</string>
-  <string name="onboarding_ai_transfer">국외 이전 안내: 입력은 Google LLC(미국)의 서버로 전송돼 AI 응답을 만드는 데 쓰여. 무료 등급에서는 Google이 서비스 개선에 쓸 수 있고 사람 검토자가 볼 수 있어. 그래서 집계 숫자와 범주만 보내. 언제든 설정 › AI에서 끌 수 있어.</string>
+  <string name="onboarding_ai_not_sent_body">닉네임, 앱을 열고 닫은 기록, 설치 앱 목록, 연락처, 정확한 위치, 친구 이름.</string>
+  <string name="onboarding_ai_transfer">국외 이전 안내: 입력은 Google LLC(미국)의 서버로 전송돼 AI 응답을 만드는 데 쓰여. 무료 등급에서는 Google이 서비스 개선에 쓸 수 있고 사람 검토자가 볼 수 있어. 그래서 합계 숫자와 종류만 보내. 언제든 설정 › AI에서 끌 수 있어.</string>
 
   <!-- 5단계 온보딩(작업 3) -->
   <string name="onboarding_start_body">만 18세 이상만 쓸 수 있어. 생년월일은 묻지 않아.</string>
-  <string name="onboarding_terms_summary">사용 기록은 이 폰 안에만 남고 화면 글자나 메시지는 저장하지 않아. AI를 켜면 코드가 센 요약만 밖으로 나가.</string>
+  <string name="onboarding_terms_summary">사용 기록은 이 폰 안에만 남고 화면 글자나 메시지는 저장하지 않아. AI를 켜면 앱이 센 요약 숫자만 밖으로 나가.</string>
   <string name="onboarding_more">자세히</string>
   <string name="onboarding_less">접기</string>
   <string name="onboarding_sleep_title">평일엔 보통 몇 시에 자?</string>
@@ -93,7 +93,7 @@
   <string name="onboarding_perm_overlay_line">숏폼 위에 작은 캐릭터와 카드를 띄워.</string>
   <string name="onboarding_perm_allow_short">허용</string>
   <string name="onboarding_perm_granted_mark">✓ 허용됨</string>
-  <string name="onboarding_ai_line">AI가 코드가 센 숫자를 보고 말을 걸어. 입력은 Google 서버(미국)로 가.</string>
+  <string name="onboarding_ai_line">AI가 앱이 센 숫자를 보고 말을 걸어. 입력은 Google 서버(미국)로 가.</string>
   <string name="onboarding_ai_use">AI 친구 쓰기</string>
-  <string name="onboarding_ai_later_note">나중에 골라도 규칙으로 만든 문장으로 다 돼. 설정 › AI에서 언제든 바꿀 수 있어.</string>
+  <string name="onboarding_ai_later_note">나중에 골라도 기본 문장으로 다 돼. 설정 › AI에서 언제든 바꿀 수 있어.</string>
 </resources>
