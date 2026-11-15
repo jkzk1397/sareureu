@@ -22,7 +22,12 @@ data class CoachTemplates(
     val diff: String,
     val type: String,
     val summary: String,
+    /** 기록이 모자라 답할 수 없을 때. */
     val unknown: String,
+    /** 분을 "2시간 45분"처럼 쓰는 틀(`%h%`, `%m%`). 화면의 다른 곳과 같은 모양으로 맞춘다. */
+    val durationHm: String = "%h%:%m%",
+    val durationH: String = "%h%",
+    val durationM: String = "%m%",
     val followUps: List<String>,
     val dayLabels: Map<String, String>,
     val entryLabels: Map<String, String>,
