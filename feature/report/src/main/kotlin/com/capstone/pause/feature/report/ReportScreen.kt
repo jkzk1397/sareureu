@@ -2,11 +2,8 @@ package com.capstone.pause.feature.report
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -90,7 +87,7 @@ fun ReportScreen(uiState: ReportUiState, onAction: (ReportAction) -> Unit, modif
             Text(
                 stringResource(if (details) R.string.report_detail_hide else R.string.report_detail_show),
                 style = PauseTheme.type.label,
-                color = PauseTheme.colors.ink2,
+                color = PauseTheme.colors.ink,
             )
         }
         if (details) {
@@ -121,43 +118,41 @@ private fun WeekHeader(report: WeeklyReportState) {
 @Composable
 private fun StatRow(report: WeeklyReportState) {
     TileGroup { tile ->
-        PauseCard(modifier = tile) {
+        StatHero(
+            value = durationLabel(report.avgMinPerDay.roundToInt()),
+            caption = stringResource(R.string.report_stat_avg),
+            valueStyle = TileValueStyle,
+            modifier = tile,
+        )
+        val rate = report.reductionRate
+        if (rate == null) {
             StatHero(
-                value = durationLabel(report.avgMinPerDay.roundToInt()),
-                caption = stringResource(R.string.report_stat_avg),
+                value = stringResource(R.string.report_stat_reduction_measuring),
+                caption = stringResource(R.string.report_stat_reduction),
                 valueStyle = TileValueStyle,
+                modifier = tile,
+            )
+        } else {
+            StatHero(
+                value = stringResource(R.string.report_percent, (abs(rate) * PERCENT).roundToInt()),
+                caption = stringResource(R.string.report_stat_reduction),
+                valueStyle = TileValueStyle,
+                direction = if (rate >= 0) ChangeDirection.DOWN else ChangeDirection.UP,
+                change = stringResource(if (rate >= 0) R.string.report_stat_less else R.string.report_stat_more),
+                modifier = tile,
             )
         }
-        PauseCard(modifier = tile) {
-            val rate = report.reductionRate
-            if (rate == null) {
-                StatHero(
-                    value = stringResource(R.string.report_stat_reduction_measuring),
-                    caption = stringResource(R.string.report_stat_reduction),
-                    valueStyle = TileValueStyle,
-                )
+        val stop = report.stopRate
+        StatHero(
+            value = if (stop == null) {
+                stringResource(R.string.report_stat_none)
             } else {
-                StatHero(
-                    value = stringResource(R.string.report_percent, (abs(rate) * PERCENT).roundToInt()),
-                    caption = stringResource(R.string.report_stat_reduction),
-                    valueStyle = TileValueStyle,
-                    direction = if (rate >= 0) ChangeDirection.DOWN else ChangeDirection.UP,
-                    change = stringResource(if (rate >= 0) R.string.report_stat_less else R.string.report_stat_more),
-                )
-            }
-        }
-        PauseCard(modifier = tile) {
-            val stop = report.stopRate
-            StatHero(
-                value = if (stop == null) {
-                    stringResource(R.string.report_stat_none)
-                } else {
-                    stringResource(R.string.report_percent, (stop * PERCENT).roundToInt())
-                },
-                caption = stringResource(R.string.report_stat_stop),
-                valueStyle = TileValueStyle,
-            )
-        }
+                stringResource(R.string.report_percent, (stop * PERCENT).roundToInt())
+            },
+            caption = stringResource(R.string.report_stat_stop),
+            valueStyle = TileValueStyle,
+            modifier = tile,
+        )
     }
 }
 
@@ -194,20 +189,24 @@ internal const val PERCENT = 100
 private val TileValueStyle: TextStyle
     @Composable get() = PauseTheme.type.body.copy(fontWeight = FontWeight.Bold)
 
-/** 통계 칸 묶음: 보통은 세 칸 가로, 큰 글자에서는 세로로 쌓는다. [content]는 칸마다 받은 Modifier를 쓴다. */
+/**
+ * 통계 칸 묶음: 카드 한 장 안에 세 칸. 칸마다 카드를 두면 좁은 폰(가로 360dp)에서 "1시간 21분"이 두 줄로 꺾인다.
+ * 큰 글자에서는 세로로 쌓는다. [content]는 칸마다 받은 Modifier를 쓴다.
+ */
 @Composable
 private fun TileGroup(content: @Composable (Modifier) -> Unit) {
-    if (isLargeFont()) {
-        Column(verticalArrangement = Arrangement.spacedBy(PauseTheme.spacing.sm)) { content(Modifier.fillMaxWidth()) }
-    } else {
-        // 세 칸 높이를 맞춘다(변화 줄이 있는 칸만 길어지지 않게).
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.sm),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(IntrinsicSize.Min),
-        ) {
-            content(Modifier.weight(1f).fillMaxHeight())
+    PauseCard {
+        if (isLargeFont()) {
+            Column(verticalArrangement = Arrangement.spacedBy(PauseTheme.spacing.md)) {
+                content(Modifier.fillMaxWidth())
+            }
+        } else {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.sm),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                content(Modifier.weight(1f))
+            }
         }
     }
 }

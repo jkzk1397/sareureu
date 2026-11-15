@@ -1,7 +1,9 @@
 package com.capstone.pause.feature.report
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import com.capstone.pause.core.ai.report.AiHypothesis
@@ -212,9 +215,12 @@ private fun HypothesisItem(
         }
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
             if (evidence.isNotEmpty()) {
-                TextButton(
-                    onClick = { open = !open },
-                    modifier = Modifier.heightIn(min = PauseTheme.spacing.minTouch),
+                // 글자 왼쪽 끝을 카드 안 문장과 맞춘다(TextButton은 안쪽 여백 때문에 들여 써진다).
+                Box(
+                    contentAlignment = Alignment.CenterStart,
+                    modifier = Modifier
+                        .heightIn(min = PauseTheme.spacing.minTouch)
+                        .clickable(role = Role.Button) { open = !open },
                 ) {
                     Text(
                         stringResource(if (open) R.string.report_evidence_hide else R.string.report_evidence_show),

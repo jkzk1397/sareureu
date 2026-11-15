@@ -18,8 +18,8 @@
   <string name="report_obs_title">숫자로 보기</string>
   <string name="report_obs_caption">이 폰이 직접 센 숫자야. AI가 만든 숫자가 아니야.</string>
   <string name="report_obs_week_total">일주일 동안 %1$s 봤어. 하루 평균 %2$s, 모두 %3$d번</string>
-  <string name="report_obs_reduction_down">시작할 때 하루 %1$s에서 이번 주 %2$s로 %3$d%% 줄었어</string>
-  <string name="report_obs_reduction_up">시작할 때 하루 %1$s에서 이번 주 %2$s로 %3$d%% 늘었어</string>
+  <string name="report_obs_reduction_down">하루 %1$s 보다가 이번 주는 %2$s. 시작할 때보다 %3$d%% 줄었어</string>
+  <string name="report_obs_reduction_up">하루 %1$s 보다가 이번 주는 %2$s. 시작할 때보다 %3$d%% 늘었어</string>
   <string name="report_obs_context">%1$s: %2$s 봤어. 전체의 %3$d%%, %4$d번</string>
   <string name="report_obs_night">자기 전과 한밤중: %1$s 봤어. 전체의 %2$d%%</string>
   <string name="report_obs_risk">%1$s %2$d시쯤에 평균 %3$s씩 봤어</string>
@@ -106,18 +106,18 @@
   <string name="report_peer_caption_demo">같은 연령대·신분의 하루 평균 · 시연용 가상 데이터</string>
   <string name="report_peer_me">나</string>
   <string name="report_peer_peer">또래</string>
-  <string name="report_peer_baseline">내 기준선</string>
+  <string name="report_peer_baseline">시작할 때</string>
   <string name="report_peer_a11y">하루 평균 나 %1$s, 또래 %2$s</string>
   <string name="report_type_fact">자기 전과 한밤중이 %1$d%%였어</string>
   <string name="report_type_not_ready">3일쯤 쓰면 유형이 나와.</string>
-  <string name="report_evidence_show">왜 이렇게 생각했어?</string>
-  <string name="report_evidence_hide">근거 접기</string>
+  <string name="report_evidence_show">왜 이렇게 생각했어? ▾</string>
+  <string name="report_evidence_hide">근거 접기 ▴</string>
   <string name="report_evidence_caption">이 폰이 직접 센 기록이야</string>
   <string name="report_confidence_high">꽤 그런 것 같아</string>
   <string name="report_confidence_medium">그럴 수도 있어</string>
   <string name="report_confidence_low">잘 모르겠어. 네가 알려 줘</string>
   <string name="report_flow_exit_title">어떻게 끝났어?</string>
   <string name="report_flow_apps">본 곳: %1$s</string>
-  <string name="report_detail_show">기록 더 자세히 보기</string>
-  <string name="report_detail_hide">자세한 기록 접기</string>
+  <string name="report_detail_show">기록 더 자세히 보기 ▾</string>
+  <string name="report_detail_hide">자세한 기록 접기 ▴</string>
 </resources>

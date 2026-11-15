@@ -61,7 +61,9 @@ internal fun ViewerTypeCard(report: WeeklyReportState, local: ReportLocal, onAct
         }
         if (ai != null && "type" !in local.reportedKeys) {
             Text(fill(ai.viewerTypeLine), style = PauseTheme.type.bodySmall, color = onContainer)
-            ReportButton { onAction(ReportAction.ReportSentence(ai.callId, "type")) }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                ReportButton { onAction(ReportAction.ReportSentence(ai.callId, "type")) }
+            }
         }
     }
 }

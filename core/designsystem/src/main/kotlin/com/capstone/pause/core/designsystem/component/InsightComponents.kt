@@ -3,12 +3,9 @@ package com.capstone.pause.core.designsystem.component
 import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -30,7 +27,6 @@ import com.capstone.pause.core.designsystem.buddy.BuddyAvatar
 import com.capstone.pause.core.designsystem.theme.PauseSizes
 import com.capstone.pause.core.designsystem.theme.PauseTheme
 import com.capstone.pause.core.model.BuddyExpression
-import com.capstone.pause.core.model.Confidence
 import com.capstone.pause.core.model.ContextSlot
 import com.capstone.pause.core.model.Verdict
 
@@ -58,58 +54,6 @@ fun BuddyBubble(
                 .border(PauseTheme.spacing.hairline, colors.line, PauseTheme.shapes.card)
                 .padding(horizontal = PauseTheme.spacing.lg, vertical = PauseTheme.spacing.md),
         )
-    }
-}
-
-/** AI 문장 옆 근거 칩("화 23:40 · 쇼츠 32분"). 탭하면 그 세션·통계로. */
-@Composable
-fun EvidenceChip(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Text(
-        text = text,
-        style = PauseTheme.type.label,
-        color = PauseTheme.colors.ink2,
-        modifier = modifier
-            .heightIn(min = PauseSizes.chipMinHeight)
-            .background(PauseTheme.colors.surfaceAlt, PauseTheme.shapes.pill)
-            .clickable(role = Role.Button, onClick = onClick)
-            .padding(horizontal = PauseTheme.spacing.sm, vertical = PauseTheme.spacing.xs),
-    )
-}
-
-/** 가설 카드: 문장 + 확신도(글자) + 근거 칩 + 맞아/반쯤/아니야. */
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-fun HypothesisCard(
-    text: String,
-    confidence: Confidence,
-    evidence: List<String>,
-    verdict: Verdict?,
-    onVerdict: (Verdict) -> Unit,
-    modifier: Modifier = Modifier,
-    onEvidenceClick: (Int) -> Unit = {},
-    footer: (@Composable () -> Unit)? = null,
-) {
-    PauseCard(modifier = modifier) {
-        Text(
-            text = stringResource(confidence.labelRes()),
-            style = PauseTheme.type.label,
-            color = PauseTheme.colors.ink2,
-        )
-        Text(text = text, style = PauseTheme.type.body, color = PauseTheme.colors.ink)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xs)) {
-            evidence.forEachIndexed { i, e -> EvidenceChip(e, onClick = { onEvidenceClick(i) }) }
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xs)) {
-            Verdict.entries.forEach { v ->
-                ChoicePill(
-                    text = stringResource(v.labelRes()),
-                    selected = verdict == v,
-                    onClick = { onVerdict(v) },
-                    modifier = Modifier.weight(1f),
-                )
-            }
-        }
-        footer?.invoke()
     }
 }
 
@@ -198,13 +142,6 @@ fun StrategyCard(
     }
 }
 
-/** 확신도 글자. */
-fun Confidence.labelRes(): Int = when (this) {
-    Confidence.HIGH -> R.string.designsystem_confidence_high
-    Confidence.MEDIUM -> R.string.designsystem_confidence_medium
-    Confidence.LOW -> R.string.designsystem_confidence_low
-}
-
 /** 판정 글자. */
 fun Verdict.labelRes(): Int = when (this) {
     Verdict.YES -> R.string.designsystem_verdict_yes
@@ -224,13 +161,6 @@ private fun InsightComponentsPreview() {
             verticalArrangement = Arrangement.spacedBy(PauseTheme.spacing.md),
         ) {
             BuddyBubble(text = "오늘 알림 3번 중 2번 멈췄어!")
-            HypothesisCard(
-                text = "메신저 답장 뒤에 숏폼으로 넘어가는 것 같아",
-                confidence = Confidence.MEDIUM,
-                evidence = listOf("화 23:40 · 쇼츠 32분", "o3"),
-                verdict = Verdict.YES,
-                onVerdict = {},
-            )
             StrategyCard(ContextSlot.PRE_SLEEP, "누우면", "폰은 책상 충전기에", selected = true, onToggle = {})
         }
     }

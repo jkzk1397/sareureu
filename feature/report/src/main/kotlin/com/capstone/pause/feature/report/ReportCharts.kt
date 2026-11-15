@@ -168,7 +168,8 @@ private fun ShareList(items: List<Pair<String, Int>>, total: Int) {
         val name = keyLabel(key)
         val value = stringResource(R.string.report_percent, (count * PERCENT.toDouble() / total).roundToInt())
         Column(
-            Modifier
+            verticalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xxs),
+            modifier = Modifier
                 .fillMaxWidth()
                 .clearAndSetSemantics { contentDescription = "$name $value" },
         ) {
