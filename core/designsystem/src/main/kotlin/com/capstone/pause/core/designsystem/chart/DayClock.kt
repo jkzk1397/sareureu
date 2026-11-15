@@ -32,6 +32,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import com.capstone.pause.core.designsystem.R
+import com.capstone.pause.core.designsystem.component.durationLabel
 import com.capstone.pause.core.designsystem.component.labelRes
 import com.capstone.pause.core.designsystem.theme.CappedFontScale
 import com.capstone.pause.core.designsystem.theme.PauseColors
@@ -64,6 +65,11 @@ data class DayClockData(
     /** 위험 시간대. 22..23이면 22:00–24:00 호. */
     val riskHours: List<IntRange> = emptyList(),
     val scale: DayClockScale = DayClockScale.Today,
+    /**
+     * 가운데에 합계를 쓸지. 같은 숫자가 바로 위에 크게 있는 화면(오늘 탭)은 false로 두어 [caption]만 보인다.
+     * 화면 읽기 설명에는 합계가 그대로 들어간다.
+     */
+    val showTotal: Boolean = true,
 )
 
 /** 다이얼 비율(지름 대비). 06 문서 7절 값을 지름 300dp 기준으로 환산했다. */
@@ -151,7 +157,15 @@ private fun DayClockContent(data: DayClockData, modifier: Modifier, diameter: Dp
         ) {
             // 일주일 합계("11시간 12분")는 가운데 원에 비해 길어서 한 단계 작은 글자로 한 줄에 둔다.
             val totalStyle = if (data.scale == DayClockScale.Week) PauseTheme.type.label else PauseTheme.type.title
-            Text(data.totalLabel, style = totalStyle, color = colors.ink, textAlign = TextAlign.Center, maxLines = 2)
+            if (data.showTotal) {
+                Text(
+                    data.totalLabel,
+                    style = totalStyle,
+                    color = colors.ink,
+                    textAlign = TextAlign.Center,
+                    maxLines = 2,
+                )
+            }
             Text(data.caption, style = PauseTheme.type.caption, color = colors.ink2, textAlign = TextAlign.Center)
         }
     }
@@ -162,7 +176,8 @@ private fun clockDescription(data: DayClockData): String {
     val totals = ContextSlot.entries.map { slot -> slot to data.minutesByHour.sumOf { it[slot] ?: 0 } }
         .filter { it.second > 0 }
     val items = totals.map { (slot, min) ->
-        stringResource(R.string.designsystem_clock_a11y_item, stringResource(slot.labelRes()), min)
+        // "이동 165분"이 아니라 화면의 다른 곳처럼 "이동 2시간 45분"으로 읽는다.
+        stringResource(R.string.designsystem_clock_a11y_item, stringResource(slot.labelRes()), durationLabel(min))
     }.joinToString(", ")
     return stringResource(R.string.designsystem_clock_a11y, data.caption, data.totalLabel, items)
 }

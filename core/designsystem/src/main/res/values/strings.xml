@@ -33,7 +33,7 @@
   <string name="designsystem_clock_risk">자주 길어지는 시간</string>
   <string name="designsystem_clock_night">위 반은 밤</string>
   <string name="designsystem_clock_a11y">%1$s %2$s. %3$s</string>
-  <string name="designsystem_clock_a11y_item">%1$s %2$d분</string>
+  <string name="designsystem_clock_a11y_item">%1$s %2$s</string>
   <string name="designsystem_clock_toggle_clock">시계</string>
   <string name="designsystem_clock_toggle_table">표</string>
   <string name="designsystem_minutes">%1$d분</string>
