@@ -41,6 +41,7 @@ import com.capstone.pause.core.designsystem.component.CardFooter
 import com.capstone.pause.core.designsystem.component.ChoicePill
 import com.capstone.pause.core.designsystem.component.PauseCard
 import com.capstone.pause.core.designsystem.component.PrimaryButton
+import com.capstone.pause.core.designsystem.component.Reveal
 import com.capstone.pause.core.designsystem.component.StrategyCard
 import com.capstone.pause.core.designsystem.component.labelRes
 import com.capstone.pause.core.designsystem.theme.PauseSizes
@@ -267,12 +268,12 @@ private fun HypothesisItem(
             Spacer(Modifier.weight(1f))
             ReportButton(onReport)
         }
-        if (open) {
+        Reveal(open) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xs),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(colors.surfaceAlt, PauseTheme.shapes.small)
+                    .background(colors.surfaceAlt, PauseTheme.shapes.nested)
                     .padding(PauseTheme.spacing.md),
             ) {
                 Text(

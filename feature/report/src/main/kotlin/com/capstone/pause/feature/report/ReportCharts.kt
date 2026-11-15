@@ -292,7 +292,7 @@ private fun Insight(text: String) {
         color = PauseTheme.colors.onAccentContainer,
         modifier = Modifier
             .fillMaxWidth()
-            .background(PauseTheme.colors.accentContainer, PauseTheme.shapes.small)
+            .background(PauseTheme.colors.accentContainer, PauseTheme.shapes.nested)
             .padding(PauseTheme.spacing.md),
     )
 }

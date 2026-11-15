@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
@@ -40,6 +41,8 @@ import com.capstone.pause.core.ai.engine.safety.HelpLine
 import com.capstone.pause.core.designsystem.R as DesignR
 import com.capstone.pause.core.designsystem.buddy.BuddyAvatar
 import com.capstone.pause.core.designsystem.component.PrimaryButton
+import com.capstone.pause.core.designsystem.component.Reveal
+import com.capstone.pause.core.designsystem.component.pauseSurface
 import com.capstone.pause.core.designsystem.theme.PauseTheme
 import com.capstone.pause.core.model.BuddyExpression
 
@@ -117,7 +120,7 @@ private fun ReplyExtras(details: ReplyDetails, onAction: (CoachAction) -> Unit) 
             verticalArrangement = Arrangement.spacedBy(spacing.xs),
             modifier = Modifier
                 .fillMaxWidth()
-                .background(colors.accentContainer, PauseTheme.shapes.card)
+                .background(colors.accentContainer, PauseTheme.shapes.small)
                 .padding(spacing.md),
         ) {
             Text(
@@ -166,7 +169,7 @@ private fun ReplyExtras(details: ReplyDetails, onAction: (CoachAction) -> Unit) 
             )
         }
     }
-    if (open && details.evidence.isNotEmpty()) {
+    Reveal(open && details.evidence.isNotEmpty()) {
         // 맨 아래 답에서 펼치면 펼친 부분이 입력창 뒤에 가려진다. 펼친 상자가 보이는 곳까지 따라 내려간다.
         val bring = remember { BringIntoViewRequester() }
         LaunchedEffect(Unit) { bring.bringIntoView() }
@@ -196,7 +199,7 @@ private fun SmallAction(text: String, color: Color, onClick: () -> Unit, modifie
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
-            .heightIn(min = PauseTheme.spacing.minTouch)
+            .sizeIn(minWidth = PauseTheme.spacing.minTouch, minHeight = PauseTheme.spacing.minTouch)
             .clickable(role = Role.Button, onClick = onClick),
     ) {
         Text(text = text, style = PauseTheme.type.label, color = color)
@@ -213,8 +216,7 @@ internal fun CrisisCard(lines: List<HelpLine>, onClose: () -> Unit) {
         verticalArrangement = Arrangement.spacedBy(spacing.sm),
         modifier = Modifier
             .fillMaxWidth()
-            .background(colors.surface, PauseTheme.shapes.card)
-            .border(spacing.hairline, colors.line, PauseTheme.shapes.card)
+            .pauseSurface(PauseTheme.shapes.card)
             .padding(spacing.lg),
     ) {
         Text(text = stringResource(R.string.coach_crisis_title), style = PauseTheme.type.title, color = colors.ink)

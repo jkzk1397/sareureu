@@ -1,8 +1,10 @@
 package com.capstone.pause.feature.today
 
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +17,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,6 +35,8 @@ import com.capstone.pause.core.designsystem.component.PrimaryButton
 import com.capstone.pause.core.designsystem.component.durationLabel
 import com.capstone.pause.core.designsystem.component.iconRes
 import com.capstone.pause.core.designsystem.component.labelRes
+import com.capstone.pause.core.designsystem.component.pauseSurface
+import com.capstone.pause.core.designsystem.component.pressScale
 import com.capstone.pause.core.designsystem.theme.PauseSizes
 import com.capstone.pause.core.designsystem.theme.PauseTheme
 import com.capstone.pause.core.model.BuddyExpression
@@ -74,7 +79,8 @@ internal fun LiveCard(live: LiveSummary, melt: MeltStage, onStop: () -> Unit) {
                 )
                 Text(
                     text = stringResource(R.string.today_live_elapsed, live.elapsedMinutes),
-                    style = PauseTheme.type.display,
+                    // 1분마다 바뀌는 숫자라 고정폭.
+                    style = PauseTheme.type.display.copy(fontFeatureSettings = "tnum"),
                     color = colors.ink,
                 )
                 val left = live.thresholdMinutes - live.elapsedMinutes
@@ -218,24 +224,23 @@ private fun SmallCard(
     content: @Composable () -> Unit,
 ) {
     val spacing = PauseTheme.spacing
-    val base = modifier
-        .heightIn(min = PauseSizes.bubbleBuddy * 2)
-        .clip(PauseTheme.shapes.card)
-        .background(container, PauseTheme.shapes.card)
-        .clickable(role = Role.Button, onClick = onClick)
+    val interaction = remember { MutableInteractionSource() }
+    // 흰 카드는 바탕 위에 뜬 표면이라 그림자로, 라임 카드는 색이 이미 구분되므로 바탕만.
+    val surface = if (bordered) {
+        Modifier.pauseSurface(PauseTheme.shapes.card, container)
+    } else {
+        Modifier.background(container, PauseTheme.shapes.card)
+    }
     Column(
         verticalArrangement = Arrangement.spacedBy(spacing.sm),
-        modifier = (
-            if (bordered) {
-                base.border(
-                    spacing.hairline,
-                    PauseTheme.colors.line,
-                    PauseTheme.shapes.card,
-                )
-            } else {
-                base
+        modifier = modifier
+            .heightIn(min = PauseSizes.bubbleBuddy * 2)
+            .pressScale(interaction)
+            .then(surface)
+            .clip(PauseTheme.shapes.card)
+            .clickable(interactionSource = interaction, indication = LocalIndication.current, role = Role.Button) {
+                onClick()
             }
-            )
             .padding(spacing.md),
     ) { content() }
 }

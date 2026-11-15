@@ -33,6 +33,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import com.capstone.pause.core.designsystem.component.PrimaryButton
+import com.capstone.pause.core.designsystem.component.Reveal
 import com.capstone.pause.core.designsystem.theme.PauseSizes
 import com.capstone.pause.core.designsystem.theme.PauseTheme
 import java.time.LocalTime
@@ -169,6 +170,6 @@ internal fun MoreDetails(content: @Composable ColumnScope.() -> Unit) {
                 color = PauseTheme.colors.ink2,
             )
         }
-        if (open) content()
+        Reveal(open) { content() }
     }
 }

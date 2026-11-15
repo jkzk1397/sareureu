@@ -30,6 +30,7 @@ import com.capstone.pause.core.data.settings.ThresholdGroup
 import com.capstone.pause.core.designsystem.component.PauseCard
 import com.capstone.pause.core.designsystem.component.PauseScreenColumn
 import com.capstone.pause.core.designsystem.component.PrimaryButton
+import com.capstone.pause.core.designsystem.component.Reveal
 import com.capstone.pause.core.designsystem.theme.PauseTheme
 
 /** 설정 탭 진입점. */
@@ -251,7 +252,7 @@ private fun MoreGroup(uiState: SettingsUiState, onAction: (SettingsAction) -> Un
         stringResource(if (dev) R.string.settings_dev_hide else R.string.settings_dev_show),
         onClick = { dev = !dev },
     )
-    if (dev) RecentSessions(uiState.recentSessions)
+    Reveal(dev) { RecentSessions(uiState.recentSessions) }
     SubTitle(stringResource(R.string.settings_section_about))
     AboutRows(versionName)
 }

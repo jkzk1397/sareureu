@@ -66,7 +66,12 @@ internal fun ReminderRows(
                 .fillMaxWidth()
                 .heightIn(min = PauseTheme.spacing.minTouch),
         ) {
-            Text(text = label, style = PauseTheme.type.title, color = colors.ink, modifier = Modifier.weight(1f))
+            Text(
+                text = label,
+                style = PauseTheme.type.title.copy(fontFeatureSettings = "tnum"),
+                color = colors.ink,
+                modifier = Modifier.weight(1f),
+            )
             val earlier = stringResource(R.string.settings_reminder_earlier, label)
             val later = stringResource(R.string.settings_reminder_later, label)
             val remove = stringResource(R.string.settings_reminder_remove, label)

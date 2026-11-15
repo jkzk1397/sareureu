@@ -40,6 +40,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.capstone.pause.core.designsystem.R as DesignR
 import com.capstone.pause.core.designsystem.buddy.BuddyAvatar
+import com.capstone.pause.core.designsystem.component.Reveal
 import com.capstone.pause.core.designsystem.theme.PauseTheme
 import com.capstone.pause.core.model.BuddyExpression
 
@@ -171,7 +172,7 @@ private fun CoachHeader(usingRealAi: Boolean) {
                         .clickable(role = Role.Button) { hint = !hint }
                         .wrapContentHeight(Alignment.CenterVertically),
                 )
-                if (hint) {
+                Reveal(hint) {
                     Text(
                         text = stringResource(R.string.coach_mock_hint),
                         style = PauseTheme.type.caption,

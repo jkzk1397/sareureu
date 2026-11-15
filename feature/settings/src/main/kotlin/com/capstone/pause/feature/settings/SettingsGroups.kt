@@ -1,7 +1,6 @@
 package com.capstone.pause.feature.settings
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -30,6 +29,8 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextOverflow
+import com.capstone.pause.core.designsystem.component.Reveal
+import com.capstone.pause.core.designsystem.component.pauseSurface
 import com.capstone.pause.core.designsystem.theme.PauseTheme
 
 /**
@@ -49,8 +50,7 @@ internal fun SettingsGroup(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(colors.surface, PauseTheme.shapes.card)
-            .border(PauseTheme.spacing.hairline, colors.line, PauseTheme.shapes.card),
+            .pauseSurface(PauseTheme.shapes.card),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -83,7 +83,7 @@ internal fun SettingsGroup(
                 color = colors.ink2,
             )
         }
-        if (expanded) {
+        Reveal(expanded) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xs),
                 modifier = Modifier
@@ -138,7 +138,7 @@ internal fun MoreNote(key: String, summary: String, detail: String) {
                 color = colors.ink,
             )
         }
-        if (open) {
+        Reveal(open) {
             Text(
                 text = detail,
                 style = PauseTheme.type.bodySmall,

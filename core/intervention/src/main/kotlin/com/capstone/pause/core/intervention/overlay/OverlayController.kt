@@ -182,18 +182,8 @@ class OverlayController @Inject constructor(
         }
         val view = composeView {
             val padding = Modifier.padding(OverlayDimens.cardOuterPadding)
-            when (command) {
-                // 오버레이 창은 화면 높이까지만 커지므로, 큰 글자·키보드에서도 아래 버튼에 닿게 카드만 스크롤한다.
-                // (NudgePreviewActivity는 화면 전체가 이미 스크롤된다 — 겹쳐 두면 무한 높이 오류.)
-                is NudgeCommand.ShowCard -> NudgeCard(
-                    command.card,
-                    onAction = ::emit,
-                    modifier = padding.verticalScroll(rememberScrollState()),
-                )
-
-                is NudgeCommand.ShowPraise -> PraiseCard(command.text, onClose = { removeCard() }, modifier = padding)
-
-                else -> Unit
+            RiseIn {
+                CardContent(command, padding)
             }
         }
         card = add(view, params)
@@ -204,6 +194,23 @@ class OverlayController @Inject constructor(
                     _current.value = null
                 }
             }, PRAISE_MS)
+        }
+    }
+
+    @androidx.compose.runtime.Composable
+    private fun CardContent(command: NudgeCommand, padding: Modifier) {
+        when (command) {
+            // 오버레이 창은 화면 높이까지만 커지므로, 큰 글자·키보드에서도 아래 버튼에 닿게 카드만 스크롤한다.
+            // (NudgePreviewActivity는 화면 전체가 이미 스크롤된다 — 겹쳐 두면 무한 높이 오류.)
+            is NudgeCommand.ShowCard -> NudgeCard(
+                command.card,
+                onAction = ::emit,
+                modifier = padding.verticalScroll(rememberScrollState()),
+            )
+
+            is NudgeCommand.ShowPraise -> PraiseCard(command.text, onClose = { removeCard() }, modifier = padding)
+
+            else -> Unit
         }
     }
 
