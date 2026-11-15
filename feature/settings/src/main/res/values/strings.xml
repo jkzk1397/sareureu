@@ -167,4 +167,5 @@
   <string name="settings_detection_precise_short">쇼츠·릴스 화면만 골라 세. 아직 못 써.</string>
   <string name="settings_detection_more">두 방식이 어떻게 다른지</string>
   <string name="settings_export_short">내 기록을 파일 하나로 저장해.</string>
+  <string name="settings_threshold_applies_next">숏폼을 보는 중에 바꾸면 다음에 볼 때부터 적용돼.</string>
 </resources>
