@@ -105,7 +105,8 @@ private fun ReportChartsPreview() {
     PauseTheme {
         Column(verticalArrangement = Arrangement.spacedBy(PauseTheme.spacing.md)) {
             ViewerTypeCard(previewReport(withAi = true), ReportLocal(), onAction = {})
-            ReportCharts(previewCharts())
+            ReportMainCharts(previewCharts())
+            ReportDetailCharts(previewCharts())
         }
     }
 }

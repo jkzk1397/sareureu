@@ -7,10 +7,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
@@ -26,7 +30,6 @@ import com.capstone.pause.core.designsystem.component.PauseCard
 import com.capstone.pause.core.designsystem.component.PauseScreenColumn
 import com.capstone.pause.core.designsystem.component.StatHero
 import com.capstone.pause.core.designsystem.component.durationLabel
-import com.capstone.pause.core.designsystem.theme.PauseSizes
 import com.capstone.pause.core.designsystem.theme.PauseTheme
 import com.capstone.pause.core.designsystem.theme.isLargeFont
 import kotlin.math.abs
@@ -40,8 +43,8 @@ fun ReportRoute(viewModel: ReportViewModel = hiltViewModel()) {
 }
 
 /**
- * 리포트 탭(상태 없음). 위에서부터(목업 05): 기간·요약 숫자 → 유형 → 일주일 시계 → 맥락별 합계 → 경로 → 세션 길이 →
- * 또래 비교 → 관찰(코드) → AI 주간 분석(추측).
+ * 리포트 탭. 결론부터: 르르 한 줄 → 요약 숫자 → 유형 → 왜 그럴까(AI 추측 + 해 볼 것) → 언제·어떤 때 봤는지.
+ * 나머지(보기 직전·끝, 한 번 길이, 또래 비교, 숫자 목록)는 '더 자세히'를 펼쳐야 보인다(펼침만 화면이 기억한다).
  * 관찰과 추측은 다른 카드·다른 제목으로 나눈다(AGENTS: 관찰(코드)과 가설(AI)을 화면에서 분리).
  */
 @Composable
@@ -64,6 +67,7 @@ fun ReportScreen(uiState: ReportUiState, onAction: (ReportAction) -> Unit, modif
             }
             return@PauseScreenColumn
         }
+        AiSummary(report = report, local = ready.local, onAction = onAction)
         StatRow(report)
         if (report.typeReady) {
             ViewerTypeCard(report = report, local = ready.local, onAction = onAction)
@@ -74,9 +78,25 @@ fun ReportScreen(uiState: ReportUiState, onAction: (ReportAction) -> Unit, modif
                 color = PauseTheme.colors.ink2,
             )
         }
-        ready.charts?.let { ReportCharts(it) }
-        ObservationsCard(report)
         AiSection(report = report, local = ready.local, onAction = onAction)
+        ready.charts?.let { ReportMainCharts(it) }
+        var details by rememberSaveable { mutableStateOf(false) }
+        TextButton(
+            onClick = { details = !details },
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = PauseTheme.spacing.minTouch),
+        ) {
+            Text(
+                stringResource(if (details) R.string.report_detail_hide else R.string.report_detail_show),
+                style = PauseTheme.type.label,
+                color = PauseTheme.colors.ink2,
+            )
+        }
+        if (details) {
+            ready.charts?.let { ReportDetailCharts(it) }
+            ObservationsCard(report)
+        }
     }
 }
 
@@ -151,17 +171,7 @@ private fun ObservationsCard(report: WeeklyReportState) {
         )
         Column(verticalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xs)) {
             report.observations.forEach { o ->
-                observationText(o)?.let { text ->
-                    Row(horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xs)) {
-                        Text(
-                            o.id,
-                            style = PauseTheme.type.captionTabular,
-                            color = PauseTheme.colors.ink3,
-                            modifier = Modifier.width(PauseSizes.listIdColumn),
-                        )
-                        Text(text, style = PauseTheme.type.bodySmall, color = PauseTheme.colors.ink)
-                    }
-                }
+                observationText(o)?.let { Text(it, style = PauseTheme.type.bodySmall, color = PauseTheme.colors.ink) }
             }
         }
     }

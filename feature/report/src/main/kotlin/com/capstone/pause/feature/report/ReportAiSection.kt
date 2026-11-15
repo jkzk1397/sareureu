@@ -1,18 +1,26 @@
 package com.capstone.pause.feature.report
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import com.capstone.pause.core.ai.report.AiHypothesis
 import com.capstone.pause.core.ai.report.AiReport
 import com.capstone.pause.core.ai.report.GenerationStatus
 import com.capstone.pause.core.ai.report.WeeklyReportState
@@ -20,7 +28,6 @@ import com.capstone.pause.core.designsystem.buddy.BuddyAvatar
 import com.capstone.pause.core.designsystem.component.BuddyBubble
 import com.capstone.pause.core.designsystem.component.CardFooter
 import com.capstone.pause.core.designsystem.component.ChoicePill
-import com.capstone.pause.core.designsystem.component.HypothesisCard
 import com.capstone.pause.core.designsystem.component.PauseCard
 import com.capstone.pause.core.designsystem.component.PrimaryButton
 import com.capstone.pause.core.designsystem.component.StrategyCard
@@ -28,6 +35,22 @@ import com.capstone.pause.core.designsystem.component.labelRes
 import com.capstone.pause.core.designsystem.theme.PauseSizes
 import com.capstone.pause.core.designsystem.theme.PauseTheme
 import com.capstone.pause.core.model.BuddyExpression
+import com.capstone.pause.core.model.Confidence
+import com.capstone.pause.core.model.Verdict
+
+/** 화면 맨 위 르르 한 줄(AI 요약). 분석이 아직 없거나 신고한 문장이면 그리지 않는다. */
+@Composable
+internal fun AiSummary(report: WeeklyReportState, local: ReportLocal, onAction: (ReportAction) -> Unit) {
+    val ai = report.ai ?: return
+    if ("summary" in local.reportedKeys) return
+    val fill = rememberPlaceholderFiller(report)
+    AiLine(onReport = { onAction(ReportAction.ReportSentence(ai.callId, "summary")) }) {
+        BuddyBubble(
+            text = fill(ai.summaryLine),
+            avatar = { BuddyAvatar(BuddyExpression.CHEER, PauseSizes.bubbleBuddy) },
+        )
+    }
+}
 
 /** AI 주간 분석(추측) 묶음. 관찰 카드와 따로 그린다. 모든 AI 문장 옆에 '신고'가 있다. */
 @Composable
@@ -88,23 +111,15 @@ private fun AiBody(ai: AiReport, report: WeeklyReportState, local: ReportLocal, 
     val fill = rememberPlaceholderFiller(report)
     fun reportAction(key: String) = { onAction(ReportAction.ReportSentence(ai.callId, key)) }
 
-    if ("summary" !in hidden) {
-        AiLine(onReport = reportAction("summary")) {
-            BuddyBubble(
-                text = fill(ai.summaryLine),
-                avatar = { BuddyAvatar(BuddyExpression.CHEER, PauseSizes.bubbleBuddy) },
-            )
-        }
-    }
-    SectionTitle(stringResource(R.string.report_ai_hypotheses))
+    val observations = report.observations.associateBy { it.id }
     ai.hypotheses.filter { it.id !in hidden }.forEach { h ->
-        HypothesisCard(
+        HypothesisItem(
+            hypothesis = h,
             text = fill(h.text),
-            confidence = h.confidence,
-            evidence = h.evidence.map { stringResource(R.string.report_evidence_chip, it.removePrefix("o")) },
-            verdict = h.verdict,
+            question = fill(h.confirmQuestion),
+            evidence = h.evidence.mapNotNull { id -> observations[id]?.let { observationText(it) } },
             onVerdict = { onAction(ReportAction.SetVerdict(h.id, it)) },
-            footer = { CardFooter(fill(h.confirmQuestion)) { ReportButton(reportAction(h.id)) } },
+            onReport = reportAction(h.id),
         )
     }
     if (ai.strategies.isNotEmpty()) {
@@ -164,6 +179,76 @@ private fun AiBody(ai: AiReport, report: WeeklyReportState, local: ReportLocal, 
             Text(stringResource(R.string.report_ai_regenerate, report.regenerationsLeft), color = colors.ink2)
         }
     }
+}
+
+/**
+ * 가설 카드: 얼마나 확실한지(쉬운 말) → 문장 → 확인 질문 → 맞아/반쯤/아니야 → '왜 이렇게 생각했어?'.
+ * 근거는 관찰 번호 대신 그 관찰의 문장을 펼쳐 보여 준다(코드가 센 기록이라고 따로 밝힌다).
+ */
+@Composable
+private fun HypothesisItem(
+    hypothesis: AiHypothesis,
+    text: String,
+    question: String,
+    evidence: List<String>,
+    onVerdict: (Verdict) -> Unit,
+    onReport: () -> Unit,
+) {
+    val colors = PauseTheme.colors
+    var open by rememberSaveable(hypothesis.id) { mutableStateOf(false) }
+    PauseCard {
+        Text(stringResource(confidenceRes(hypothesis.confidence)), style = PauseTheme.type.label, color = colors.ink2)
+        Text(text, style = PauseTheme.type.body, color = colors.ink)
+        if (question.isNotBlank()) Text(question, style = PauseTheme.type.bodySmall, color = colors.ink2)
+        Row(horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xs)) {
+            Verdict.entries.forEach { v ->
+                ChoicePill(
+                    text = stringResource(v.labelRes()),
+                    selected = hypothesis.verdict == v,
+                    onClick = { onVerdict(v) },
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            if (evidence.isNotEmpty()) {
+                TextButton(
+                    onClick = { open = !open },
+                    modifier = Modifier.heightIn(min = PauseTheme.spacing.minTouch),
+                ) {
+                    Text(
+                        stringResource(if (open) R.string.report_evidence_hide else R.string.report_evidence_show),
+                        style = PauseTheme.type.label,
+                        color = colors.ink,
+                    )
+                }
+            }
+            Spacer(Modifier.weight(1f))
+            ReportButton(onReport)
+        }
+        if (open) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xs),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(colors.surfaceAlt, PauseTheme.shapes.small)
+                    .padding(PauseTheme.spacing.md),
+            ) {
+                Text(
+                    stringResource(R.string.report_evidence_caption),
+                    style = PauseTheme.type.caption,
+                    color = colors.ink2,
+                )
+                evidence.forEach { Text(it, style = PauseTheme.type.bodySmall, color = colors.ink) }
+            }
+        }
+    }
+}
+
+private fun confidenceRes(confidence: Confidence): Int = when (confidence) {
+    Confidence.HIGH -> R.string.report_confidence_high
+    Confidence.MEDIUM -> R.string.report_confidence_medium
+    Confidence.LOW -> R.string.report_confidence_low
 }
 
 /** AI 문장 + 오른쪽 아래 '신고'. */

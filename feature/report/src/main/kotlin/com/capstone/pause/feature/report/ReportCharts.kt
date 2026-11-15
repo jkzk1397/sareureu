@@ -20,15 +20,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import com.capstone.pause.core.data.insight.ContextShare
+import com.capstone.pause.core.data.insight.FlowSummary
 import com.capstone.pause.core.data.insight.WeekChartData
 import com.capstone.pause.core.designsystem.chart.DayClockData
 import com.capstone.pause.core.designsystem.chart.DayClockScale
 import com.capstone.pause.core.designsystem.chart.DurationHistogram
-import com.capstone.pause.core.designsystem.chart.FlowDiagram
-import com.capstone.pause.core.designsystem.chart.FlowLink
-import com.capstone.pause.core.designsystem.chart.FlowNode
 import com.capstone.pause.core.designsystem.chart.WeekClock
 import com.capstone.pause.core.designsystem.component.PauseCard
 import com.capstone.pause.core.designsystem.component.durationLabel
@@ -41,11 +38,16 @@ import java.time.format.TextStyle
 import java.util.Locale
 import kotlin.math.roundToInt
 
-/** 목업 05 순서의 차트 묶음: 일주일 시계 → 맥락별 합계 → 경로 → 세션 길이 → 또래 비교. */
+/** 늘 보이는 차트: 일주일 시계 → 어떤 때 봤는지. */
 @Composable
-internal fun ReportCharts(charts: WeekChartData) {
+internal fun ReportMainCharts(charts: WeekChartData) {
     WeekClockCard(charts)
     ContextTotalsCard(charts)
+}
+
+/** '더 자세히'를 펼쳤을 때만 보이는 차트: 보기 직전과 끝 → 한 번 길이 → 또래 비교. */
+@Composable
+internal fun ReportDetailCharts(charts: WeekChartData) {
     FlowCard(charts)
     LengthCard(charts)
     charts.peer?.let { PeerCard(charts) }
@@ -134,47 +136,52 @@ private fun ContextRow(item: ContextShare, fraction: Float) {
     }
 }
 
+/** 띠 그림 대신 순위 막대: 숏폼을 켜기 직전에 있던 곳, 끝난 방식, 본 앱. */
 @Composable
 private fun FlowCard(charts: WeekChartData) {
     val flow = charts.flow
     val total = charts.sessionCount.coerceAtLeast(1)
     PauseCard(title = stringResource(R.string.report_flow_title)) {
-        Caption(stringResource(R.string.report_flow_caption, charts.sessionCount))
-        val entries = flow.entries.map { (k, n) -> FlowNode(ENTRY + k, nodeLabel(keyLabel(k), n, total), n.toFloat()) }
-        val apps = flow.apps.map { (k, n) -> FlowNode(APP + k, reportAppLabel(k), n.toFloat()) }
-        val exits = flow.exits.map { (k, n) -> FlowNode(EXIT + k, nodeLabel(keyLabel(k), n, total), n.toFloat()) }
-        if (isLargeFont()) {
-            // 큰 글자에서는 띠 그림 대신 같은 값을 표로 보인다(라벨이 겹치지 않게).
-            FlowTable(entries, apps.map { it.copy(label = nodeLabel(it.label, it.value.toInt(), total)) }, exits)
-        } else {
-            FlowDiagram(
-                entries = entries,
-                apps = apps,
-                exits = exits,
-                links = flow.entryToApp.map { FlowLink(ENTRY + it.first, APP + it.second, it.third.toFloat()) } +
-                    flow.appToExit.map { FlowLink(APP + it.first, EXIT + it.second, it.third.toFloat()) },
-            )
-        }
+        Caption(stringResource(R.string.report_flow_caption))
+        ShareList(flow.entries, total)
         charts.longestEntry?.let {
             Insight(stringResource(R.string.report_flow_insight, keyLabel(it.key), durationLabel(it.medianMinutes)))
         }
+        Text(
+            stringResource(R.string.report_flow_exit_title),
+            style = PauseTheme.type.title,
+            color = PauseTheme.colors.ink2,
+        )
+        ShareList(flow.exits, total)
+        val apps = flow.apps.map { (key, count) -> nodeLabel(reportAppLabel(key), count, total) }
+        if (apps.isNotEmpty()) Caption(stringResource(R.string.report_flow_apps, apps.joinToString()))
     }
 }
 
-/** 흐름도의 표 보기: 진입·앱·이탈마다 이름과 비율. */
+/** 많은 순서로 [TOP_ROWS]개까지: 이름, 비율, 1위를 가득 채운 막대. */
 @Composable
-private fun FlowTable(entries: List<FlowNode>, apps: List<FlowNode>, exits: List<FlowNode>) {
+private fun ShareList(items: List<Pair<String, Int>>, total: Int) {
+    val rows = items.filter { it.first != FlowSummary.OTHER_GROUP }.take(TOP_ROWS)
+    val top = rows.maxOfOrNull { it.second }?.coerceAtLeast(1) ?: return
     val colors = PauseTheme.colors
-    Column(verticalArrangement = Arrangement.spacedBy(PauseTheme.spacing.sm)) {
-        listOf(
-            R.string.report_flow_col_entry to entries,
-            R.string.report_flow_col_app to apps,
-            R.string.report_flow_col_exit to exits,
-        ).forEach { (title, nodes) ->
-            Column(Modifier.semantics(mergeDescendants = true) {}) {
-                Text(stringResource(title), style = PauseTheme.type.label, color = colors.ink2)
-                nodes.forEach { Text(it.label, style = PauseTheme.type.body, color = colors.ink) }
+    rows.forEach { (key, count) ->
+        val name = keyLabel(key)
+        val value = stringResource(R.string.report_percent, (count * PERCENT.toDouble() / total).roundToInt())
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .clearAndSetSemantics { contentDescription = "$name $value" },
+        ) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(name, style = PauseTheme.type.label, color = colors.ink)
+                Text(value, style = PauseTheme.type.captionTabular, color = colors.ink2)
             }
+            Box(
+                Modifier
+                    .fillMaxWidth((count.toFloat() / top).coerceIn(MIN_BAR, 1f))
+                    .height(PauseSizes.barHeight)
+                    .background(colors.ink2, PauseTheme.shapes.small),
+            )
         }
     }
 }
@@ -292,7 +299,5 @@ private fun Insight(text: String) {
 private const val HOURS = 24
 private const val MIN_BAR = 0.04f
 private const val MIN_WEIGHT = 0.001f
-private const val ENTRY = "e:"
-private const val APP = "a:"
-private const val EXIT = "x:"
+private const val TOP_ROWS = 4
 private val LABEL_WIDTH = PauseSizes.dayClock / 3
