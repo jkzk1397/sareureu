@@ -50,7 +50,7 @@
 **폰에서 확인할 것**(빌드 검사만 통과했고 실제 화면은 아직 못 봤다): 가설 카드의 '왜 이렇게 생각했어?', 맨 아래 '기록 더 자세히 보기', 큰 글자 설정, 다크 모드. 어색하면 이 작업 안에서 고친다.
 리포트에서 더 이상 쓰지 않는 `core:designsystem`의 `FlowDiagram`, `HypothesisCard`, `EvidenceChip`은 다른 곳에서도 안 쓰면 지운다(목업 문서 `docs/06_DESIGN_SYSTEM.md` 6절과 9절도 같이 고친다).
 
-## 작업 2. 설정 탭: 13개 구역을 접는 묶음 6개로
+## ✅ 작업 2. 설정 탭: 13개 구역을 접는 묶음 6개로
 지금은 감지, 하루 리듬, 예약 알림, 알림 기준, 추적 앱, AI 사용 방식, AI가 한 일, 개인정보, 화면, 시연, 개발자 메뉴, 정보가 한 줄로 길게 이어진다.
 
 - 파일: `feature/settings/`의 `SettingsScreen.kt`, `SettingsSections.kt`, `SettingsAi.kt`, `SettingsMonitoring.kt`, `SettingsPrivacy.kt`, `strings.xml`

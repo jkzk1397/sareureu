@@ -1,13 +1,11 @@
 package com.capstone.pause.feature.settings
 
 import android.content.res.Configuration
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
@@ -32,23 +30,24 @@ import com.capstone.pause.core.model.TrackedApp
 /** 감지 방식: 앱 단위(선택됨) / 정밀 모드(P1, 비활성). */
 @Composable
 internal fun DetectionModeRows() {
-    Text(
-        stringResource(R.string.settings_detection_title),
-        style = PauseTheme.type.label,
-        color = PauseTheme.colors.ink,
-        modifier = Modifier.padding(top = PauseTheme.spacing.sm),
-    )
+    SubTitle(stringResource(R.string.settings_detection_title))
     ModeRow(
         label = stringResource(R.string.settings_detection_app),
-        desc = stringResource(R.string.settings_detection_app_desc),
+        desc = stringResource(R.string.settings_detection_app_short),
         selected = true,
         enabled = true,
     )
     ModeRow(
         label = stringResource(R.string.settings_detection_precise),
-        desc = stringResource(R.string.settings_detection_precise_desc),
+        desc = stringResource(R.string.settings_detection_precise_short),
         selected = false,
         enabled = false,
+    )
+    MoreNote(
+        key = "detection",
+        summary = stringResource(R.string.settings_detection_more),
+        detail = stringResource(R.string.settings_detection_app_desc) + PARAGRAPH +
+            stringResource(R.string.settings_detection_precise_desc),
     )
 }
 
@@ -56,7 +55,7 @@ internal fun DetectionModeRows() {
 private fun ModeRow(label: String, desc: String, selected: Boolean, enabled: Boolean) {
     val colors = PauseTheme.colors
     Row(
-        verticalAlignment = Alignment.Top,
+        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = PauseTheme.spacing.minTouch)
@@ -105,10 +104,14 @@ internal fun TrackedAppRows(apps: List<TrackedApp>, onToggle: (String, Boolean) 
 @Composable
 internal fun PrivacyRows(state: PrivacyUiState, onExport: () -> Unit, onAction: (PrivacyAction) -> Unit) {
     val colors = PauseTheme.colors
-    Summary(R.string.settings_privacy_device_title, R.string.settings_privacy_device_body)
-    Summary(R.string.settings_privacy_cloud_title, R.string.settings_privacy_cloud_body)
-    Summary(R.string.settings_privacy_never_title, R.string.settings_privacy_never_body)
-    Text(stringResource(R.string.settings_export_desc), style = PauseTheme.type.bodySmall, color = colors.ink2)
+    Summary("device", R.string.settings_privacy_device_title, R.string.settings_privacy_device_body)
+    Summary("cloud", R.string.settings_privacy_cloud_title, R.string.settings_privacy_cloud_body)
+    Summary("never", R.string.settings_privacy_never_title, R.string.settings_privacy_never_body)
+    MoreNote(
+        key = "export",
+        summary = stringResource(R.string.settings_export_short),
+        detail = stringResource(R.string.settings_export_desc),
+    )
     PrimaryButton(
         text = stringResource(
             if (state.export == ExportStatus.RUNNING) R.string.settings_export_running else R.string.settings_export,
@@ -171,13 +174,13 @@ internal fun PrivacyRows(state: PrivacyUiState, onExport: () -> Unit, onAction: 
     }
 }
 
+/** 세 줄 요약의 한 줄: 제목이 요약이고, '자세히'를 누르면 전체 고지가 나온다. */
 @Composable
-private fun Summary(title: Int, body: Int) {
-    Column(verticalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xxs)) {
-        Text(stringResource(title), style = PauseTheme.type.label, color = PauseTheme.colors.ink)
-        Text(stringResource(body), style = PauseTheme.type.bodySmall, color = PauseTheme.colors.ink2)
-    }
+private fun Summary(key: String, title: Int, body: Int) {
+    MoreNote(key = key, summary = stringResource(title), detail = stringResource(body))
 }
+
+private const val PARAGRAPH = "\n\n"
 
 /** 정보: 앱 이름·버전, 글꼴 라이선스, AI 안내. */
 @Composable
