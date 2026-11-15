@@ -58,6 +58,12 @@ internal fun ThresholdRows(thresholds: Map<ContextSlot, Int>, onSet: (ThresholdG
             onSet = { onSet(group, it) },
         )
     }
+    // 보는 중에 바꾼 기준은 그 번에는 안 바뀐다(엔진이 볼 때 시작한 기준을 쓴다). 그 사실을 한 줄로 알린다.
+    Text(
+        stringResource(R.string.settings_threshold_applies_next),
+        style = PauseTheme.type.bodySmall,
+        color = PauseTheme.colors.ink2,
+    )
 }
 
 @Composable

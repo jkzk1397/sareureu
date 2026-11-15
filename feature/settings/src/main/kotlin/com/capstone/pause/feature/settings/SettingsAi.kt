@@ -15,10 +15,15 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextOverflow
 import com.capstone.pause.core.ai.AiCallEntry
 import com.capstone.pause.core.ai.engine.llm.AiFeature
 import com.capstone.pause.core.ai.engine.llm.Provider
@@ -59,16 +64,20 @@ internal fun AiModeRows(state: AiSettingsUiState, onAction: (AiSettingsAction) -
                 .background(colors.surfaceAlt, PauseTheme.shapes.small)
                 .padding(PauseTheme.spacing.md),
         ) {
-            Text(stringResource(R.string.settings_ai_cloud_send), style = PauseTheme.type.bodySmall, color = colors.ink)
+            // 동의를 받는 자리라 국외 이전 한 줄은 접지 않는다. 전체 고지는 '자세히'에 그대로 있다.
             Text(
-                stringResource(R.string.settings_ai_cloud_not_send),
+                stringResource(R.string.settings_ai_cloud_short),
                 style = PauseTheme.type.bodySmall,
                 color = colors.ink,
             )
-            Text(
-                stringResource(R.string.settings_ai_cloud_transfer),
-                style = PauseTheme.type.bodySmall,
-                color = colors.ink2,
+            MoreNote(
+                key = "cloud",
+                summary = stringResource(R.string.settings_ai_cloud_more),
+                detail = listOf(
+                    stringResource(R.string.settings_ai_cloud_send),
+                    stringResource(R.string.settings_ai_cloud_not_send),
+                    stringResource(R.string.settings_ai_cloud_transfer),
+                ).joinToString(PARAGRAPH),
             )
             PrimaryButton(text = stringResource(R.string.settings_ai_cloud_agree), onClick = {
                 onAction(AiSettingsAction.ConfirmCloud)
@@ -83,84 +92,108 @@ internal fun AiModeRows(state: AiSettingsUiState, onAction: (AiSettingsAction) -
     }
 }
 
-/** 설정 › AI가 한 일(감사 로그). 입력은 해시·길이만, 출력은 검증 통과본만 보인다. */
+/**
+ * 설정 › AI가 한 일(감사 로그). 한 줄에 날짜·기능·결과만, 줄을 누르면 제공자·이유·걸린 시간·지문과 길이·받은 답이 펼쳐진다.
+ * 최근 [RECENT]개만 보이고 '더 보기'로 나머지를 편다. 입력은 해시·길이만, 출력은 검증 통과본만 남아 있다.
+ */
 @Composable
 internal fun AiCallList(state: AiSettingsUiState, onAction: (AiSettingsAction) -> Unit) {
     val colors = PauseTheme.colors
-    Text(stringResource(R.string.settings_ai_log_caption), style = PauseTheme.type.bodySmall, color = colors.ink2)
+    MoreNote(
+        key = "ai_log",
+        summary = stringResource(R.string.settings_ai_log_short),
+        detail = stringResource(R.string.settings_ai_log_caption),
+    )
     if (state.calls.isEmpty()) {
         Text(stringResource(R.string.settings_ai_log_empty), style = PauseTheme.type.bodySmall, color = colors.ink3)
         return
     }
-    state.calls.forEach { entry ->
-        val r = entry.record
-        val expanded = entry.id in state.expanded
-        Column(
+    var all by rememberSaveable { mutableStateOf(false) }
+    val shown = if (all) state.calls else state.calls.take(RECENT)
+    shown.forEach { entry -> AiCallRow(entry, expanded = entry.id in state.expanded, onAction = onAction) }
+    if (state.calls.size > RECENT) {
+        TextButton(
+            onClick = { all = !all },
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = PauseTheme.spacing.minTouch)
-                .clickable { onAction(AiSettingsAction.ToggleCall(entry.id)) }
-                .padding(vertical = PauseTheme.spacing.xs),
+                .heightIn(min = PauseTheme.spacing.minTouch),
         ) {
+            Text(
+                stringResource(if (all) R.string.settings_ai_log_less else R.string.settings_ai_log_more),
+                color = colors.ink,
+            )
+        }
+    }
+}
+
+@Composable
+private fun AiCallRow(entry: AiCallEntry, expanded: Boolean, onAction: (AiSettingsAction) -> Unit) {
+    val colors = PauseTheme.colors
+    val r = entry.record
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = PauseTheme.spacing.minTouch)
+            .clickable(role = Role.Button) { onAction(AiSettingsAction.ToggleCall(entry.id)) }
+            .padding(vertical = PauseTheme.spacing.xs),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 stringResource(
                     R.string.settings_ai_log_row,
                     TIME.format(r.at.atZone(ZoneId.systemDefault())),
                     stringResource(r.feature.labelRes()),
-                    stringResource(r.provider.labelRes()),
-                ),
-                style = PauseTheme.type.body,
-                color = colors.ink,
-            )
-            Text(
-                stringResource(
-                    R.string.settings_ai_log_detail,
                     stringResource(r.outcome.labelRes()),
-                    r.latencyMs,
-                    r.model.orEmpty(),
                 ),
                 style = PauseTheme.type.bodySmall,
+                color = colors.ink,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                stringResource(if (expanded) R.string.settings_mark_open else R.string.settings_mark_closed),
+                style = PauseTheme.type.label,
                 color = colors.ink2,
             )
-            if (entry.reported) {
-                Text(
-                    stringResource(R.string.settings_ai_log_reported),
-                    style = PauseTheme.type.caption,
-                    color = colors.nudgeText,
-                )
+        }
+        if (entry.reported) {
+            Text(
+                stringResource(R.string.settings_ai_log_reported),
+                style = PauseTheme.type.caption,
+                color = colors.nudgeText,
+            )
+        }
+        if (expanded) {
+            val detail = buildList {
+                add(stringResource(R.string.settings_ai_log_provider, stringResource(r.provider.labelRes())))
+                r.reason?.let { add(stringResource(R.string.settings_ai_log_reason, it)) }
+                add(stringResource(R.string.settings_ai_log_latency, r.latencyMs / MILLIS))
+                add(stringResource(R.string.settings_ai_log_input, r.inputHash, r.inputLength))
             }
-            if (expanded) {
-                Text(
-                    stringResource(R.string.settings_ai_log_input, r.inputHash, r.inputLength),
-                    style = PauseTheme.type.captionTabular,
-                    color = colors.ink3,
-                )
-                r.reason?.let {
-                    Text(
-                        stringResource(R.string.settings_ai_log_reason, it),
-                        style = PauseTheme.type.caption,
-                        color = colors.ink3,
-                    )
-                }
-                Text(
-                    r.outputJson ?: stringResource(R.string.settings_ai_log_no_output),
-                    style = PauseTheme.type.caption,
-                    color = colors.ink2,
-                )
-                if (!entry.reported) {
-                    TextButton(
-                        onClick = { onAction(AiSettingsAction.Report(entry.id)) },
-                        modifier = Modifier.heightIn(min = PauseTheme.spacing.minTouch),
-                    ) { Text(stringResource(R.string.settings_ai_log_report), color = colors.ink2) }
-                }
+            detail.forEach { Text(it, style = PauseTheme.type.caption, color = colors.ink2) }
+            Text(
+                r.outputJson ?: stringResource(R.string.settings_ai_log_no_output),
+                style = PauseTheme.type.caption,
+                color = colors.ink2,
+                maxLines = OUTPUT_LINES,
+                overflow = TextOverflow.Ellipsis,
+            )
+            if (!entry.reported) {
+                TextButton(
+                    onClick = { onAction(AiSettingsAction.Report(entry.id)) },
+                    modifier = Modifier.heightIn(min = PauseTheme.spacing.minTouch),
+                ) { Text(stringResource(R.string.settings_ai_log_report), color = colors.ink2) }
             }
         }
     }
 }
 
+private const val RECENT = 5
+private const val OUTPUT_LINES = 12
+private const val MILLIS = 1000f
+private const val PARAGRAPH = "\n\n"
 private val TIME: DateTimeFormatter = DateTimeFormatter.ofPattern("M/d HH:mm")
 
-private fun AiMode.labelRes(): Int = when (this) {
+internal fun AiMode.labelRes(): Int = when (this) {
     AiMode.CLOUD -> R.string.settings_ai_mode_cloud
     AiMode.ON_DEVICE -> R.string.settings_ai_mode_device
     AiMode.OFF -> R.string.settings_ai_mode_off
