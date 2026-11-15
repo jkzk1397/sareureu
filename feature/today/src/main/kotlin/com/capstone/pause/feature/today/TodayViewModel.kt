@@ -69,6 +69,12 @@ sealed interface TodayAction {
 
     /** 감지 켜기(권한이 없으면 사용 기록 설정으로 안내). */
     data object TurnOnMonitoring : TodayAction
+
+    /** '내 계획' 카드 → 리포트 탭(해 볼 것). */
+    data object OpenReport : TodayAction
+
+    /** '맡겨 둔 잔소리' 카드 → 친구 탭. */
+    data object OpenFriends : TodayAction
 }
 
 /** 오늘 탭 ViewModel. 계산은 하지 않고 저장소 값을 묶기만 한다. */

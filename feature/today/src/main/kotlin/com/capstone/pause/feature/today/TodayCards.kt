@@ -2,6 +2,7 @@ package com.capstone.pause.feature.today
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,8 +17,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
@@ -141,9 +144,9 @@ internal fun RiskCard(risk: RiskSummary) {
 
 /** 받은 잔소리 카드. 내용은 숨기고 '맡겨 뒀다'만 알린다(숏폼 2단계에서 꺼냄). */
 @Composable
-internal fun PokeCard(poke: ReceivedPoke, modifier: Modifier = Modifier) {
+internal fun PokeCard(poke: ReceivedPoke, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val colors = PauseTheme.colors
-    SmallCard(modifier = modifier, container = colors.surface, bordered = true) {
+    SmallCard(modifier = modifier, container = colors.surface, bordered = true, onClick = onClick) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xs),
@@ -156,7 +159,13 @@ internal fun PokeCard(poke: ReceivedPoke, modifier: Modifier = Modifier) {
             ) {
                 Text(text = poke.fromNickname.take(1), style = PauseTheme.type.label, color = colors.surface)
             }
-            Text(text = stringResource(R.string.today_poke_title), style = PauseTheme.type.label, color = colors.social)
+            Text(
+                text = stringResource(R.string.today_poke_title),
+                style = PauseTheme.type.label,
+                color = colors.social,
+                modifier = Modifier.weight(1f),
+            )
+            GoMark(colors.social)
         }
         val body = if (hasFinalConsonant(poke.fromNickname)) R.string.today_poke_body_i else R.string.today_poke_body_ga
         Text(text = stringResource(body, poke.fromNickname), style = PauseTheme.type.body, color = colors.ink)
@@ -165,9 +174,9 @@ internal fun PokeCard(poke: ReceivedPoke, modifier: Modifier = Modifier) {
 
 /** 내 계획 카드(부드러운 라임 바탕). */
 @Composable
-internal fun PlanCard(plan: IfThenPlan, modifier: Modifier = Modifier) {
+internal fun PlanCard(plan: IfThenPlan, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val colors = PauseTheme.colors
-    SmallCard(modifier = modifier, container = colors.accentContainer, bordered = false) {
+    SmallCard(modifier = modifier, container = colors.accentContainer, bordered = false, onClick = onClick) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xs),
@@ -182,7 +191,9 @@ internal fun PlanCard(plan: IfThenPlan, modifier: Modifier = Modifier) {
                 text = stringResource(R.string.today_plan_title),
                 style = PauseTheme.type.label,
                 color = colors.onAccentContainer,
+                modifier = Modifier.weight(1f),
             )
+            GoMark(colors.onAccentContainer)
         }
         Text(
             text = stringResource(R.string.today_plan_body, plan.ifText, plan.thenText),
@@ -192,17 +203,26 @@ internal fun PlanCard(plan: IfThenPlan, modifier: Modifier = Modifier) {
     }
 }
 
+/** 카드 제목 오른쪽 '›': 누르면 다른 화면으로 간다는 표시. */
+@Composable
+private fun GoMark(color: androidx.compose.ui.graphics.Color) {
+    Text(text = stringResource(R.string.today_go_mark), style = PauseTheme.type.title, color = color)
+}
+
 @Composable
 private fun SmallCard(
     modifier: Modifier,
     container: androidx.compose.ui.graphics.Color,
     bordered: Boolean,
+    onClick: () -> Unit,
     content: @Composable () -> Unit,
 ) {
     val spacing = PauseTheme.spacing
     val base = modifier
         .heightIn(min = PauseSizes.bubbleBuddy * 2)
+        .clip(PauseTheme.shapes.card)
         .background(container, PauseTheme.shapes.card)
+        .clickable(role = Role.Button, onClick = onClick)
     Column(
         verticalArrangement = Arrangement.spacedBy(spacing.sm),
         modifier = (
@@ -223,24 +243,18 @@ private fun SmallCard(
 private val PauseColorsInk = com.capstone.pause.core.designsystem.theme.PauseColors.BuddyInk
 private val LIVE_BUDDY: Dp = PauseSizes.liveBuddy
 
-/** 시연 모드 전용: "시연: 숏폼 보기 시작" / "시연 멈추기"(DemoController만 부른다). */
+/** 시연 모드 전용: "숏폼 보기 시작" / "시연 멈추기"(DemoController만 부른다). 시연 배지 옆에 놓는 작은 보조 버튼. */
 @Composable
 internal fun DemoPlayButton(running: Boolean, onAction: (TodayAction) -> Unit) {
-    if (running) {
-        androidx.compose.material3.OutlinedButton(
-            onClick = { onAction(TodayAction.StopDemo) },
-            shape = PauseTheme.shapes.pill,
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = PauseTheme.spacing.minTouch),
-        ) {
-            Text(
-                text = stringResource(R.string.today_demo_stop),
-                style = PauseTheme.type.label,
-                color = PauseTheme.colors.ink,
-            )
-        }
-    } else {
-        PrimaryButton(text = stringResource(R.string.today_demo_start), onClick = { onAction(TodayAction.StartDemo) })
+    androidx.compose.material3.OutlinedButton(
+        onClick = { onAction(if (running) TodayAction.StopDemo else TodayAction.StartDemo) },
+        shape = PauseTheme.shapes.pill,
+        modifier = Modifier.heightIn(min = PauseTheme.spacing.minTouch),
+    ) {
+        Text(
+            text = stringResource(if (running) R.string.today_demo_stop else R.string.today_demo_start),
+            style = PauseTheme.type.label,
+            color = PauseTheme.colors.ink,
+        )
     }
 }
