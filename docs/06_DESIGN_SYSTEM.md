@@ -97,13 +97,10 @@
 | `WeekClock` (일주일 시계) | `DayClock`과 같은 다이얼에 일주일 시간대별 합계를 맥락별로 쌓은 꽃잎. "시계 / 표" 토글 |
 | `Heatmap` | `WeekClock`의 '표' 보기: 요일×2시간 7×12 칸. 위험 시간대(1시간 단위)가 걸친 2시간 칸 전체에 잉크 테두리 |
 | `RhythmRing` | 온보딩의 하루 리듬 미리보기(맥락 색 링). 다이얼 방향은 `DayClock`과 같다 |
-| `FlowDiagram` | 진입 → 숏폼 앱 → 이탈 3단 흐름도(Sankey), 상위 5개 + 기타 |
 | `DurationHistogram` | 세션 길이 분포(0–5, 5–10, 10–20, 20–40, 40+분) |
 | `TrendLine` | 기준선 점선 + 주별 하루 평균 |
 | `BuddyAvatar` | 르르. `expression`, `size`, `melt`(8절) |
 | `BuddyBubble` | 캐릭터 말풍선(채팅·카드 공용) |
-| `EvidenceChip` | AI 문장 옆 근거("화 23:40 · 쇼츠 32분"), 탭하면 해당 세션·통계로 |
-| `HypothesisCard` | 가설 + 확신도(낮음/중간/높음 글자) + 근거 칩 + 맞아/반쯤/아니야 |
 | `StrategyCard` | 맥락 아이콘 + 만약~하면 문장 + 고르기 |
 | `RankRow` | 순위·아바타·감소율·기록률 배지, "나"는 `accentContainer` |
 | `PermissionExplainer` | 권한 고지 화면 템플릿(무엇을/왜/안 하는 것/거절 시) |
@@ -188,8 +185,8 @@ object BuddyBitmap { fun render(context: Context, expression: BuddyExpression, s
 | 2 | 숏폼 위 플로팅 캐릭터 + 카드 1단계 | `02_overlay_card.png` |
 | 3 | 메시지 알림 헤드업 + 카드 2단계 | `03_message_alert.png` |
 | 4 | 카드 3단계(입력 마찰) | `04_friction.png` |
-| 5 | 리포트: 일주일 시계·맥락별 합계·흐름도·표 보기·세션 길이·또래 | `05_report.png` |
-| 6 | AI 주간 리포트: 가설·근거·전략 | `06_ai_weekly.png` |
+| 5 | 리포트: 일주일 시계·때별 합계·표 보기. 펼치면 보기 직전·끝 순위 막대, 한 번 길이, 또래 (목업의 흐름도는 순위 막대로 바꿨다) | `05_report.png` |
+| 6 | AI 주간 리포트: 가설·펼치는 근거 문장·전략 (목업의 근거 칩은 '왜 이렇게 생각했어?'를 눌러 펼치는 문장으로 바꿨다. 화면 전용이라 `feature:report` 안에 있다) | `06_ai_weekly.png` |
 | 7 | 코치 채팅 | `07_coach.png` |
 | 8 | 친구: 랭킹·잔소리 | `08_friends.png` |
 | 9 | 온보딩: 하루 리듬 | `09_onboarding_rhythm.png` |
