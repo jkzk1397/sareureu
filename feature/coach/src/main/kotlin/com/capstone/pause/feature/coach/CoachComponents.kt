@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,10 +18,16 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -38,7 +45,7 @@ private val BubbleMaxWidth = 300.dp
 /** 채팅 아바타(06 문서 8절: 28dp). */
 private val AvatarSize = 28.dp
 
-/** 대화 글 하나. AI 답이면 근거 칩·계획 제안·신고가 붙는다. */
+/** 대화 글 하나. AI 답이면 펼치는 근거·계획 제안·신고가 붙는다. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun ChatRow(item: ChatItem, onAction: (CoachAction) -> Unit) {
@@ -92,19 +99,15 @@ internal fun ChatRow(item: ChatItem, onAction: (CoachAction) -> Unit) {
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
+/**
+ * AI 답 아래: 계획 제안(있으면) → 한 줄에 '왜 이렇게 답했어?'(왼쪽)와 '신고'(오른쪽) → 펼친 근거 문장.
+ * 근거는 전에는 누를 수 있게 생긴 칩인데 눌러도 반응이 없었다. 리포트의 가설 카드처럼 눌러서 문장으로 편다.
+ */
 @Composable
 private fun ReplyExtras(details: ReplyDetails, onAction: (CoachAction) -> Unit) {
     val colors = PauseTheme.colors
     val spacing = PauseTheme.spacing
-    if (details.evidence.isNotEmpty()) {
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(spacing.xs),
-            verticalArrangement = Arrangement.spacedBy(spacing.xs),
-        ) {
-            details.evidence.forEach { EvidenceTag(evidenceLabel(it)) }
-        }
-    }
+    var open by rememberSaveable(details.messageId) { mutableStateOf(false) }
     details.planProposal?.let { plan ->
         Column(
             verticalArrangement = Arrangement.spacedBy(spacing.xs),
@@ -124,6 +127,7 @@ private fun ReplyExtras(details: ReplyDetails, onAction: (CoachAction) -> Unit) 
                 color = colors.onAccentContainer,
             )
             if (details.planSaved) {
+                // 저장하면 버튼이 사라지고 이 글자만 남는다(다시 누를 수 없다).
                 Text(
                     text = stringResource(R.string.coach_plan_saved),
                     style = PauseTheme.type.label,
@@ -137,33 +141,58 @@ private fun ReplyExtras(details: ReplyDetails, onAction: (CoachAction) -> Unit) 
             }
         }
     }
-    if (details.reported) {
-        Text(text = stringResource(R.string.coach_reported), style = PauseTheme.type.caption, color = colors.ink3)
-    } else {
-        val desc = stringResource(R.string.coach_report_desc)
-        TextButton(
-            onClick = { onAction(CoachAction.Report(details.messageId)) },
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+        if (details.evidence.isNotEmpty()) {
+            SmallAction(
+                text = stringResource(if (open) R.string.coach_evidence_hide else R.string.coach_evidence_show),
+                color = colors.ink,
+                onClick = { open = !open },
+            )
+        }
+        Box(Modifier.weight(1f))
+        if (details.reported) {
+            Text(text = stringResource(R.string.coach_reported), style = PauseTheme.type.caption, color = colors.ink3)
+        } else {
+            val desc = stringResource(R.string.coach_report_desc)
+            SmallAction(
+                text = stringResource(R.string.coach_report),
+                color = colors.ink3,
+                onClick = { onAction(CoachAction.Report(details.messageId)) },
+                modifier = Modifier.semantics { contentDescription = desc },
+            )
+        }
+    }
+    if (open && details.evidence.isNotEmpty()) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(spacing.xs),
             modifier = Modifier
-                .heightIn(min = spacing.minTouch)
-                .semantics { contentDescription = desc },
+                .fillMaxWidth()
+                .background(colors.surfaceAlt, PauseTheme.shapes.small)
+                .padding(spacing.md),
         ) {
-            Text(text = stringResource(R.string.coach_report), style = PauseTheme.type.caption, color = colors.ink3)
+            Text(
+                text = stringResource(R.string.coach_evidence_caption),
+                style = PauseTheme.type.caption,
+                color = colors.ink2,
+            )
+            details.evidence.forEach {
+                Text(text = evidenceLabel(it), style = PauseTheme.type.bodySmall, color = colors.ink)
+            }
         }
     }
 }
 
-/** 근거 칩(읽기만, 누르지 않음). */
+/** 말풍선 안 작은 글자 버튼(48dp 터치 영역, 글자 왼쪽 끝은 말풍선 글과 맞춘다). */
 @Composable
-private fun EvidenceTag(text: String) {
-    val colors = PauseTheme.colors
-    Text(
-        text = text,
-        style = PauseTheme.type.label,
-        color = colors.ink,
-        modifier = Modifier
-            .border(PauseTheme.spacing.hairline, colors.line, PauseTheme.shapes.pill)
-            .padding(horizontal = PauseTheme.spacing.sm, vertical = PauseTheme.spacing.xxs),
-    )
+private fun SmallAction(text: String, color: Color, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .heightIn(min = PauseTheme.spacing.minTouch)
+            .clickable(role = Role.Button, onClick = onClick),
+    ) {
+        Text(text = text, style = PauseTheme.type.label, color = color)
+    }
 }
 
 /** 위기 표현 도움 카드: AI를 멈추고 상담 전화로 안내한다. */
