@@ -39,29 +39,24 @@ internal fun rememberBreathLeft(card: CardContent): Int {
 internal fun TypeToExtendField(card: CardContent, breathLeft: Int, typed: String, onTyped: (String) -> Unit) {
     val target = card.typeToExtend ?: return
     val open = FrictionGate.inputEnabled(breathLeft)
+    // 안내 한 줄 → 따라 쓸 문장 → 입력 칸. 숨 고르는 중에는 안내가 "N초 뒤에 쓸 수 있어"로 바뀐다.
     Column(verticalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xs)) {
         Text(
-            text = stringResource(R.string.intervention_l3_type_label),
+            text = if (open) {
+                stringResource(R.string.intervention_type_label, card.extendMinutes)
+            } else {
+                stringResource(R.string.intervention_breath_short, breathLeft)
+            },
             style = PauseTheme.type.label,
-            color = PauseTheme.colors.ink,
+            color = PauseTheme.colors.ink2,
         )
         Text(text = target, style = PauseTheme.type.title, color = PauseTheme.colors.ink)
         OutlinedTextField(
             value = typed,
             onValueChange = onTyped,
             enabled = open,
-            placeholder = { Text(text = target, color = PauseTheme.colors.ink3) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
-        )
-        Text(
-            text = if (open) {
-                stringResource(R.string.intervention_l3_hint_open, card.extendMinutes)
-            } else {
-                stringResource(R.string.intervention_breath_short, breathLeft)
-            },
-            style = PauseTheme.type.caption,
-            color = PauseTheme.colors.ink2,
         )
     }
 }

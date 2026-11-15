@@ -1,7 +1,6 @@
 package com.capstone.pause.core.intervention.overlay
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -79,6 +78,12 @@ fun PraiseCard(text: String, onClose: () -> Unit, modifier: Modifier = Modifier)
     }
 }
 
+/*
+ * 모든 단계가 같은 순서다: 때 표시 → "N분째야" → 르르 한마디 → (그 단계의 입력) → 버튼.
+ * 버튼도 같은 순서·무게다: '그만 볼래'(주 버튼) → 'N분만 더'(보조) → '오늘은 그만 알려 줘'(글자 버튼).
+ * 단계 번호는 사용자에게 뜻이 없어 화면에 쓰지 않는다.
+ */
+
 @Composable
 private fun LevelOneCard(card: CardContent, onAction: (NudgeUserAction) -> Unit, modifier: Modifier) {
     var typed by rememberSaveable(card.copyId, card.level) { mutableStateOf("") }
@@ -89,18 +94,12 @@ private fun LevelOneCard(card: CardContent, onAction: (NudgeUserAction) -> Unit,
             modifier = Modifier.padding(end = PauseTheme.spacing.xl),
         )
         NudgeCardSurface {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xs),
-            ) {
-                ContextChip(card.context)
-            }
+            ContextChip(card.context)
             CardHeadline(card)
             CardBody(card.text)
-            StopButton(card, onAction)
             TypeToExtendField(card, breathLeft = 0, typed = typed, onTyped = { typed = it })
-            ExtendButton(card, enabled = FrictionGate.canExtendTyped(0, typed, card.typeToExtend)) {
-                onAction(NudgeUserAction.Extend(card.level, answer = typed))
+            CardButtons(card, onAction, canExtend = FrictionGate.canExtendTyped(0, typed, card.typeToExtend)) {
+                NudgeUserAction.Extend(card.level, answer = typed)
             }
         }
     }
@@ -113,47 +112,31 @@ private fun LevelTwoCard(card: CardContent, onAction: (NudgeUserAction) -> Unit,
     var typed by rememberSaveable(card.copyId, card.level) { mutableStateOf("") }
     val left = rememberBreathLeft(card)
     NudgeCardSurface(modifier = modifier) {
-        LevelBadge(card)
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.md),
-        ) {
-            BuddyAvatar(expression = BuddyExpression.WORRIED, size = OverlayDimens.cardBuddySmall)
-            Column(modifier = Modifier.weight(1f)) {
-                CardHeadline(card)
-                CardBody(card.text)
-            }
-        }
-        Text(
-            text = stringResource(R.string.intervention_l2_question),
-            style = PauseTheme.type.title,
-            color = PauseTheme.colors.ink,
-            modifier = Modifier.semantics { heading() },
-        )
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xs),
-            verticalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xs),
-        ) {
-            card.reasonChips.forEach { reason ->
-                ChoicePill(text = reason.label, selected = chip == reason.key, onClick = { chip = reason.key })
-            }
-        }
-        if (chip != null) {
+        CardTop(card)
+        if (card.reasonChips.isNotEmpty()) {
             Text(
-                text = stringResource(R.string.intervention_l2_reply),
-                style = PauseTheme.type.bodySmall,
-                color = PauseTheme.colors.ink2,
-                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                text = stringResource(R.string.intervention_l2_question),
+                style = PauseTheme.type.label,
+                color = PauseTheme.colors.ink,
             )
+            // 고르면 알약에 ✓가 붙는다(눌렀다는 반응). 따로 답 문장을 더 보여 주지 않는다.
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xs),
+                verticalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xs),
+            ) {
+                card.reasonChips.forEach { reason ->
+                    ChoicePill(text = reason.label, selected = chip == reason.key, onClick = { chip = reason.key })
+                }
+            }
         }
-        StopButton(card, onAction)
         val chosen = chip != null || card.reasonChips.isEmpty()
         if (chosen && card.breathSeconds > 0 && left > 0) BreathRing(left = left, total = card.breathSeconds)
         if (chosen) TypeToExtendField(card, breathLeft = left, typed = typed, onTyped = { typed = it })
-        ExtendButton(card, enabled = chosen && FrictionGate.canExtendTyped(left, typed, card.typeToExtend)) {
-            onAction(NudgeUserAction.Extend(card.level, reasonChip = chip, answer = typed))
-        }
-        SnoozeLink(card, onAction)
+        CardButtons(
+            card,
+            onAction,
+            canExtend = chosen && FrictionGate.canExtendTyped(left, typed, card.typeToExtend),
+        ) { NudgeUserAction.Extend(card.level, reasonChip = chip, answer = typed) }
     }
 }
 
@@ -162,34 +145,12 @@ private fun LevelThreeCard(card: CardContent, onAction: (NudgeUserAction) -> Uni
     val left = rememberBreathLeft(card)
     var typed by rememberSaveable(card.copyId, card.level) { mutableStateOf("") }
     NudgeCardSurface(modifier = modifier) {
-        LevelBadge(card)
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.md),
-        ) {
-            BuddyAvatar(expression = BuddyExpression.WORRIED, size = OverlayDimens.cardBuddySmall)
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(R.string.intervention_l3_title),
-                    style = PauseTheme.type.title,
-                    color = PauseTheme.colors.ink,
-                    modifier = Modifier.semantics { heading() },
-                )
-                Text(
-                    text = stringResource(R.string.intervention_l3_subtitle, card.breathSeconds),
-                    style = PauseTheme.type.bodySmall,
-                    color = PauseTheme.colors.ink2,
-                )
-            }
-        }
-        BreathRing(left = left, total = card.breathSeconds)
-        CardBody(card.text)
-        StopButton(card, onAction)
+        CardTop(card)
+        if (left > 0) BreathRing(left = left, total = card.breathSeconds)
         TypeToExtendField(card, breathLeft = left, typed = typed, onTyped = { typed = it })
-        ExtendButton(card, enabled = FrictionGate.canExtendTyped(left, typed, card.typeToExtend)) {
-            onAction(NudgeUserAction.Extend(card.level, answer = typed))
+        CardButtons(card, onAction, canExtend = FrictionGate.canExtendTyped(left, typed, card.typeToExtend)) {
+            NudgeUserAction.Extend(card.level, answer = typed)
         }
-        SnoozeLink(card, onAction)
     }
 }
 
@@ -197,39 +158,59 @@ private fun LevelThreeCard(card: CardContent, onAction: (NudgeUserAction) -> Uni
 private fun LevelFourCard(card: CardContent, onAction: (NudgeUserAction) -> Unit, modifier: Modifier) {
     var answer by rememberSaveable(card.copyId, card.level) { mutableStateOf("") }
     val left = rememberBreathLeft(card)
+    // 4단계의 한마디는 답을 받을 질문이다. 질문이 따로 있으면 그것만 보여 준다(같은 문장이 두 번 나오지 않게).
+    val question = card.question ?: card.text.ifBlank { stringResource(R.string.intervention_l4_title) }
     NudgeCardSurface(modifier = modifier) {
-        LevelBadge(card)
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.md),
-        ) {
-            BuddyAvatar(expression = BuddyExpression.WORRIED, size = OverlayDimens.cardBuddySmall)
-            CardHeadline(card, Modifier.weight(1f))
-        }
-        CardBody(card.text)
-        Text(
-            text = card.question ?: stringResource(R.string.intervention_l4_title),
-            style = PauseTheme.type.title,
-            color = PauseTheme.colors.ink,
-            modifier = Modifier.semantics { heading() },
-        )
-        if (card.breathSeconds > 0) BreathRing(left = left, total = card.breathSeconds)
+        CardTop(card, body = question)
+        if (card.breathSeconds > 0 && left > 0) BreathRing(left = left, total = card.breathSeconds)
         OutlinedTextField(
             value = answer,
             onValueChange = { answer = it },
             enabled = FrictionGate.inputEnabled(left),
             label = { Text(stringResource(R.string.intervention_l4_answer_label)) },
+            supportingText = {
+                Text(
+                    stringResource(R.string.intervention_l4_hint, card.extendMinutes, FrictionGate.MIN_ANSWER_CHARS),
+                    color = PauseTheme.colors.ink2,
+                )
+            },
             modifier = Modifier.fillMaxWidth(),
         )
-        Text(
-            text = stringResource(R.string.intervention_l4_hint, card.extendMinutes, FrictionGate.MIN_ANSWER_CHARS),
-            style = PauseTheme.type.caption,
-            color = PauseTheme.colors.ink2,
-        )
-        StopButton(card, onAction)
-        ExtendButton(card, enabled = FrictionGate.canExtendAnswered(answer, left)) {
-            onAction(NudgeUserAction.Extend(card.level, answer = answer.trim()))
+        CardButtons(card, onAction, canExtend = FrictionGate.canExtendAnswered(answer, left)) {
+            NudgeUserAction.Extend(card.level, answer = answer.trim())
         }
+    }
+}
+
+/** 카드 윗부분(2~4단계 공용): 때 표시, 작은 르르 + "N분째야" + 한마디. */
+@Composable
+private fun CardTop(card: CardContent, body: String = card.text) {
+    ContextChip(card.context)
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.md),
+    ) {
+        BuddyAvatar(expression = BuddyExpression.WORRIED, size = OverlayDimens.cardBuddySmall)
+        Column(modifier = Modifier.weight(1f)) {
+            CardHeadline(card)
+            CardBody(body)
+        }
+    }
+}
+
+/** 버튼 세 개. 모든 단계에서 같은 순서: 그만(주) → N분만 더(보조) → 오늘은 그만 알려 줘(글자). */
+@Composable
+private fun CardButtons(
+    card: CardContent,
+    onAction: (NudgeUserAction) -> Unit,
+    canExtend: Boolean,
+    extend: () -> NudgeUserAction,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xs)) {
+        PrimaryButton(text = stringResource(R.string.intervention_stop), onClick = {
+            onAction(NudgeUserAction.Stop(card.level))
+        })
+        ExtendButton(card, enabled = canExtend) { onAction(extend()) }
         SnoozeLink(card, onAction)
     }
 }
@@ -247,25 +228,7 @@ private fun CardHeadline(card: CardContent, modifier: Modifier = Modifier) {
 @Composable
 private fun CardBody(text: String) {
     if (text.isNotBlank()) {
-        Text(text = text, style = PauseTheme.type.body, color = PauseTheme.colors.ink2)
-    }
-}
-
-@Composable
-private fun LevelBadge(card: CardContent) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xs),
-    ) {
-        Text(
-            text = stringResource(R.string.intervention_level_badge, card.level),
-            style = PauseTheme.type.label,
-            color = PauseTheme.colors.ink2,
-            modifier = Modifier
-                .background(PauseTheme.colors.surfaceAlt, PauseTheme.shapes.pill)
-                .padding(horizontal = PauseTheme.spacing.sm, vertical = PauseTheme.spacing.xxs),
-        )
-        ContextChip(card.context)
+        Text(text = text, style = PauseTheme.type.body, color = PauseTheme.colors.ink)
     }
 }
 
@@ -294,13 +257,6 @@ private fun BreathRing(left: Int, total: Int) {
             )
         }
     }
-}
-
-@Composable
-private fun StopButton(card: CardContent, onAction: (NudgeUserAction) -> Unit) {
-    PrimaryButton(text = stringResource(R.string.intervention_stop), onClick = {
-        onAction(NudgeUserAction.Stop(card.level))
-    })
 }
 
 @Composable
