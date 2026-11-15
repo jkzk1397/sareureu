@@ -15,11 +15,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -163,10 +167,14 @@ private fun ReplyExtras(details: ReplyDetails, onAction: (CoachAction) -> Unit) 
         }
     }
     if (open && details.evidence.isNotEmpty()) {
+        // 맨 아래 답에서 펼치면 펼친 부분이 입력창 뒤에 가려진다. 펼친 상자가 보이는 곳까지 따라 내려간다.
+        val bring = remember { BringIntoViewRequester() }
+        LaunchedEffect(Unit) { bring.bringIntoView() }
         Column(
             verticalArrangement = Arrangement.spacedBy(spacing.xs),
             modifier = Modifier
                 .fillMaxWidth()
+                .bringIntoViewRequester(bring)
                 .background(colors.surfaceAlt, PauseTheme.shapes.small)
                 .padding(spacing.md),
         ) {
