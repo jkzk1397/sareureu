@@ -109,7 +109,11 @@ fun PauseAppShell(needsOnboarding: Boolean, openTabRequest: String? = null, onTa
                 .padding(padding)
                 .consumeWindowInsets(padding),
         ) {
-            todayEntries(onOpenMessages = { selectedIndex = TopTab.COACH.ordinal })
+            todayEntries(
+                onOpenMessages = { selectedIndex = TopTab.COACH.ordinal },
+                onOpenReport = { selectedIndex = TopTab.REPORT.ordinal },
+                onOpenFriends = { selectedIndex = TopTab.FRIENDS.ordinal },
+            )
             reportEntries()
             coachEntries()
             friendsEntries()

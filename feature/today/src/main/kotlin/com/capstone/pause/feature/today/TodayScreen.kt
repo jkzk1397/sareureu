@@ -33,12 +33,12 @@ import com.capstone.pause.core.designsystem.chart.DayClock
 import com.capstone.pause.core.designsystem.chart.DayClockData
 import com.capstone.pause.core.designsystem.component.BuddyBubble
 import com.capstone.pause.core.designsystem.component.ChangeDirection
-import com.capstone.pause.core.designsystem.component.ChangeText
 import com.capstone.pause.core.designsystem.component.ContextLegendRow
 import com.capstone.pause.core.designsystem.component.DemoBadge
 import com.capstone.pause.core.designsystem.component.PauseCard
 import com.capstone.pause.core.designsystem.component.PauseScreenColumn
 import com.capstone.pause.core.designsystem.component.PrimaryButton
+import com.capstone.pause.core.designsystem.component.StatHero
 import com.capstone.pause.core.designsystem.component.Wordmark
 import com.capstone.pause.core.designsystem.component.durationLabel
 import com.capstone.pause.core.designsystem.theme.PauseSizes
@@ -49,7 +49,12 @@ import com.capstone.pause.core.model.MeltStage
 
 /** 오늘 탭 진입점. '지금 그만할래'는 홈 화면 인텐트(다른 앱을 조작하지 않는다). */
 @Composable
-fun TodayRoute(onOpenMessages: () -> Unit, viewModel: TodayViewModel = hiltViewModel()) {
+fun TodayRoute(
+    onOpenMessages: () -> Unit,
+    onOpenReport: () -> Unit = {},
+    onOpenFriends: () -> Unit = {},
+    viewModel: TodayViewModel = hiltViewModel(),
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     LifecycleResumeEffect(Unit) {
@@ -59,6 +64,10 @@ fun TodayRoute(onOpenMessages: () -> Unit, viewModel: TodayViewModel = hiltViewM
     TodayScreen(uiState = uiState, onAction = { action ->
         when (action) {
             TodayAction.OpenMessages -> onOpenMessages()
+
+            TodayAction.OpenReport -> onOpenReport()
+
+            TodayAction.OpenFriends -> onOpenFriends()
 
             TodayAction.StartDemo, TodayAction.StopDemo -> viewModel.onDemoAction(action)
 
@@ -77,7 +86,10 @@ fun TodayRoute(onOpenMessages: () -> Unit, viewModel: TodayViewModel = hiltViewM
     })
 }
 
-/** 오늘 탭(상태 없음). 목업 01 구성: 상단 바 → 르르 한마디/보는 중 → 하루 시계 → 위험 시간대 → 잔소리·계획. */
+/**
+ * 오늘 탭(상태 없음). 결론부터: 상단 바 → 오늘 본 시간(큰 숫자, 어제와 비교) → 르르 한마디/보는 중 → 하루 시계
+ * → 자주 길어지는 시간 → 잔소리·계획. 잔소리 카드를 누르면 친구 탭, 계획 카드를 누르면 리포트 탭으로 간다.
+ */
 @Composable
 fun TodayScreen(uiState: TodayUiState, onAction: (TodayAction) -> Unit, modifier: Modifier = Modifier) {
     val ready = uiState as? TodayUiState.Ready
@@ -86,9 +98,18 @@ fun TodayScreen(uiState: TodayUiState, onAction: (TodayAction) -> Unit, modifier
         if (ready == null) return@PauseScreenColumn
         val summary = ready.summary
         if (summary.isDemo) {
-            DemoBadge()
-            DemoPlayButton(running = ready.demoRunning, onAction = onAction)
+            // 시연 배지와 시연 버튼을 한 줄에. 이 화면의 주 버튼 자리를 차지하지 않게 작은 보조 버튼으로 그린다.
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.sm),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                DemoBadge()
+                Box(Modifier.weight(1f))
+                DemoPlayButton(running = ready.demoRunning, onAction = onAction)
+            }
         }
+        TodayTotal(ready)
         if (ready.monitoringOff) {
             PauseCard(title = stringResource(R.string.today_monitoring_off_title)) {
                 Text(
@@ -124,11 +145,13 @@ fun TodayScreen(uiState: TodayUiState, onAction: (TodayAction) -> Unit, modifier
         ClockCard(ready)
         summary.topRisk?.let { RiskCard(it) }
         if (ready.poke != null || ready.plan != null) {
+            val openFriends = { onAction(TodayAction.OpenFriends) }
+            val openReport = { onAction(TodayAction.OpenReport) }
             if (isLargeFont()) {
                 // 큰 글자에서는 두 카드를 세로로 쌓는다(좁은 칸에서 한 글자씩 줄바꿈되지 않게).
                 Column(verticalArrangement = Arrangement.spacedBy(PauseTheme.spacing.sm)) {
-                    ready.poke?.let { PokeCard(it, Modifier.fillMaxWidth()) }
-                    ready.plan?.let { PlanCard(it, Modifier.fillMaxWidth()) }
+                    ready.poke?.let { PokeCard(it, openFriends, Modifier.fillMaxWidth()) }
+                    ready.plan?.let { PlanCard(it, openReport, Modifier.fillMaxWidth()) }
                 }
             } else {
                 // 두 카드 높이를 맞춘다(키 큰 쪽에 맞춤).
@@ -138,8 +161,8 @@ fun TodayScreen(uiState: TodayUiState, onAction: (TodayAction) -> Unit, modifier
                         .fillMaxWidth()
                         .height(IntrinsicSize.Min),
                 ) {
-                    ready.poke?.let { PokeCard(it, Modifier.weight(1f).fillMaxHeight()) }
-                    ready.plan?.let { PlanCard(it, Modifier.weight(1f).fillMaxHeight()) }
+                    ready.poke?.let { PokeCard(it, openFriends, Modifier.weight(1f).fillMaxHeight()) }
+                    ready.plan?.let { PlanCard(it, openReport, Modifier.weight(1f).fillMaxHeight()) }
                 }
             }
         }
@@ -188,28 +211,36 @@ private fun greetingText(greeting: TodayGreeting): String = when (greeting) {
         stringResource(R.string.today_greeting_stopped_none, greeting.nudged)
     }
 
-    is TodayGreeting.Watched -> stringResource(R.string.today_greeting_watched, durationLabel(greeting.minutes))
+    // 본 시간은 바로 위 큰 숫자에 있어서 한마디에서는 되풀이하지 않는다.
+    is TodayGreeting.Watched -> stringResource(R.string.today_greeting_watched)
+}
+
+/** 맨 위 큰 숫자: 오늘 본 시간 한 번, 그 아래 어제와 비교. */
+@Composable
+private fun TodayTotal(ready: TodayUiState.Ready) {
+    val summary = ready.summary
+    val less = summary.lessThanYesterday
+    StatHero(
+        value = durationLabel(summary.totalMinutes),
+        caption = stringResource(R.string.today_total_caption),
+        change = when {
+            less == null -> null
+            less == 0 -> stringResource(R.string.today_same_as_yesterday)
+            less > 0 -> stringResource(R.string.today_less_than_yesterday, durationLabel(less))
+            else -> stringResource(R.string.today_more_than_yesterday, durationLabel(-less))
+        },
+        direction = when {
+            less == null || less == 0 -> ChangeDirection.NONE
+            less > 0 -> ChangeDirection.DOWN
+            else -> ChangeDirection.UP
+        },
+    )
 }
 
 @Composable
 private fun ClockCard(ready: TodayUiState.Ready) {
     val summary = ready.summary
-    PauseCard(
-        title = stringResource(R.string.today_clock_title),
-        trailing = {
-            val less = summary.lessThanYesterday
-            when {
-                less == null -> Unit
-
-                less == 0 -> ChangeText(stringResource(R.string.today_same_as_yesterday), ChangeDirection.NONE)
-
-                else -> ChangeText(
-                    text = stringResource(R.string.today_vs_yesterday, durationLabel(kotlin.math.abs(less))),
-                    direction = if (less > 0) ChangeDirection.DOWN else ChangeDirection.UP,
-                )
-            }
-        },
-    ) {
+    PauseCard(title = stringResource(R.string.today_clock_title)) {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
             DayClock(
                 data = DayClockData(
