@@ -5,9 +5,9 @@
   <string name="intervention_sender_friend">%1$s · 맡겨 둔 잔소리</string>
   <string name="intervention_me">나</string>
   <string name="intervention_channel_buddy">%1$s 메시지</string>
-  <string name="intervention_channel_buddy_desc">숏폼을 오래 볼 때 오는 메신저형 알림</string>
+  <string name="intervention_channel_buddy_desc">숏폼을 오래 볼 때 오는 메시지 알림</string>
   <string name="intervention_channel_reminder">예약·미리 알림</string>
-  <string name="intervention_channel_reminder_desc">내가 정한 시각과 위험 시간대 전 알림</string>
+  <string name="intervention_channel_reminder_desc">내가 정한 시각과, 자주 길어지는 시간 전에 미리 오는 알림</string>
   <string name="intervention_channel_friends">친구</string>
   <string name="intervention_channel_friends_desc">친구가 맡긴 잔소리와 친구 소식</string>
   <string name="intervention_channel_status">감지 상태</string>
