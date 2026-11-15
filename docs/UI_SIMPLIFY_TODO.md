@@ -67,7 +67,7 @@
 - 새 내비 경로는 만들지 않는다(화면 안 접기만 쓴다). 펼침 상태는 `rememberSaveable`
 - 끝난 기준: 설정을 열면 스크롤 없이 묶음 6개가 다 보인다. 시연 모드 켜기까지 누르는 횟수가 2번 이하
 
-## 작업 3. 화면 위 카드와 버블 (`core:intervention`)
+## ✅ 작업 3. 화면 위 카드와 버블 (`core:intervention`)
 숏폼 위에 뜨는 카드가 이 앱의 핵심이라 가장 쉽게 읽혀야 한다.
 
 - 파일: `overlay/NudgeCards.kt`, `overlay/BuddyBubble.kt`, `strings.xml`
