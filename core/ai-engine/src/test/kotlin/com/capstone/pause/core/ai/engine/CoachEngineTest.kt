@@ -59,7 +59,8 @@ class CoachEngineTest {
         assertIs<CoachTurn.Reply>(turn)
         assertEquals(CallOutcome.MOCK_FALLBACK, turn.record.outcome)
         assertEquals(Provider.MOCK, turn.record.provider)
-        assertTrue("208" in turn.reply.answer)
+        // 기본 답변은 분을 화면의 다른 곳처럼 "3시간 28분"으로 쓴다(전에는 "208분").
+        assertTrue("3시간 28분" in turn.reply.answer, turn.reply.answer)
     }
 
     @Test
@@ -101,6 +102,10 @@ class CoachEngineTest {
             assertIs<CoachTurn.Reply>(turn)
             assertEquals(CallOutcome.PASSED, turn.record.outcome, q)
             assertTrue(turn.reply.evidence.isNotEmpty(), q)
+            // 틀에 값이 그대로 남거나("%ctx%"), 조사 뒤에 '때'가 겹치거나("타면 때"), 안에서 쓰는 말이 나오면 안 된다.
+            assertTrue("%" !in turn.reply.answer, turn.reply.answer)
+            assertTrue("면 때" !in turn.reply.answer, turn.reply.answer)
+            assertTrue("세션" !in turn.reply.answer, turn.reply.answer)
         }
     }
 

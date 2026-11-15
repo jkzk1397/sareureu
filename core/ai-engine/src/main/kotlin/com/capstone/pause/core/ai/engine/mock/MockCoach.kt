@@ -106,7 +106,7 @@ internal class MockCoach(private val t: MockTemplates) {
                         t.coach.`when`,
                         mapOf(
                             "ctx" to label(ctx.context),
-                            "ctxMin" to ctx.minutes,
+                            "ctxMin" to duration(ctx.minutes),
                             "day" to day(risk.dayOfWeek),
                             "hour" to risk.hour,
                         ),
@@ -126,7 +126,7 @@ internal class MockCoach(private val t: MockTemplates) {
                         t.coach.why,
                         mapOf(
                             "ctx" to label(ctx.context),
-                            "ctxMin" to ctx.minutes,
+                            "ctxMin" to duration(ctx.minutes),
                             "entry" to entry,
                             "flowCount" to flow.count,
                         ),
@@ -150,18 +150,24 @@ internal class MockCoach(private val t: MockTemplates) {
                 } else {
                     evidence += EvidenceOut("stat", key = now.key)
                     evidence += EvidenceOut("stat", key = last.key)
-                    fill(t.coach.diff, mapOf("thisAvg" to now.avgMinPerDay, "lastAvg" to last.avgMinPerDay))
+                    fill(
+                        t.coach.diff,
+                        mapOf(
+                            "thisAvg" to duration(now.avgMinPerDay),
+                            "lastAvg" to duration(last.avgMinPerDay),
+                        ),
+                    )
                 }
             }
 
             Intent.TYPE -> ctx?.let {
                 evidence += EvidenceOut("stat", key = it.key)
-                fill(t.coach.type, mapOf("ctx" to label(it.context), "ctxMin" to it.minutes))
+                fill(t.coach.type, mapOf("ctx" to label(it.context), "ctxMin" to duration(it.minutes)))
             }
 
             Intent.SUMMARY -> results.decode<SummaryResult>(ToolNames.SUMMARY).firstOrNull()?.let {
                 evidence += EvidenceOut("stat", key = it.key)
-                fill(t.coach.summary, mapOf("avg" to it.avgMinPerDay, "sessions" to it.sessionCount))
+                fill(t.coach.summary, mapOf("avg" to duration(it.avgMinPerDay), "sessions" to it.sessionCount))
             }
         }
         val plan = if (intent == Intent.COMMUTE) {
@@ -176,6 +182,19 @@ internal class MockCoach(private val t: MockTemplates) {
 
     private fun label(slot: ContextSlot) = t.contextLabels[slot] ?: slot.name
 
+    /** 165 → "2시간 45분". 한 시간이 안 되면 "45분", 딱 떨어지면 "2시간". */
+    private fun duration(minutes: Number): String {
+        val total = minutes.toInt()
+        val h = total / MINUTES_PER_HOUR
+        val m = total % MINUTES_PER_HOUR
+        val template = when {
+            h == 0 -> t.coach.durationM
+            m == 0 -> t.coach.durationH
+            else -> t.coach.durationHm
+        }
+        return template.replace("%h%", h.toString()).replace("%m%", m.toString())
+    }
+
     /** 도구 결과의 요일은 "MON"처럼 줄인 값일 수 있어 앞부분으로도 찾는다. */
     private fun day(name: String) = t.coach.dayLabels[name]
         ?: t.coach.dayLabels.entries.firstOrNull { name.length >= 3 && it.key.startsWith(name) }?.value
@@ -183,5 +202,6 @@ internal class MockCoach(private val t: MockTemplates) {
 
     private companion object {
         val FLOW_LIMIT = JsonPrimitive(3)
+        const val MINUTES_PER_HOUR = 60
     }
 }
