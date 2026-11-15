@@ -86,7 +86,8 @@ private fun ThresholdGroupRow(name: String, saved: Int, onSet: (Int) -> Unit) {
             ) { Text(MINUS, style = PauseTheme.type.title) }
             Text(
                 text = stringResource(R.string.settings_minutes, shown),
-                style = PauseTheme.type.body,
+                // 슬라이더를 끄는 동안 숫자가 바뀌어도 −·+ 버튼이 흔들리지 않게 고정폭 숫자.
+                style = PauseTheme.type.body.copy(fontFeatureSettings = "tnum"),
                 color = colors.ink,
             )
             TextButton(

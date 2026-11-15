@@ -106,7 +106,7 @@ internal fun PokeCard(overview: FriendsOverview, poke: PokeDraftState, onAction:
                 Text(
                     text = stringResource(R.string.friends_poke_counter, poke.text.trim().length, PokeRules.MAX_LENGTH),
                     color = if (over) colors.nudgeText else colors.ink3,
-                    style = PauseTheme.type.caption,
+                    style = PauseTheme.type.captionTabular,
                     textAlign = TextAlign.End,
                     modifier = Modifier.fillMaxWidth(),
                 )

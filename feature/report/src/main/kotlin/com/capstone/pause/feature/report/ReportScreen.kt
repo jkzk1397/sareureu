@@ -25,6 +25,7 @@ import com.capstone.pause.core.designsystem.component.ChangeDirection
 import com.capstone.pause.core.designsystem.component.DemoBadge
 import com.capstone.pause.core.designsystem.component.PauseCard
 import com.capstone.pause.core.designsystem.component.PauseScreenColumn
+import com.capstone.pause.core.designsystem.component.Reveal
 import com.capstone.pause.core.designsystem.component.StatHero
 import com.capstone.pause.core.designsystem.component.durationLabel
 import com.capstone.pause.core.designsystem.theme.PauseTheme
@@ -111,9 +112,11 @@ fun ReportScreen(
                 color = PauseTheme.colors.ink,
             )
         }
-        if (details) {
-            ready.charts?.let { ReportDetailCharts(it) }
-            ObservationsCard(report)
+        Reveal(details) {
+            Column(verticalArrangement = Arrangement.spacedBy(PauseTheme.spacing.md)) {
+                ready.charts?.let { ReportDetailCharts(it) }
+                ObservationsCard(report)
+            }
         }
     }
 }

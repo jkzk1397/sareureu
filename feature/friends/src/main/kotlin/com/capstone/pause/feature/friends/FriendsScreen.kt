@@ -29,6 +29,7 @@ import com.capstone.pause.core.designsystem.component.ChangeDirection
 import com.capstone.pause.core.designsystem.component.PauseCard
 import com.capstone.pause.core.designsystem.component.PauseScreenColumn
 import com.capstone.pause.core.designsystem.component.RankRow
+import com.capstone.pause.core.designsystem.component.Reveal
 import com.capstone.pause.core.designsystem.theme.PauseTheme
 import com.capstone.pause.core.social.FriendsOverview
 import com.capstone.pause.core.social.RankingView
@@ -128,14 +129,14 @@ private fun RankingCard(overview: FriendsOverview) {
                 color = PauseTheme.colors.ink,
             )
         }
-        if (detail) {
+        Reveal(detail) {
             Text(
                 text = stringResource(R.string.friends_ranking_detail),
                 style = PauseTheme.type.bodySmall,
                 color = PauseTheme.colors.ink,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(PauseTheme.colors.surfaceAlt, PauseTheme.shapes.small)
+                    .background(PauseTheme.colors.surfaceAlt, PauseTheme.shapes.nested)
                     .padding(PauseTheme.spacing.md),
             )
         }

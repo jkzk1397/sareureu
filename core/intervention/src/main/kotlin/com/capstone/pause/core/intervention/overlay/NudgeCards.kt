@@ -249,7 +249,12 @@ private fun BreathRing(left: Int, total: Int) {
                     LiveRegionMode.Polite
             },
         ) {
-            Text(text = left.toString(), style = PauseTheme.type.display, color = PauseTheme.colors.ink)
+            // 1초마다 바뀌는 숫자라 고정폭(숫자가 바뀔 때 좌우로 흔들리지 않게).
+            Text(
+                text = left.toString(),
+                style = PauseTheme.type.display.copy(fontFeatureSettings = "tnum"),
+                color = PauseTheme.colors.ink,
+            )
             Text(
                 text = stringResource(R.string.intervention_l3_seconds_left),
                 style = PauseTheme.type.caption,

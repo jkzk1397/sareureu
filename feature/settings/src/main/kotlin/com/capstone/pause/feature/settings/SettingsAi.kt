@@ -30,6 +30,7 @@ import com.capstone.pause.core.ai.engine.llm.Provider
 import com.capstone.pause.core.ai.engine.run.CallOutcome
 import com.capstone.pause.core.data.settings.AiMode
 import com.capstone.pause.core.designsystem.component.PrimaryButton
+import com.capstone.pause.core.designsystem.component.Reveal
 import com.capstone.pause.core.designsystem.theme.PauseTheme
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -162,7 +163,7 @@ private fun AiCallRow(entry: AiCallEntry, expanded: Boolean, onAction: (AiSettin
                 color = colors.nudgeText,
             )
         }
-        if (expanded) {
+        Reveal(expanded) {
             val detail = buildList {
                 add(stringResource(R.string.settings_ai_log_provider, stringResource(r.provider.labelRes())))
                 r.reason?.let { add(stringResource(R.string.settings_ai_log_reason, it)) }

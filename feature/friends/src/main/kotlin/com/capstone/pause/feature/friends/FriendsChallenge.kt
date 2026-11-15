@@ -28,6 +28,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import com.capstone.pause.core.designsystem.component.PauseCard
+import com.capstone.pause.core.designsystem.component.Reveal
 import com.capstone.pause.core.designsystem.theme.PauseSizes
 import com.capstone.pause.core.designsystem.theme.PauseTheme
 import com.capstone.pause.core.social.ChallengeRow
@@ -113,7 +114,7 @@ internal fun ManageCard(overview: FriendsOverview, onAction: (FriendsAction) -> 
             color = colors.ink,
         )
     }
-    if (open) {
+    Reveal(open) {
         PauseCard(title = stringResource(R.string.friends_manage_title)) {
             entries.forEach { (id, name) ->
                 FriendRow(
