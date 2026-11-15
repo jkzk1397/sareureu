@@ -3,7 +3,7 @@ package com.capstone.pause.core.designsystem.component
 import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -16,6 +16,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,7 +45,7 @@ fun Wordmark(modifier: Modifier = Modifier, height: Dp = PauseSizes.wordmarkHeig
     )
 }
 
-/** 28dp 카드: `surface` 바탕 + `line` 1dp 테두리, 제목·오른쪽 끝·내용 슬롯. */
+/** 28dp 카드: `surface` 바탕 + 깊이는 그림자([pauseSurface]), 제목·오른쪽 끝·내용 슬롯. 안쪽 상자는 `shapes.nested`. */
 @Composable
 fun PauseCard(
     modifier: Modifier = Modifier,
@@ -57,8 +58,7 @@ fun PauseCard(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(containerColor, PauseTheme.shapes.card)
-            .border(spacing.hairline, PauseTheme.colors.line, PauseTheme.shapes.card)
+            .pauseSurface(PauseTheme.shapes.card, containerColor)
             .padding(spacing.lg),
         verticalArrangement = Arrangement.spacedBy(spacing.sm),
     ) {
@@ -108,7 +108,8 @@ fun StatHero(
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xxs)) {
         Text(text = caption, style = PauseTheme.type.bodySmall, color = PauseTheme.colors.ink2)
-        Text(text = value, style = valueStyle, color = PauseTheme.colors.ink)
+        // 바뀌는 숫자는 고정폭 숫자로(오늘 본 시간이 늘어도 글자 폭이 흔들리지 않게).
+        Text(text = value, style = valueStyle.copy(fontFeatureSettings = TABULAR), color = PauseTheme.colors.ink)
         if (change != null) ChangeText(change, direction)
     }
 }
@@ -116,9 +117,11 @@ fun StatHero(
 /** 주 버튼: 라이트는 잉크 바탕 + 라임 글자, 다크는 반전. 최소 48dp, 알약 모양. */
 @Composable
 fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
+    val interaction = remember { MutableInteractionSource() }
     Button(
         onClick = onClick,
         enabled = enabled,
+        interactionSource = interaction,
         shape = PauseTheme.shapes.pill,
         colors = ButtonDefaults.buttonColors(
             containerColor = PauseTheme.colors.primary,
@@ -126,7 +129,8 @@ fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
         ),
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = PauseTheme.spacing.minTouch),
+            .heightIn(min = PauseTheme.spacing.minTouch)
+            .pressScale(interaction),
     ) {
         Text(text = text, style = PauseTheme.type.title)
     }
@@ -165,3 +169,6 @@ private fun BasicComponentsPreview() {
         }
     }
 }
+
+/** 고정폭 숫자(OpenType tnum). */
+internal const val TABULAR = "tnum"

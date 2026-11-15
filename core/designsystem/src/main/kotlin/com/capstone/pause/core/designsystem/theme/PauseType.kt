@@ -49,6 +49,12 @@ data class PauseType(
  */
 val KoreanLineBreak: LineBreak = LineBreak.Paragraph.copy(wordBreak = LineBreak.WordBreak.Phrase)
 
+/**
+ * 제목 줄바꿈: 줄 길이를 고르게 나눈다("이번 주 누가 많이 줄였어 / ?"처럼 한 낱말만 다음 줄에 남지 않게).
+ * 본문은 [KoreanLineBreak](문단용)를 그대로 쓴다.
+ */
+val KoreanHeadingLineBreak: LineBreak = LineBreak.Heading.copy(wordBreak = LineBreak.WordBreak.Phrase)
+
 /** 글자 언어(줄바꿈·글꼴 선택용). */
 val KoreanLocale: LocaleList = LocaleList(Locale("ko-KR"))
 
@@ -63,9 +69,9 @@ private fun style(size: Int, line: Int, weight: Int) = TextStyle(
 
 /** 기본 글자 토큰. */
 val DefaultPauseType = PauseType(
-    display = style(40, 46, 800),
-    headline = style(26, 34, 700),
-    title = style(19, 26, 700),
+    display = style(40, 46, 800).copy(lineBreak = KoreanHeadingLineBreak),
+    headline = style(26, 34, 700).copy(lineBreak = KoreanHeadingLineBreak),
+    title = style(19, 26, 700).copy(lineBreak = KoreanHeadingLineBreak),
     body = style(16, 24, 500),
     bodySmall = style(14, 20, 500),
     label = style(13, 18, 600),

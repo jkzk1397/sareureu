@@ -15,6 +15,11 @@ data class PauseShape(
     val sheet: RoundedCornerShape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
     val pill: RoundedCornerShape = RoundedCornerShape(percent = 50),
     val small: RoundedCornerShape = RoundedCornerShape(12.dp),
+    /**
+     * 카드 안에 든 상자의 모서리. 겹친 모서리는 '바깥 반지름 = 안쪽 반지름 + 안쪽 여백'이어야 나란해 보인다.
+     * [card](28dp) 안쪽 여백이 20dp(`PauseCard`)이므로 8dp. 안쪽 여백이 16dp인 곳(설정 묶음·말풍선)은 [small](12dp).
+     */
+    val nested: RoundedCornerShape = RoundedCornerShape(8.dp),
 )
 
 /** 간격 토큰(4dp 단위). */

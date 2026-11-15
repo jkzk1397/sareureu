@@ -54,7 +54,7 @@ fun RankRow(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = PauseTheme.spacing.minTouch)
-            .background(if (isMe) colors.accentContainer else colors.surface, PauseTheme.shapes.small)
+            .background(if (isMe) colors.accentContainer else colors.surface, PauseTheme.shapes.nested)
             .padding(horizontal = PauseTheme.spacing.sm, vertical = PauseTheme.spacing.xs),
     ) {
         // 순위 칸 폭을 고정해 줄마다 아바타·이름 시작점이 같게.

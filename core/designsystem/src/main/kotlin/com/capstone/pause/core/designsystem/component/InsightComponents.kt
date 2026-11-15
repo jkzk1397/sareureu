@@ -1,8 +1,9 @@
 package com.capstone.pause.core.designsystem.component
 
 import android.content.res.Configuration
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +16,7 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -50,8 +52,7 @@ fun BuddyBubble(
             color = colors.ink,
             modifier = Modifier
                 .weight(1f)
-                .background(colors.surface, PauseTheme.shapes.card)
-                .border(PauseTheme.spacing.hairline, colors.line, PauseTheme.shapes.card)
+                .pauseSurface(PauseTheme.shapes.card)
                 .padding(horizontal = PauseTheme.spacing.lg, vertical = PauseTheme.spacing.md),
         )
     }
@@ -75,12 +76,20 @@ fun CardFooter(text: String?, modifier: Modifier = Modifier, action: @Composable
 @Composable
 fun ChoicePill(text: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val colors = PauseTheme.colors
+    val interaction = remember { MutableInteractionSource() }
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
             .heightIn(min = PauseTheme.spacing.minTouch)
+            .pressScale(interaction)
             .background(if (selected) colors.accentContainer else colors.surfaceAlt, PauseTheme.shapes.pill)
-            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
+            .selectable(
+                selected = selected,
+                interactionSource = interaction,
+                indication = LocalIndication.current,
+                role = Role.RadioButton,
+                onClick = onClick,
+            )
             .padding(horizontal = PauseTheme.spacing.md, vertical = PauseTheme.spacing.xs),
     ) {
         Text(
