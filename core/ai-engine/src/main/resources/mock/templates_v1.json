@@ -10,14 +10,14 @@
     "OTHER": "기타"
   },
   "summary": {
-    "PLAYFUL": "이번 주는 {topContext} 때가 제일 길었어. 그래도 기준보다 {reduction} 줄었어!",
-    "WARM": "이번 주엔 {topContext} 시간이 제일 길었네. 기준보다 {reduction} 줄인 거 잘했어",
-    "PLAIN": "이번 주 가장 긴 맥락은 {topContext}. 기준선 대비 {reduction} 줄었어"
+    "PLAYFUL": "이번 주는 {topContext} 때가 제일 길었어. 그래도 시작할 때보다 {reduction} 줄었어!",
+    "WARM": "이번 주엔 {topContext} 시간이 제일 길었네. 시작할 때보다 {reduction} 줄인 거 잘했어",
+    "PLAIN": "이번 주 가장 긴 때는 {topContext}. 시작할 때보다 {reduction} 줄었어"
   },
   "summaryNoReduction": {
     "PLAYFUL": "이번 주는 {topContext} 때가 제일 길었어. 어디서 새는지 같이 보자!",
     "WARM": "이번 주엔 {topContext} 시간이 제일 길었네. 천천히 같이 살펴보자",
-    "PLAIN": "이번 주 가장 긴 맥락은 {topContext}. 아래 가설을 확인해 줘"
+    "PLAIN": "이번 주 가장 긴 때는 {topContext}. 아래 추측이 맞는지 알려 줘"
   },
   "hypothesisContext": {
     "WAKE_UP": { "text": "눈 뜨자마자 숏폼으로 하루를 여는 날이 많은 것 같아", "question": "알람 끄고 바로 열게 되는 거 맞아?" },
@@ -29,9 +29,9 @@
     "LATE_NIGHT": { "text": "자다 깨서 폰을 잡으면 다시 잠들기 어려운 것 같아", "question": "새벽에 깨서 보게 되는 날이 있었어?" },
     "OTHER": { "text": "딱 정해진 때 없이 틈날 때마다 여는 것 같아", "question": "특별히 떠오르는 때가 있어?" }
   },
-  "hypothesisEntry": { "text": "어디서 넘어왔는지가 길어지는 열쇠 같아. 진입 경로부터 바꿔 보자", "question": "그 앱 보다가 넘어오는 게 익숙해?" },
+  "hypothesisEntry": { "text": "어디서 넘어왔는지가 길어지는 열쇠 같아. 어디서 넘어오는지부터 바꿔 보자", "question": "그 앱 보다가 넘어오는 게 익숙해?" },
   "hypothesisSecond": { "text": "{topContext} 다음으로 긴 때도 비슷한 흐름인 것 같아", "question": "두 때가 비슷하게 느껴져?" },
-  "strategyWhy": "{topContext} 세션이 제일 길어서",
+  "strategyWhy": "{topContext} 때 본 시간이 제일 길어서",
   "viewerType": {
     "NIGHT_OWL": "밤이 되면 엄지가 바빠지는 밤 산책형!",
     "COMMUTER": "이동할 때 몰아 보는 출퇴근 몰아보기형!",
@@ -41,7 +41,7 @@
     "MORNING": "아침을 숏폼으로 여는 기상 루틴형!",
     "BALANCED": "크게 쏠린 데 없는 균형형!"
   },
-  "thresholdWhy": "자기 전 세션이 길게 이어져서",
+  "thresholdWhy": "자기 전에 한 번 보면 길게 이어져서",
   "contextCheck": {
     "question": "{timeRange}에 자주 보던데, 그때 뭐 하고 있었어?",
     "options": {
