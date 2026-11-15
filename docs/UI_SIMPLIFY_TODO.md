@@ -95,7 +95,7 @@
 - 처음 들어왔을 때 추천 질문 3개가 입력창 바로 위에 보이게
 - '계획으로 저장'은 누르면 바로 '계획에 저장했어'로 바뀌고 다시 못 누르게
 
-## 작업 6. 친구 탭
+## ✅ 작업 6. 친구 탭
 서버가 없어 지금은 전부 가상 친구다. "곧 열려요"가 여러 곳에 흩어져 있어 고장 난 것처럼 보인다.
 
 - 파일: `feature/friends/`의 `FriendsScreen.kt`, `FriendsPokeCard.kt`, `FriendsChallenge.kt`, `strings.xml`

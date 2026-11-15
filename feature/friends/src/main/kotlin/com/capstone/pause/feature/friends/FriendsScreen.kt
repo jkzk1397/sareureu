@@ -1,6 +1,7 @@
 package com.capstone.pause.feature.friends
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,12 +20,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.capstone.pause.core.designsystem.component.ChangeDirection
-import com.capstone.pause.core.designsystem.component.DemoBadge
 import com.capstone.pause.core.designsystem.component.PauseCard
 import com.capstone.pause.core.designsystem.component.PauseScreenColumn
 import com.capstone.pause.core.designsystem.component.RankRow
@@ -41,30 +42,15 @@ fun FriendsRoute(viewModel: FriendsViewModel = hiltViewModel()) {
     FriendsScreen(uiState = uiState, onAction = viewModel::onAction)
 }
 
-/** 친구 탭(상태 없음). 목업 08: 감소율 랭킹 → 주간 리그 → 잔소리 맡기기 → 함께 챌린지 → 친구 관리. */
+/**
+ * 친구 탭(상태 없음): 안내 한 줄 → 이번 주 순위 → 잔소리 맡기기 → 함께 챌린지 → 친구 관리.
+ * 서버가 없어 지금은 전부 가상 친구다. "곧 열려요"가 여러 곳에 흩어져 고장 난 것처럼 보여서
+ * '+ 초대' 버튼([InviteButton])과 주간 리그 카드([LeagueCard])는 서버가 열릴 때까지 그리지 않는다.
+ */
 @Composable
 fun FriendsScreen(uiState: FriendsUiState, onAction: (FriendsAction) -> Unit, modifier: Modifier = Modifier) {
-    var showInvite by rememberSaveable { mutableStateOf(false) }
-    PauseScreenColumn(title = null, modifier = modifier) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-            Text(
-                text = stringResource(R.string.friends_title),
-                style = PauseTheme.type.headline,
-                color = PauseTheme.colors.ink,
-                modifier = Modifier
-                    .weight(1f)
-                    .semantics { heading() },
-            )
-            OutlinedButton(
-                onClick = { showInvite = true },
-                shape = PauseTheme.shapes.pill,
-                modifier = Modifier.heightIn(min = PauseTheme.spacing.minTouch),
-            ) {
-                Text(text = stringResource(R.string.friends_invite), color = PauseTheme.colors.ink)
-            }
-        }
+    PauseScreenColumn(title = stringResource(R.string.friends_title), modifier = modifier) {
         val overview = uiState.overview ?: return@PauseScreenColumn
-        if (overview.isDemo) DemoBadge()
         if (!overview.available) {
             PauseCard(title = stringResource(R.string.friends_unavailable_title)) {
                 Text(
@@ -75,11 +61,36 @@ fun FriendsScreen(uiState: FriendsUiState, onAction: (FriendsAction) -> Unit, mo
             }
             return@PauseScreenColumn
         }
+        if (overview.isDemo) {
+            Text(
+                text = stringResource(R.string.friends_demo_notice),
+                style = PauseTheme.type.bodySmall,
+                color = PauseTheme.colors.onAccentContainer,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(PauseTheme.colors.accentContainer, PauseTheme.shapes.small)
+                    .padding(horizontal = PauseTheme.spacing.sm, vertical = PauseTheme.spacing.sm),
+            )
+        }
         RankingCard(overview)
-        LeagueCard()
         PokeCard(overview = overview, poke = uiState.poke, onAction = onAction)
         ChallengeCard(overview.challenge)
         ManageCard(overview = overview, onAction = onAction)
+    }
+}
+
+// TODO(#26): 친구 서버가 열리면 제목 줄 오른쪽에 다시 그리고 실제 초대 코드 흐름으로 잇는다.
+
+/** '+ 초대' 버튼과 안내 창. 서버가 열릴 때까지 화면에서 뺐다. */
+@Composable
+internal fun InviteButton() {
+    var showInvite by rememberSaveable { mutableStateOf(false) }
+    OutlinedButton(
+        onClick = { showInvite = true },
+        shape = PauseTheme.shapes.pill,
+        modifier = Modifier.heightIn(min = PauseTheme.spacing.minTouch),
+    ) {
+        Text(text = stringResource(R.string.friends_invite), color = PauseTheme.colors.ink)
     }
     if (showInvite) {
         AlertDialog(
@@ -96,11 +107,38 @@ fun FriendsScreen(uiState: FriendsUiState, onAction: (FriendsAction) -> Unit, mo
 @Composable
 private fun RankingCard(overview: FriendsOverview) {
     PauseCard(title = stringResource(R.string.friends_ranking_title)) {
-        Text(
-            text = stringResource(R.string.friends_ranking_subtitle),
-            style = PauseTheme.type.bodySmall,
-            color = PauseTheme.colors.ink2,
-        )
+        // 한 줄 설명. 계산 조건은 '자세히'를 눌러야 나온다.
+        var detail by rememberSaveable { mutableStateOf(false) }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = PauseTheme.spacing.minTouch)
+                .clickable(role = Role.Button) { detail = !detail },
+        ) {
+            Text(
+                text = stringResource(R.string.friends_ranking_subtitle),
+                style = PauseTheme.type.bodySmall,
+                color = PauseTheme.colors.ink2,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                text = stringResource(if (detail) R.string.friends_more_hide else R.string.friends_more_show),
+                style = PauseTheme.type.label,
+                color = PauseTheme.colors.ink,
+            )
+        }
+        if (detail) {
+            Text(
+                text = stringResource(R.string.friends_ranking_detail),
+                style = PauseTheme.type.bodySmall,
+                color = PauseTheme.colors.ink,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(PauseTheme.colors.surfaceAlt, PauseTheme.shapes.small)
+                    .padding(PauseTheme.spacing.md),
+            )
+        }
         RankingRows(overview.ranking)
         overview.ranking.measuring.forEach { s ->
             Text(
@@ -143,8 +181,11 @@ private fun RankingRows(ranking: RankingView) {
     }
 }
 
+// TODO(#26): 리그 그룹이 생기면 순위 카드 아래에 다시 그린다(LeagueState가 ComingSoon이 아닐 때).
+
+/** 주간 리그 카드. 서버가 열릴 때까지 화면에서 뺐다. */
 @Composable
-private fun LeagueCard() {
+internal fun LeagueCard() {
     val colors = PauseTheme.colors
     // 라이트는 잉크 바탕(목업 08), 다크는 표면 바탕.
     val container = if (colors.isDark) colors.surface else colors.ink
