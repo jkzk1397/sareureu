@@ -10,6 +10,12 @@
 4. Cloudflare의 `sareureu` Worker에서 **Settings → Builds → Root directory**를 `server`로 지정한다. **Build command**는 비워 두고 **Deploy command**는 `npx wrangler deploy`로 설정한다. 설정과 코드가 배포 대상 브랜치에 있으면 빌드를 다시 실행한다.
 5. Worker의 `GET /health`가 `204`를 돌려주면 D1 바인딩과 테이블이 연결된 것이다.
 
+## 지금 배포 상태 (2026-11-16)
+
+- Worker `sareureu`는 팀원 Cloudflare 계정에 있고 리드 계정이 공동 작업자다. GitHub 빌드가 이 저장소 `main`에 연결돼 있어 **`server/`를 고친 PR이 `main`에 머지되면 자동 배포**된다. 따로 `wrangler deploy`를 하지 않는다.
+- `FIREBASE_PROJECT_ID`는 앱의 Firebase 프로젝트(`app/google-services.json`의 `project_id`)와 같아야 한다. 다르면 모든 요청이 `401 invalid_token`이다.
+- 앱이 부를 주소는 코드에 쓰지 않고 각자 `local.properties`의 `socialBaseUrl`에 둔다(없으면 가상 친구로 동작).
+
 ## 앱 연결 계약
 
 - 아래 요청에는 `Authorization: Bearer <Firebase ID token>`을 넣는다. 서버는 토큰을 검증해서 사용자 ID를 얻는다. JSON 요청은 `Content-Type: application/json`을 사용한다.
