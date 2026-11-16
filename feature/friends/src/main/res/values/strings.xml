@@ -58,4 +58,5 @@
   <string name="friends_manage_hide">친구 관리 접기 ▴</string>
   <string name="friends_menu_mark">⋮</string>
   <string name="friends_menu_a11y">%1$s 메뉴: 차단, 신고</string>
+  <string name="friends_poke_failed">전하지 못했어. 인터넷을 확인하거나 내일 다시 해 줘.</string>
 </resources>

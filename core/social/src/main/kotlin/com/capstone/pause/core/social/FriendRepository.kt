@@ -37,6 +37,18 @@ interface FriendRepository {
 
     /** 신고(로컬 기록. 친구 기능이 서버에 연결되면 함께 보낸다). */
     suspend fun report(friendId: String)
+
+    /** 서버에서 친구·순위를 새로 받아 온다. 친구 탭을 열 때만 부른다. 받았으면 true. */
+    suspend fun refresh(): Boolean = false
+
+    /** 내 초대 코드 만들기(이전 코드는 없어진다). 서버가 없으면 null. */
+    suspend fun createInvite(): InviteCode? = null
+
+    /** 친구 초대 코드로 연결. 코드를 만든 사람과 입력한 사람이 각각 동의한 것이 된다. */
+    suspend fun connect(code: String): ConnectResult = ConnectResult.Failed
+
+    /** 연결 끊기. 상대 목록에서도 빠진다. */
+    suspend fun disconnect(friendId: String) {}
 }
 
 /** 가상 친구 파일 `assets/demo/friends.json`(core:sensing 자산, 앱에 합쳐진다). */
