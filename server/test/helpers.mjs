@@ -2,27 +2,34 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import worker from '../src/index.mjs';
 
+/** 서버의 자동 마이그레이션(src/migrate.mjs)이 다시 적용하지 않게 wrangler와 같은 기록 표에 남긴다. */
+export function markApplied(sql, files) {
+    sql.exec(`CREATE TABLE IF NOT EXISTS d1_migrations (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE,
+        applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL)`);
+    for (const file of files) sql.prepare('INSERT OR IGNORE INTO d1_migrations (name) VALUES (?)').run(file);
+}
+
 /** migrations/의 SQL을 번호 순서대로 모두 적용한 메모리 SQLite. */
 export function migratedSql() {
     const sql = new DatabaseSync(':memory:');
     const dir = new URL('../migrations/', import.meta.url);
-    for (const file of readdirSync(dir).filter((name) => name.endsWith('.sql')).sort()) {
-        sql.exec(readFileSync(new URL(file, dir), 'utf8'));
-    }
+    const files = readdirSync(dir).filter((name) => name.endsWith('.sql')).sort();
+    for (const file of files) sql.exec(readFileSync(new URL(file, dir), 'utf8'));
+    markApplied(sql, files);
     return sql;
 }
 
 /** D1 바인딩처럼 동작하는 얇은 감싸개(prepare·bind·first·run·all·batch). */
 export function d1(sql) {
-    const bound = (statement, values) => ({
-        run: () => statement.run(...values),
-        all: () => ({ results: statement.all(...values) }),
-        first: () => statement.get(...values) ?? null,
+    // 실제 D1처럼 실행할 때 컴파일한다(같은 batch 안에서 앞 문장이 만든 칸을 뒤 문장이 쓸 수 있게).
+    const bound = (query, values) => ({
+        run: () => sql.prepare(query).run(...values),
+        all: () => ({ results: sql.prepare(query).all(...values) }),
+        first: () => sql.prepare(query).get(...values) ?? null,
     });
     return {
         prepare(query) {
-            const statement = sql.prepare(query);
-            return { ...bound(statement, []), bind: (...values) => bound(statement, values) };
+            return { ...bound(query, []), bind: (...values) => bound(query, values) };
         },
         batch(statements) {
             sql.exec('BEGIN');

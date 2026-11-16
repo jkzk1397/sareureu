@@ -3,6 +3,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import { test } from 'node:test';
 import worker from '../src/index.mjs';
+import { markApplied } from './helpers.mjs';
 
 test('동의한 계정의 일일 합계만 저장하고 철회하면 삭제한다', async (t) => {
     const now = Date.parse('2026-11-09T18:59:00.000Z'); // 한국 시간 03:59
@@ -17,6 +18,7 @@ test('동의한 계정의 일일 합계만 저장하고 철회하면 삭제한�
     for (const file of later) {
         sql.exec(readFileSync(new URL(`../migrations/${file}`, import.meta.url), 'utf8'));
     }
+    markApplied(sql, ['0001_daily_watch.sql', ...later]);
     const db = {
         prepare(query) {
             const statement = sql.prepare(query);

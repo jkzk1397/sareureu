@@ -1,6 +1,7 @@
 import { verifyFirebaseUser } from './firebase-auth.mjs';
 import { friendRoutes } from './friends.mjs';
 import { error, noContent, readBody } from './http.mjs';
+import { ensureMigrated } from './migrate.mjs';
 import { computePeerStats, peerRoutes } from './peers.mjs';
 import { cleanPokes, pokeRoutes } from './pokes.mjs';
 
@@ -150,6 +151,7 @@ export default {
     async fetch(request, env) {
         const path = new URL(request.url).pathname;
         try {
+            await ensureMigrated(env.DB);
             if (path === '/health' && request.method === 'GET') {
                 await env.DB.prepare('SELECT 1 FROM daily_watch LIMIT 1').first();
                 return noContent();
@@ -172,6 +174,7 @@ export default {
     },
 
     async scheduled(controller, env) {
+        await ensureMigrated(env.DB);
         const cutoff = utcDate(controller.scheduledTime - retentionDays * dayMs);
         await env.DB.prepare('DELETE FROM daily_watch WHERE watch_date < ?').bind(cutoff).run();
         // 임시(5-3): 시간이 지난 초대 코드 정리.
