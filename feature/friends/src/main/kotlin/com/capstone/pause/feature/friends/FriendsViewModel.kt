@@ -4,8 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.capstone.pause.core.ai.coach.PokeDrafter
 import com.capstone.pause.core.ai.engine.validate.BannedWords
+import com.capstone.pause.core.common.AppClock
 import com.capstone.pause.core.data.profile.ProfileRepository
 import com.capstone.pause.core.model.Tone
+import com.capstone.pause.core.social.ConnectResult
 import com.capstone.pause.core.social.EntrustResult
 import com.capstone.pause.core.social.FriendRepository
 import com.capstone.pause.core.social.FriendsOverview
@@ -15,6 +17,7 @@ import com.capstone.pause.core.social.PokeInbox
 import com.capstone.pause.core.social.PokeRules
 import com.capstone.pause.core.social.SharingRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.time.LocalDateTime
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -52,6 +55,7 @@ data class FriendsUiState(
     val league: LeagueState = LeagueState.ComingSoon,
     val poke: PokeDraftState = PokeDraftState(),
     val sharing: SharingUiState = SharingUiState(),
+    val invite: InviteUiState = InviteUiState(),
 )
 
 /** 친구 탭 동작. */
@@ -88,6 +92,18 @@ sealed interface FriendsAction {
 
     /** 공유 그만하기(확인 창 뒤). */
     data object RevokeSharing : FriendsAction
+
+    /** 내 초대 코드 만들기(이전 코드는 없어짐). */
+    data object CreateInvite : FriendsAction
+
+    /** 친구 코드 입력. */
+    data class EditCode(val text: String) : FriendsAction
+
+    /** 친구 코드로 연결. */
+    data object Connect : FriendsAction
+
+    /** 연결 끊기. */
+    data class Disconnect(val id: String) : FriendsAction
 }
 
 /** 잔소리 글 검사: 길이(코어) + 금지 표현(AI 엔진 목록). 통과하면 null. */
@@ -105,22 +121,29 @@ class FriendsViewModel @Inject constructor(
     private val pokeDrafter: PokeDrafter,
     private val profileRepository: ProfileRepository,
     private val sharingRepository: SharingRepository,
+    private val clock: AppClock,
     leagueRepository: LeagueRepository,
 ) : ViewModel() {
     private val poke = MutableStateFlow(PokeDraftState())
     private val sharing = MutableStateFlow(SharingUiState())
+    private val invite = MutableStateFlow(InviteUiState())
 
     /** 화면 상태. */
     val uiState: StateFlow<FriendsUiState> = combine(
         friendRepository.observe(),
         leagueRepository.observe(),
         poke,
-        sharing,
-    ) { overview, league, p, sh ->
+        combine(sharing, invite, ::Pair),
+    ) { overview, league, p, (sh, inv) ->
         val selected = p.friendId?.takeIf { id -> overview.friends.any { it.id == id } }
             ?: overview.friends.firstOrNull()?.id
-        FriendsUiState(overview, league, p.copy(friendId = selected), sh)
+        FriendsUiState(overview, league, p.copy(friendId = selected), sh, inv)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), FriendsUiState())
+
+    init {
+        // 친구 서버 조회는 친구 탭을 열 때만(무료 한도). 시연·동의 전이면 아무것도 부르지 않는다.
+        viewModelScope.launch { runCatching { friendRepository.refresh() } }
+    }
 
     /** 동작 처리. */
     fun onAction(action: FriendsAction) {
@@ -150,6 +173,44 @@ class FriendsViewModel @Inject constructor(
             FriendsAction.GrantSharing -> changeSharing(stop = false) { sharingRepository.grant() }
 
             FriendsAction.RevokeSharing -> changeSharing(stop = true) { sharingRepository.revoke() }
+
+            FriendsAction.CreateInvite -> createInvite()
+
+            is FriendsAction.EditCode -> invite.update {
+                it.copy(input = action.text.take(CODE_INPUT_MAX), result = null)
+            }
+
+            FriendsAction.Connect -> connect()
+
+            is FriendsAction.Disconnect -> viewModelScope.launch { friendRepository.disconnect(action.id) }
+        }
+    }
+
+    private fun createInvite() {
+        if (invite.value.busy) return
+        invite.update { it.copy(busy = true, inviteFailed = false, result = null) }
+        viewModelScope.launch {
+            val code = runCatching { friendRepository.createInvite() }.getOrNull()
+            invite.update {
+                it.copy(
+                    busy = false,
+                    code = code?.code ?: it.code,
+                    expires = code?.let { c -> LocalDateTime.ofInstant(c.expiresAt, clock.zone) } ?: it.expires,
+                    inviteFailed = code == null,
+                )
+            }
+        }
+    }
+
+    private fun connect() {
+        val code = invite.value.input
+        if (invite.value.busy || code.isBlank()) return
+        invite.update { it.copy(busy = true, result = null) }
+        viewModelScope.launch {
+            val result = runCatching { friendRepository.connect(code) }.getOrDefault(ConnectResult.Failed)
+            invite.update {
+                it.copy(busy = false, result = result, input = if (result is ConnectResult.Connected) "" else it.input)
+            }
         }
     }
 
@@ -208,5 +269,6 @@ class FriendsViewModel @Inject constructor(
 
     private companion object {
         const val STOP_TIMEOUT_MS = 5_000L
+        const val CODE_INPUT_MAX = 12
     }
 }

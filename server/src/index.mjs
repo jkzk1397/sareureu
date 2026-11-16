@@ -1,9 +1,10 @@
 import { verifyFirebaseUser } from './firebase-auth.mjs';
+import { friendRoutes } from './friends.mjs';
+import { error, noContent, readBody } from './http.mjs';
 
 const consentVersion = 1;
 const dayMs = 86_400_000;
 const retentionDays = 365;
-const maxBodyBytes = 2048;
 
 function utcDate(timestamp) {
     return new Date(timestamp).toISOString().slice(0, 10);
@@ -16,41 +17,6 @@ function logicalDate(timestamp, timeZone) {
     const { year, month, day, hour } = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
     const date = `${year}-${month}-${day}`;
     return Number(hour) < 4 ? utcDate(Date.parse(date) - dayMs) : date;
-}
-
-function error(code, status) {
-    return Response.json({ error: code }, { status, headers: { 'Cache-Control': 'no-store' } });
-}
-
-function noContent() {
-    return new Response(null, { status: 204, headers: { 'Cache-Control': 'no-store' } });
-}
-
-async function readBody(request) {
-    if (!request.body || request.headers.get('Content-Type')?.split(';')[0].trim() !== 'application/json') {
-        return null;
-    }
-    const reader = request.body.getReader();
-    const bytes = new Uint8Array(maxBodyBytes);
-    let length = 0;
-    try {
-        for (;;) {
-            const { value, done } = await reader.read();
-            if (done) break;
-            if (length + value.length > bytes.length) {
-                await reader.cancel();
-                return null;
-            }
-            bytes.set(value, length);
-            length += value.length;
-        }
-        const body = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes.subarray(0, length)));
-        return body && typeof body === 'object' && !Array.isArray(body) ? body : null;
-    } catch {
-        return null;
-    } finally {
-        reader.releaseLock();
-    }
 }
 
 function validDaily(body, date, now) {
@@ -173,6 +139,7 @@ const routes = [
         handle: ({ request, db, userId, now }) => updateSharing(request, db, userId, now) },
     { pattern: /^\/api\/v1\/standing$/, methods: ['PUT'],
         handle: ({ request, db, userId, now }) => saveStanding(request, db, userId, now) },
+    ...friendRoutes,
 ];
 
 export default {
@@ -203,5 +170,7 @@ export default {
     async scheduled(controller, env) {
         const cutoff = utcDate(controller.scheduledTime - retentionDays * dayMs);
         await env.DB.prepare('DELETE FROM daily_watch WHERE watch_date < ?').bind(cutoff).run();
+        // 임시(5-3): 시간이 지난 초대 코드 정리.
+        await env.DB.prepare('DELETE FROM invite WHERE expires_at_ms <= ?').bind(controller.scheduledTime).run();
     },
 };

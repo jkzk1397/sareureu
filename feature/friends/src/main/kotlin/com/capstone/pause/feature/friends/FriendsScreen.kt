@@ -57,17 +57,6 @@ fun FriendsScreen(uiState: FriendsUiState, onAction: (FriendsAction) -> Unit, mo
             SharingConsentCard(sharing = uiState.sharing, onAction = onAction)
             return@PauseScreenColumn
         }
-        if (overview.sharing == SharingState.CONSENTED && !overview.available) {
-            PauseCard(title = stringResource(R.string.friends_sharing_on_title)) {
-                Text(
-                    text = stringResource(R.string.friends_sharing_on_body),
-                    style = PauseTheme.type.bodySmall,
-                    color = PauseTheme.colors.ink2,
-                )
-                StopSharingButton(sharing = uiState.sharing, onAction = onAction)
-            }
-            return@PauseScreenColumn
-        }
         if (!overview.available) {
             PauseCard(title = stringResource(R.string.friends_unavailable_title)) {
                 Text(
@@ -89,10 +78,14 @@ fun FriendsScreen(uiState: FriendsUiState, onAction: (FriendsAction) -> Unit, mo
                     .padding(horizontal = PauseTheme.spacing.sm, vertical = PauseTheme.spacing.sm),
             )
         }
+        val remote = overview.sharing == SharingState.CONSENTED
+        if (remote) InviteCard(invite = uiState.invite, onAction = onAction)
         RankingCard(overview)
-        PokeCard(overview = overview, poke = uiState.poke, onAction = onAction)
+        // 서버로 잔소리를 전하는 것은 5-4에서. 그전에는 가상 친구에게만 맡길 수 있다.
+        if (overview.isDemo) PokeCard(overview = overview, poke = uiState.poke, onAction = onAction)
         ChallengeCard(overview.challenge)
         ManageCard(overview = overview, onAction = onAction)
+        if (remote) StopSharingButton(sharing = uiState.sharing, onAction = onAction)
     }
 }
 
