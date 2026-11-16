@@ -162,4 +162,22 @@ class WeekMathTest {
         assertFalse(week.typeReady, "세션 3개는 유형을 보이기에 적다")
         assertFalse(week.enoughForAi)
     }
+
+    @Test
+    fun pastHypothesesSendsOnlyAnsweredNewestFirstWithoutRepeats() {
+        fun h(id: String, text: String, verdict: Verdict?) =
+            StoredHypothesis(id, text, MEDIUM, listOf("o3", "o1"), verdict)
+        val stored = listOf(
+            h("2026-10-20#100#0", "예전 추측", Verdict.NO),
+            h("2026-10-27#300#0", "자기 전이 길어", Verdict.YES),
+            h("2026-10-27#300#1", "답 안 한 추측", null),
+            h("2026-10-26#200#0", "자기 전이 길어", Verdict.NO),
+            h("2026-10-26#200#1", "쉬는 시간이 길어", Verdict.PARTLY),
+        )
+        val past = WeekMath.pastHypotheses(stored)
+        assertEquals(listOf("자기 전이 길어", "쉬는 시간이 길어", "예전 추측"), past.map { it.text })
+        assertEquals(listOf("YES", "PARTLY", "NO"), past.map { it.verdict })
+        assertEquals(1, WeekMath.pastHypotheses(stored, limit = 1).size)
+        assertTrue(WeekMath.pastHypotheses(listOf(h("x#1#0", "답 없음", null))).isEmpty())
+    }
 }

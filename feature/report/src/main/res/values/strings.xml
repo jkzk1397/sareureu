@@ -48,7 +48,7 @@
 
   <!-- AI 주간 분석(추측) -->
   <string name="report_ai_title">왜 그럴까?</string>
-  <string name="report_ai_caption">기록을 보고 AI가 짐작한 거야. 맞는지 알려 주면 다음 주에 반영할게.</string>
+  <string name="report_ai_caption">기록을 보고 AI가 짐작한 거야. 맞는지 알려 주면 다음 리포트를 만들 때 반영할게.</string>
   <string name="report_ai_mock_badge">AI 없이 만든 기본 문장</string>
   <string name="report_ai_make">AI 분석 받기</string>
   <string name="report_ai_making">분석하는 중…</string>

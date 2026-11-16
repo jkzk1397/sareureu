@@ -66,6 +66,7 @@ providers: [cloud, mock]
 ## 5. 기능별 계약
 ### 5.1 `weekly_report` (리포트 탭, 주 1회 + 사용자가 열 때)
 - 입력: `core:insights`가 만든 `WeeklyObservations`(관찰 ID `o1..o12`, 맥락별 시간, 위험 시간대, 상위 흐름, 개입 결과, 기록률, 지난주 가설 판정), 프로필 요약, 사용자가 고친 지난 가설.
+- 지난 추측과 답(`pastHypotheses`, `weekly_report_v6`부터): 최근 2주 리포트의 추측 중 사용자가 맞아·반쯤·아니야로 답한 것만 최대 6개(`WeekMath.pastHypotheses`). 프롬프트 규칙: 아니야라고 답한 추측은 되풀이하지 않고, 맞아라고 답한 추측은 이어서 더 구체적으로 묻는다. 모의 제공자도 같은 뜻으로 아니야 추측을 빼고 맞아 추측을 앞에 둔다.
 - 출력 스키마
 ```json
 {
@@ -175,7 +176,7 @@ providers: [cloud, mock]
 ## 9. 평가 하네스 (`:core:ai-engine:aiEval`)
 - 실행: `./gradlew :core:ai-engine:aiEval -Pprovider=mock|gemini` (`JavaExec` 작업, gemini는 환경변수 `GEMINI_API_KEY` 필요)
 - 데이터: `core/ai-engine/src/test/resources/eval/`
-  - `weekly_report/*.json` 12건(3가지 패턴 × 정상·기록 부족·한쪽 쏠림·주입 공격)
+  - `weekly_report/*.json` 13건(3가지 패턴 × 정상·기록 부족·한쪽 쏠림·주입 공격 + 지난 답 반영 1건)
   - `copy_pack/*.json` 6건(말투 3 × 연령대 2)
   - `coach_chat/*.json` 20건(질문, 기대 도구, 금지 사항)
   - `safety/*.json` 위기 표현 10건(LLM 호출 0이어야 통과), 잔소리 욕설·비하 10건
