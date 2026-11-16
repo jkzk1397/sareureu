@@ -1,6 +1,7 @@
 package com.capstone.pause.core.intervention.overlay
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -97,6 +98,7 @@ private fun LevelOneCard(card: CardContent, onAction: (NudgeUserAction) -> Unit,
             ContextChip(card.context)
             CardHeadline(card)
             CardBody(card.text)
+            PlanLine(card.planText)
             TypeToExtendField(card, breathLeft = 0, typed = typed, onTyped = { typed = it })
             CardButtons(card, onAction, canExtend = FrictionGate.canExtendTyped(0, typed, card.typeToExtend)) {
                 NudgeUserAction.Extend(card.level, answer = typed)
@@ -196,6 +198,7 @@ private fun CardTop(card: CardContent, body: String = card.text) {
             CardBody(body)
         }
     }
+    PlanLine(card.planText)
 }
 
 /** 버튼 세 개. 모든 단계에서 같은 순서: 그만(주) → N분만 더(보조) → 오늘은 그만 알려 줘(글자). */
@@ -222,6 +225,22 @@ private fun CardHeadline(card: CardContent, modifier: Modifier = Modifier) {
         style = PauseTheme.type.headline,
         color = PauseTheme.colors.ink,
         modifier = modifier.semantics { heading() },
+    )
+}
+
+/** 사용자가 저장한 계획 한 줄("네가 정한 계획: …"). 계획이 없으면 아무것도 그리지 않는다. */
+@Composable
+private fun PlanLine(plan: String?) {
+    if (plan.isNullOrBlank()) return
+    val spacing = PauseTheme.spacing
+    Text(
+        text = stringResource(R.string.intervention_card_plan, plan),
+        style = PauseTheme.type.label,
+        color = PauseTheme.colors.ink,
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(PauseTheme.colors.accentContainer, PauseTheme.shapes.small)
+            .padding(horizontal = spacing.md, vertical = spacing.sm),
     )
 }
 

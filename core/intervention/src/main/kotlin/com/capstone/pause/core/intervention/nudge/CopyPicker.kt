@@ -4,6 +4,7 @@ import com.capstone.pause.core.model.CardCopy
 import com.capstone.pause.core.model.ContextSlot
 import com.capstone.pause.core.model.CopyLine
 import com.capstone.pause.core.model.CopyPack
+import com.capstone.pause.core.model.IfThenPlan
 import com.capstone.pause.core.model.Tone
 
 /**
@@ -67,12 +68,15 @@ data class PendingPoke(val id: String, val nickname: String, val text: String)
 /**
  * 문구 팩으로 카드·메시지·칭찬을 쓰는 [NudgeWriter](순수).
  * [poke]는 메시지 알림을 만들 때 한 번 묻는다: 친구 잔소리가 있으면 그것을 먼저 쓴다(ONE_SHOT 3단계).
+ * [plans]는 켜 둔 만약~하면 계획. 맥락이 맞는 것을 카드에 함께 보여 준다([PlanPicker], [demo]면 맥락이 달라도).
  */
 class CopyNudgeWriter(
     private val pack: CopyPack,
     private val tone: Tone,
     private val texts: FixedTexts,
     private val nickname: String?,
+    private val plans: List<IfThenPlan> = emptyList(),
+    private val demo: Boolean = false,
     private val poke: () -> PendingPoke?,
 ) : NudgeWriter {
 
@@ -82,6 +86,7 @@ class CopyNudgeWriter(
         put("context", texts.contextLabels[live.context].orEmpty())
         minutes?.let { put("min", it.toString()) }
         nickname?.let { put("nickname", it) }
+        PlanPicker.pick(plans, live.context, anyContext = demo)?.let { put("plan_then", it.thenText) }
     }
 
     private fun seed(live: LiveInput, salt: Int): Long = live.sessionStart.epochSecond + salt
@@ -107,6 +112,7 @@ class CopyNudgeWriter(
             } else {
                 NudgeEngine.DEFAULT_EXTEND_MIN
             },
+            planText = PlanPicker.pick(plans, live.context, anyContext = demo)?.thenText,
         )
     }
 

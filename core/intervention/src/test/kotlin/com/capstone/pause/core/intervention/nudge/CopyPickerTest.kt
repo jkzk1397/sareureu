@@ -4,6 +4,7 @@ import com.capstone.pause.core.model.CardCopy
 import com.capstone.pause.core.model.ContextSlot
 import com.capstone.pause.core.model.CopyLine
 import com.capstone.pause.core.model.CopyPack
+import com.capstone.pause.core.model.IfThenPlan
 import com.capstone.pause.core.model.Tone
 import java.time.Instant
 import kotlin.test.assertEquals
@@ -44,6 +45,33 @@ class CopyPickerTest {
         val c = writer.card(1, live, 15)
         assertEquals("p1", c.copyId)
         assertEquals("유튜브 15분째!", c.text)
+    }
+
+    @Test
+    fun cardShowsPlanForContextAndKeepsCopyUnchanged() {
+        val plans = listOf(IfThenPlan(1, ContextSlot.PRE_SLEEP, "누우면", "폰은 책상 충전기에", Instant.EPOCH, true))
+        val with = CopyNudgeWriter(pack, Tone.PLAYFUL, texts, null, plans) { null }.card(1, live, 15)
+        val without = CopyNudgeWriter(pack, Tone.PLAYFUL, texts, null) { null }.card(1, live, 15)
+        assertEquals("폰은 책상 충전기에", with.planText)
+        // 계획이 없으면 지금과 똑같다(계획 줄만 없음).
+        assertNull(without.planText)
+        assertEquals(without.copy(planText = "폰은 책상 충전기에"), with)
+    }
+
+    @Test
+    fun planThenPlaceholderIsFilledOnlyWhenPlanExists() {
+        val p = pack.copy(
+            card = mapOf(ContextSlot.OTHER to card.copy(l1 = listOf(line("pt", "약속: {plan_then}", Tone.PLAYFUL)))),
+        )
+        val plans = listOf(IfThenPlan(1, null, "누우면", "물 한 잔", Instant.EPOCH, true))
+        assertEquals("약속: 물 한 잔", CopyNudgeWriter(p, Tone.PLAYFUL, texts, null, plans) { null }.card(1, live, 15).text)
+        assertEquals("약속:", CopyNudgeWriter(p, Tone.PLAYFUL, texts, null) { null }.card(1, live, 15).text)
+    }
+
+    @Test
+    fun otherContextPlanIsNotShown() {
+        val plans = listOf(IfThenPlan(1, ContextSlot.COMMUTE, "버스 타면", "이어폰 빼기", Instant.EPOCH, true))
+        assertNull(CopyNudgeWriter(pack, Tone.PLAYFUL, texts, null, plans) { null }.card(2, live, 20).planText)
     }
 
     @Test

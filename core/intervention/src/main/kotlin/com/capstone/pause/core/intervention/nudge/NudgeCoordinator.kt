@@ -8,6 +8,7 @@ import com.capstone.pause.core.common.DayBoundary
 import com.capstone.pause.core.data.copy.CopyPackRepository
 import com.capstone.pause.core.data.insight.InsightRepository
 import com.capstone.pause.core.data.message.MessageRepository
+import com.capstone.pause.core.data.plan.PlanRepository
 import com.capstone.pause.core.data.plan.PokeRepository
 import com.capstone.pause.core.data.plan.ReceivedPoke
 import com.capstone.pause.core.data.profile.ProfileRepository
@@ -20,6 +21,7 @@ import com.capstone.pause.core.model.BuddyMessage
 import com.capstone.pause.core.model.ContextSlot
 import com.capstone.pause.core.model.CopyPack
 import com.capstone.pause.core.model.DataSource
+import com.capstone.pause.core.model.IfThenPlan
 import com.capstone.pause.core.model.MeltStage
 import com.capstone.pause.core.model.NudgeResponse
 import com.capstone.pause.core.model.Profile
@@ -62,6 +64,7 @@ class NudgeCoordinator @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val profileRepository: ProfileRepository,
     private val pokeRepository: PokeRepository,
+    private val planRepository: PlanRepository,
     private val sessionRepository: SessionRepository,
     private val messageRepository: MessageRepository,
     private val insightRepository: InsightRepository,
@@ -101,6 +104,10 @@ class NudgeCoordinator @Inject constructor(
         var pack: CopyPack = copyPackRepository.activePack.first()
         var melt = MeltStage.NONE
         var pokes = pokeRepository.observeUnused(clock.now()).first()
+        // 켜 둔 계획(시연이면 시연 계획). 리포트에서 새로 저장하면 다음 카드부터 바로 보인다.
+        var plans: List<IfThenPlan> = runCatching {
+            planRepository.observeActivePlans().first()
+        }.getOrDefault(emptyList())
         scope.launch { settingsRepository.settings.collect { settings = it } }
         scope.launch { profileRepository.profile.collect { profile = it } }
         scope.launch { copyPackRepository.activePack.collect { pack = it } }
@@ -111,10 +118,19 @@ class NudgeCoordinator @Inject constructor(
             }
         }
         scope.launch { pokeRepository.observeUnused(clock.now()).collect { pokes = it } }
+        scope.launch { planRepository.observeActivePlans().collect { plans = it } }
 
         val texts = fixedTexts()
         val writer = object : NudgeWriter {
-            private fun current() = CopyNudgeWriter(pack, profile?.tone ?: Tone.PLAYFUL, texts, profile?.nickname) {
+            private fun current() = CopyNudgeWriter(
+                pack,
+                profile?.tone ?: Tone.PLAYFUL,
+                texts,
+                profile?.nickname,
+                plans,
+                demo =
+                    mode == NudgeMode.DEMO,
+            ) {
                 pokes.firstOrNull()?.let { PendingPoke(it.id, it.fromNickname, it.text) }
             }
 

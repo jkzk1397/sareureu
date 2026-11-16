@@ -28,6 +28,12 @@ class InterventionScreenshotTest {
     fun nudgeL3() = shoot("nudge_l3", heightDp = 1000) { LevelThreePreview() }
 
     @Test
+    fun nudgeL1Plan() = shoot("nudge_l1_plan", heightDp = 900) { LevelOnePlanPreview() }
+
+    @Test
+    fun nudgeL2Plan() = shoot("nudge_l2_plan", heightDp = 1000) { LevelTwoPlanPreview() }
+
+    @Test
     fun nudgeL4() = shoot("nudge_l4", heightDp = 900) { LevelFourPreview() }
 
     /** 가로 360dp(갤럭시 S22), xxhdpi. 화면이 길어 [heightDp]만큼 세로를 늘려 한 장에 담는다. */

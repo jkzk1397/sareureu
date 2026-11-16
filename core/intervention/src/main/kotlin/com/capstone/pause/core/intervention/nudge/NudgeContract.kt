@@ -72,6 +72,8 @@ data class CardContent(
     val extendMinutes: Int = 5,
     /** 2단계부터 '오늘은 그만 알려 줘'. */
     val canSnoozeToday: Boolean = level >= 2,
+    /** 사용자가 저장한 계획의 '할 것'([com.capstone.pause.core.model.IfThenPlan.thenText]). 없으면 null. */
+    val planText: String? = null,
 )
 
 /** 2단계 이유 칩: 심심해서·피곤해서·할 일 미루는 중·재밌어서·그냥. */
