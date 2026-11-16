@@ -2,6 +2,7 @@ package com.capstone.pause.core.insights
 
 import com.capstone.pause.core.common.DayBoundary
 import com.capstone.pause.core.model.ShortformSession
+import com.capstone.pause.core.model.Surface
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
@@ -27,22 +28,48 @@ data class FlowChart(
 /** 진입 경로 하나의 세션 수와 길이 중앙값. */
 data class EntryLength(val key: String, val sessions: Int, val medianMinutes: Double)
 
-/** 패키지 → 앱 키(화면 이름은 리소스에서). */
+/**
+ * 패키지 → 앱 키(화면 이름은 리소스에서). 앱 단위로 센 구간은 앱 전체([YOUTUBE] = "유튜브 전체"),
+ * 정밀 모드로 숏폼 화면만 센 구간은 [YOUTUBE_SHORTS]·[INSTAGRAM_REELS](ADR-0004).
+ */
 object AppKeys {
     const val YOUTUBE = "YOUTUBE"
+    const val YOUTUBE_SHORTS = "YOUTUBE_SHORTS"
     const val INSTAGRAM = "INSTAGRAM"
+    const val INSTAGRAM_REELS = "INSTAGRAM_REELS"
     const val TIKTOK = "TIKTOK"
     const val OTHER = "OTHER"
 
-    /** 패키지 이름으로 앱 키. */
-    fun of(packageName: String?): String = when {
+    /** 패키지 이름(과 구간의 화면 종류)으로 앱 키. */
+    fun of(packageName: String?, surface: Surface = Surface.APP_UNKNOWN): String = when {
         packageName == null -> OTHER
-        packageName.startsWith("com.google.android.youtube") -> YOUTUBE
-        packageName.startsWith("com.instagram") -> INSTAGRAM
+
+        packageName.startsWith("com.google.android.youtube") -> if (surface ==
+            Surface.SHORTS
+        ) {
+            YOUTUBE_SHORTS
+        } else {
+            YOUTUBE
+        }
+
+        packageName.startsWith("com.instagram") -> if (surface == Surface.REELS) INSTAGRAM_REELS else INSTAGRAM
+
         packageName.startsWith("com.ss.android.ugc") || packageName.startsWith("com.zhiliaoapp") -> TIKTOK
+
         else -> OTHER
     }
 }
+
+/** 정밀 모드로 센 세션의 넘김 요약. 정밀 모드 세션이 없으면 만들지 않는다. */
+data class InteractionSummary(
+    /** 넘김 횟수가 있는 세션 수. */
+    val sessions: Int,
+    val swipes: Int,
+    /** 세션당 넘김(반올림 전). */
+    val swipesPerSession: Double,
+    /** 세션별 넘김 간격 중앙값들의 중앙값(초). 넘김이 두 번 이상인 세션만. */
+    val medianSwipeIntervalSec: Double?,
+)
 
 /** 리포트 차트 계산(순수 함수). 화면은 결과를 그리기만 한다. */
 object WeekCharts {
@@ -107,7 +134,14 @@ object WeekCharts {
         // 세션은 같은 값이 여럿일 수 있어(데이터 클래스) 맵 키로 쓰지 않고 순서대로 목록을 만든다.
         val rawEntries = sessions.map { FlowKeys.entry(it.entry) }
         val rawExits = sessions.map { FlowKeys.exit(it.exit) }
-        val apps = sessions.map { AppKeys.of(it.segments.firstOrNull()?.packageName) }
+        val apps = sessions.map { s ->
+            s.segments.firstOrNull().let {
+                AppKeys.of(
+                    it?.packageName,
+                    it?.surface ?: Surface.APP_UNKNOWN,
+                )
+            }
+        }
         val entryKeep = topKeys(rawEntries)
         val exitKeep = topKeys(rawExits)
         val entries = rawEntries.map { if (it in entryKeep) it else OTHER_KEY }
@@ -119,6 +153,22 @@ object WeekCharts {
             entryToApp = links(entries.zip(apps)),
             appToExit = links(apps.zip(exits)),
         )
+    }
+
+    /** 넘김 요약(정밀 모드 세션만, `ShortformSession.interaction`). 없으면 null. */
+    fun interaction(sessions: List<ShortformSession>): InteractionSummary? {
+        val stats = sessions.mapNotNull { it.interaction }
+        if (stats.isEmpty()) return null
+        val swipes = stats.sumOf { it.swipes }
+        val intervals = stats.filter {
+            it.swipes >= 2 && it.medianSwipeIntervalSec > 0
+        }.map { it.medianSwipeIntervalSec }.sorted()
+        val median = when {
+            intervals.isEmpty() -> null
+            intervals.size % 2 == 1 -> intervals[intervals.size / 2]
+            else -> (intervals[intervals.size / 2 - 1] + intervals[intervals.size / 2]) / 2
+        }
+        return InteractionSummary(stats.size, swipes, swipes.toDouble() / stats.size, median)
     }
 
     /** 세션이 [minSessions]개 이상인 진입 경로 중 길이 중앙값이 가장 긴 것. */

@@ -133,6 +133,9 @@ internal class DefaultWeekChartRepository @Inject constructor(
                 }
             },
             flow = FlowSummary(flow.entries, flow.apps, flow.exits, flow.entryToApp, flow.appToExit),
+            swipes = WeekCharts.interaction(week)?.let {
+                SwipeSummary(it.swipesPerSession.roundToInt(), it.medianSwipeIntervalSec?.roundToInt())
+            },
             longestEntry = WeekCharts.longestEntry(week, now)?.let {
                 EntryLengthSummary(it.key, it.sessions, it.medianMinutes.roundToInt())
             },

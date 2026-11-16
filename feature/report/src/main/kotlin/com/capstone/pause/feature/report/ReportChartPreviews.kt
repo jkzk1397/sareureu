@@ -10,6 +10,7 @@ import com.capstone.pause.core.data.insight.EntryLengthSummary
 import com.capstone.pause.core.data.insight.FlowSummary
 import com.capstone.pause.core.data.insight.PeakSummary
 import com.capstone.pause.core.data.insight.PeerSummary
+import com.capstone.pause.core.data.insight.SwipeSummary
 import com.capstone.pause.core.data.insight.WeekChartData
 import com.capstone.pause.core.designsystem.theme.PauseTheme
 import com.capstone.pause.core.model.ContextSlot
@@ -62,7 +63,7 @@ internal fun previewCharts(): WeekChartData {
                 "SHORTFORM" to 6,
                 FlowSummary.OTHER_GROUP to 4,
             ),
-            apps = listOf("YOUTUBE" to 29, "INSTAGRAM" to 17, "TIKTOK" to 12),
+            apps = listOf("YOUTUBE_SHORTS" to 29, "INSTAGRAM_REELS" to 17, "TIKTOK" to 12),
             exits = listOf(
                 "SCREEN_OFF" to 24,
                 "MESSENGER" to 13,
@@ -95,6 +96,7 @@ internal fun previewCharts(): WeekChartData {
         longestEntry = EntryLengthSummary("MESSENGER", 22, 18),
         lengthShares = listOf(0.41, 0.26, 0.18, 0.11, 0.04),
         peer = PeerSummary(96, 118, 152, 125, 120, isDemo = true, scaleMaxMinutes = 240),
+        swipes = SwipeSummary(perSession = 34, medianIntervalSec = 9),
     )
 }
 

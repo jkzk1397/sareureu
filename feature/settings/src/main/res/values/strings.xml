@@ -96,8 +96,8 @@
   <string name="settings_detection_title">감지 방식</string>
   <string name="settings_detection_app">앱 단위 (기본)</string>
   <string name="settings_detection_app_desc">추적 앱이 열린 시간을 세. 앱 안에서 쇼츠인지 홈인지는 구분하지 않아(앱 전체 시간).</string>
-  <string name="settings_detection_precise">정밀 모드 · 준비 중</string>
-  <string name="settings_detection_precise_desc">접근성 권한으로 쇼츠·릴스 화면과 넘김 횟수를 세. 켜기 전에 따로 고지 화면을 보여 줄 거야. 아직 준비 중이야.</string>
+  <string name="settings_detection_precise">정밀 모드</string>
+  <string name="settings_detection_precise_desc">정밀 모드: 접근성 권한으로 유튜브·인스타그램 안에서 쇼츠·릴스 화면일 때만 세고, 넘긴 횟수도 세. 화면 글자·영상 제목은 저장하지 않고, 다른 앱을 대신 누르거나 닫지 않아. 꺼 두면 앱 단위로 셀게.</string>
   <string name="settings_section_tracked">추적 앱</string>
   <string name="settings_tracked_desc">끈 앱은 세지 않아. 앱 안 화면 내용은 보지 않아.</string>
   <string name="settings_section_privacy">개인정보</string>
@@ -164,8 +164,20 @@
   <string name="settings_ai_log_provider">만든 곳: %1$s</string>
   <string name="settings_ai_log_latency">걸린 시간: %1$.1f초</string>
   <string name="settings_detection_app_short">추적 앱이 열린 시간을 세.</string>
-  <string name="settings_detection_precise_short">쇼츠·릴스 화면만 골라 세. 아직 못 써.</string>
+  <string name="settings_detection_precise_short">꺼짐: 앱 단위로 세는 중(유튜브 전체 시간). 켜면 쇼츠·릴스 화면만 세.</string>
   <string name="settings_detection_more">두 방식이 어떻게 다른지</string>
   <string name="settings_export_short">내 기록을 파일 하나로 저장해.</string>
   <string name="settings_threshold_applies_next">숏폼을 보는 중에 바꾸면 다음에 볼 때부터 적용돼.</string>
+  <!-- 정밀 모드(ADR-0004 보완): 상태, 고지 화면 -->
+  <string name="settings_precise_on">쇼츠·릴스 화면만 세는 중. 넘긴 횟수도 세.</string>
+  <string name="settings_precise_waiting">아직 접근성 설정에서 꺼져 있어. 지금은 앱 단위로 세고 있어.</string>
+  <string name="settings_precise_open">접근성 설정 열기</string>
+  <string name="settings_precise_disclosure_title">정밀 모드를 켤까?</string>
+  <string name="settings_precise_disclosure_what">접근성 권한으로 유튜브·인스타그램·틱톡 화면이 쇼츠·릴스·피드인지 알아봐. 그래야 유튜브 전체가 아니라 쇼츠를 본 시간만 셀 수 있어.</string>
+  <string name="settings_precise_disclosure_keep">남기는 것: 쇼츠 화면이었는지(예/아니오), 넘긴 횟수, 누른 횟수. 이 폰 안에만 남아.</string>
+  <string name="settings_precise_disclosure_not_keep">남기지 않는 것: 화면 글자, 영상 제목, 채널 이름, 댓글, 메시지. 판별할 때 잠깐 봐도 저장하지 않아.</string>
+  <string name="settings_precise_disclosure_no_action">다른 앱을 대신 누르거나 닫지 않아. 말만 걸어.</string>
+  <string name="settings_precise_disclosure_decline">안 켜도 괜찮아. 지금처럼 앱 단위로 계속 셀게.</string>
+  <string name="settings_precise_agree">동의하고 켜기</string>
+  <string name="settings_precise_decline">괜찮아, 지금처럼 쓸게</string>
 </resources>

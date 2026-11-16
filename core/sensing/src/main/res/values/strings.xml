@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- 정밀 모드 접근성 서비스(시스템 접근성 설정에 보이는 이름·설명, ADR-0004 보완) -->
+  <string name="sensing_accessibility_label">정밀 모드 (쇼츠·릴스 화면만 세기)</string>
+  <string name="sensing_accessibility_description">유튜브·인스타그램·틱톡에서 지금 화면이 쇼츠·릴스인지와 넘긴 횟수만 세. 화면 글자·영상 제목·메시지는 저장하지 않고, 다른 앱을 대신 누르거나 닫지 않아.</string>
+</resources>

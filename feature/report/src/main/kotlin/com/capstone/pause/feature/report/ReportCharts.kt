@@ -155,6 +155,17 @@ private fun FlowCard(charts: WeekChartData) {
         ShareList(flow.exits, total)
         val apps = flow.apps.map { (key, count) -> nodeLabel(reportAppLabel(key), count, total) }
         if (apps.isNotEmpty()) Caption(stringResource(R.string.report_flow_apps, apps.joinToString()))
+        // 정밀 모드로 센 세션이 있을 때만(앱 단위로는 넘김 횟수를 모른다).
+        charts.swipes?.let { sw ->
+            val interval = sw.medianIntervalSec
+            Caption(
+                if (interval != null && interval > 0) {
+                    stringResource(R.string.report_swipes_interval, sw.perSession, interval)
+                } else {
+                    stringResource(R.string.report_swipes, sw.perSession)
+                },
+            )
+        }
     }
 }
 

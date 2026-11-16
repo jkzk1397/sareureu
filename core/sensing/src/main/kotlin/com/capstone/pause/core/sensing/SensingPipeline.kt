@@ -7,6 +7,8 @@ import com.capstone.pause.core.data.session.SessionRepository
 import com.capstone.pause.core.data.trackedapp.TrackedAppRepository
 import com.capstone.pause.core.model.DataSource
 import com.capstone.pause.core.model.ShortformSession
+import com.capstone.pause.core.model.Surface
+import com.capstone.pause.core.sensing.accessibility.AccessibilitySource
 import com.capstone.pause.core.sensing.context.ContextClassifier
 import com.capstone.pause.core.sensing.context.DeviceSignals
 import com.capstone.pause.core.sensing.device.DayRhythmProvider
@@ -19,13 +21,16 @@ import java.time.ZonedDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -37,6 +42,7 @@ import kotlinx.coroutines.sync.withLock
 @Singleton
 class SensingPipeline @Inject constructor(
     private val usageStatsSource: UsageStatsSource,
+    private val accessibility: AccessibilitySource,
     private val kinds: AndroidAppKindResolver,
     private val trackedApps: TrackedAppRepository,
     private val rhythm: DayRhythmProvider,
@@ -51,6 +57,9 @@ class SensingPipeline @Inject constructor(
     private var job: Job? = null
     private var tracker: SessionTracker? = null
 
+    @Volatile
+    private var precise = false
+
     /** 지금 숏폼 화면에 있는 진행 중 세션. */
     val liveSession: StateFlow<ShortformSession?> = live.asStateFlow()
 
@@ -60,13 +69,18 @@ class SensingPipeline @Inject constructor(
     /** 감지 중인지. */
     val isRunning: Boolean get() = job?.isActive == true
 
-    /** [source](기본: 사용 기록)로 감지를 시작한다. 이미 돌고 있으면 멈추고 다시 시작한다. */
-    fun start(
-        scope: CoroutineScope,
-        source: ForegroundSource = usageStatsSource,
-        dataSource: DataSource = DataSource.REAL,
-    ) {
+    /**
+     * 감지를 시작한다. 이미 돌고 있으면 멈추고 다시 시작한다.
+     * [source]를 주지 않으면 실제 감지: 정밀 모드가 쓰이는 동안(동의 + 접근성 서비스 연결)은 접근성 판단을 합친 이벤트,
+     * 아니면 사용 기록만(ADR-0004). 정밀 모드가 켜지거나 꺼지면 그 자리에서 바뀐다.
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun start(scope: CoroutineScope, source: ForegroundSource? = null, dataSource: DataSource = DataSource.REAL) {
         stop()
+        val events: Flow<ForegroundEvent> = source?.events ?: accessibility.active.flatMapLatest { on ->
+            precise = on
+            if (on) accessibility.preciseEvents(usageStatsSource) else usageStatsSource.events
+        }
         job = scope.launch {
             val tracked =
                 MutableStateFlow(trackedApps.trackedApps.first().filter { it.enabled }.map { it.packageName }.toSet())
@@ -89,6 +103,8 @@ class SensingPipeline @Inject constructor(
                 },
                 zone = clock.zone,
                 source = dataSource,
+                // 정밀 모드일 때만 쇼츠·릴스·틱톡 피드로 표시. 앱 단위면 '앱 전체'(APP_UNKNOWN).
+                surfaceOf = { pkg -> if (precise) accessibility.surfaceOf(pkg) else Surface.APP_UNKNOWN },
             )
             tracker = t
             launch {
@@ -104,7 +120,7 @@ class SensingPipeline @Inject constructor(
                     save(lock.withLock { t.onTick(clock.now()) })
                 }
             }
-            source.events.collect { event -> save(lock.withLock { t.onEvent(event) }) }
+            events.collect { event -> save(lock.withLock { t.onEvent(event) }) }
         }
     }
 
@@ -112,6 +128,7 @@ class SensingPipeline @Inject constructor(
     fun stop() {
         job?.cancel()
         job = null
+        precise = false
         tracker = null
         live.value = null
         pending.value = null
@@ -124,9 +141,17 @@ class SensingPipeline @Inject constructor(
 
     private suspend fun save(finished: List<ShortformSession>) {
         for (session in finished) {
-            runCatching { sessionRepository.insert(session, emptyList()) }
+            runCatching { sessionRepository.insert(withInteraction(session), emptyList()) }
                 .onFailure { log.e(TAG, "session save failed", it) }
         }
+    }
+
+    /** 정밀 모드로 센 세션(구간에 화면 종류가 있음)에만 넘김·누름 횟수를 붙인다. */
+    private fun withInteraction(session: ShortformSession): ShortformSession {
+        if (session.interaction != null || session.source != DataSource.REAL) return session
+        if (session.segments.none { it.surface != Surface.APP_UNKNOWN }) return session
+        val end = session.end ?: session.segments.maxOfOrNull { it.end } ?: return session
+        return session.copy(interaction = accessibility.interactionBetween(session.start, end))
     }
 
     private companion object {

@@ -5,6 +5,7 @@ import com.capstone.pause.core.model.AppSegment
 import com.capstone.pause.core.model.ContextSlot
 import com.capstone.pause.core.model.EntryPoint
 import com.capstone.pause.core.model.ExitPoint
+import com.capstone.pause.core.model.InteractionStats
 import com.capstone.pause.core.model.ShortformSession
 import com.capstone.pause.core.model.Surface
 import java.time.DayOfWeek
@@ -106,5 +107,30 @@ class WeekChartsTest {
         assertEquals(AppKeys.TIKTOK, AppKeys.of("com.ss.android.ugc.trill"))
         assertEquals(AppKeys.INSTAGRAM, AppKeys.of("com.instagram.lite"))
         assertEquals(AppKeys.OTHER, AppKeys.of(null))
+    }
+
+    @Test
+    fun preciseSegmentsGetShortsKeyAndAppLevelStaysWholeApp() {
+        assertEquals(AppKeys.YOUTUBE, AppKeys.of("com.google.android.youtube"))
+        assertEquals(AppKeys.YOUTUBE_SHORTS, AppKeys.of("com.google.android.youtube", Surface.SHORTS))
+        assertEquals(AppKeys.INSTAGRAM_REELS, AppKeys.of("com.instagram.android", Surface.REELS))
+        assertEquals(AppKeys.TIKTOK, AppKeys.of("com.zhiliaoapp.musically", Surface.TIKTOK_FEED))
+        val precise = s("2026-10-29T23:00", 10).let {
+            it.copy(segments = it.segments.map { seg -> seg.copy(surface = Surface.SHORTS) })
+        }
+        val chart = WeekCharts.flowChart(listOf(precise, s("2026-10-30T23:00", 10)))
+        assertEquals(setOf(AppKeys.YOUTUBE_SHORTS, AppKeys.YOUTUBE), chart.apps.map { it.first }.toSet())
+    }
+
+    @Test
+    fun interactionSummaryOnlyFromPreciseSessions() {
+        assertNull(WeekCharts.interaction(listOf(s("2026-10-29T23:00", 10))))
+        val a = s("2026-10-29T23:00", 10).copy(interaction = InteractionStats(40, 12.0, 1, 0))
+        val b = s("2026-10-30T23:00", 10).copy(interaction = InteractionStats(20, 18.0, 0, 2))
+        val sum = WeekCharts.interaction(listOf(a, b, s("2026-10-31T23:00", 5)))!!
+        assertEquals(2, sum.sessions)
+        assertEquals(60, sum.swipes)
+        assertEquals(30.0, sum.swipesPerSession)
+        assertEquals(15.0, sum.medianSwipeIntervalSec)
     }
 }

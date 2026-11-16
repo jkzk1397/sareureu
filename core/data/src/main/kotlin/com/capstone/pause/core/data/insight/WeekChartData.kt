@@ -35,7 +35,12 @@ data class WeekChartData(
     val lengthShares: List<Double>,
     /** 또래 비교. 그룹이 없거나 10명 미만이면 null. */
     val peer: PeerSummary?,
+    /** 정밀 모드로 센 넘김 요약. 앱 단위로만 셌으면 null(넘김 횟수를 모른다). */
+    val swipes: SwipeSummary? = null,
 )
+
+/** 넘김 요약(정밀 모드 세션만): 한 번 볼 때 평균 넘김, 넘김 간격 중앙값(초, 모르면 null). */
+data class SwipeSummary(val perSession: Int, val medianIntervalSec: Int?)
 
 /** 이어진 2시간 [startHour]부터, 그 주 합계 [minutes]. */
 data class PeakSummary(val startHour: Int, val minutes: Int)
