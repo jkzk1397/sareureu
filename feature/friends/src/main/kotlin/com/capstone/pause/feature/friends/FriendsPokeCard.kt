@@ -175,6 +175,7 @@ private fun FeedbackText(result: PokeFeedback) {
                 EntrustResult.Empty -> R.string.friends_poke_empty
                 EntrustResult.TooLong -> R.string.friends_poke_too_long
                 EntrustResult.Banned -> R.string.friends_poke_banned
+                EntrustResult.Failed -> R.string.friends_poke_failed
                 EntrustResult.Entrusted -> R.string.friends_poke_empty
             },
         ) to false

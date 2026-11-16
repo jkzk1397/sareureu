@@ -21,6 +21,9 @@ sealed interface EntrustResult {
 
     /** 금지 표현(비하·수치심). */
     data object Banned : EntrustResult
+
+    /** 서버에 전하지 못함(네트워크·하루 한도·친구가 아님). */
+    data object Failed : EntrustResult
 }
 
 /**
