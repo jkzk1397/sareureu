@@ -24,6 +24,12 @@ class FriendsScreenshotTest {
     @Test
     fun friendsUnavailable() = shoot("friends_unavailable", heightDp = 1400) { FriendsUnavailablePreview() }
 
+    @Test
+    fun friendsSharingConsent() = shoot("friends_sharing_consent", heightDp = 1200) { FriendsSharingConsentPreview() }
+
+    @Test
+    fun friendsServer() = shoot("friends_server", heightDp = 1600) { FriendsServerPreview() }
+
     /** 가로 360dp(갤럭시 S22), xxhdpi. 화면이 길어 [heightDp]만큼 세로를 늘려 한 장에 담는다. */
     private fun shoot(name: String, heightDp: Int, content: @Composable () -> Unit) {
         for (dark in listOf(false, true)) {
