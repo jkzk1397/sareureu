@@ -53,13 +53,13 @@ private fun previewState(crisis: Boolean = false) = CoachUiState(
 @Preview(name = "light", heightDp = 1200)
 @Preview(name = "dark", heightDp = 1200, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun CoachScreenPreview() {
+internal fun CoachScreenPreview() {
     PauseTheme { CoachScreen(uiState = previewState(), onAction = {}) }
 }
 
 @Preview(name = "light crisis", heightDp = 1400)
 @Preview(name = "dark crisis", heightDp = 1400, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun CoachCrisisPreview() {
+internal fun CoachCrisisPreview() {
     PauseTheme { CoachScreen(uiState = previewState(crisis = true), onAction = {}) }
 }

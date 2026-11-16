@@ -43,22 +43,22 @@ private fun PreviewFrame(content: @Composable () -> Unit) {
 @Preview(name = "L1 light")
 @Preview(name = "L1 dark", uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun LevelOnePreview() = PreviewFrame { NudgeCard(sample(1), onAction = {}) }
+internal fun LevelOnePreview() = PreviewFrame { NudgeCard(sample(1), onAction = {}) }
 
 @Preview(name = "L2 light", heightDp = 900)
 @Preview(name = "L2 dark", heightDp = 900, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun LevelTwoPreview() = PreviewFrame { NudgeCard(sample(2), onAction = {}) }
+internal fun LevelTwoPreview() = PreviewFrame { NudgeCard(sample(2), onAction = {}) }
 
 @Preview(name = "L3 light", heightDp = 1000)
 @Preview(name = "L3 dark", heightDp = 1000, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun LevelThreePreview() = PreviewFrame { NudgeCard(sample(3), onAction = {}) }
+internal fun LevelThreePreview() = PreviewFrame { NudgeCard(sample(3), onAction = {}) }
 
 @Preview(name = "L4 light", heightDp = 900)
 @Preview(name = "L4 dark", heightDp = 900, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun LevelFourPreview() = PreviewFrame { NudgeCard(sample(4), onAction = {}) }
+internal fun LevelFourPreview() = PreviewFrame { NudgeCard(sample(4), onAction = {}) }
 
 @Preview(name = "praise light")
 @Preview(name = "praise dark", uiMode = Configuration.UI_MODE_NIGHT_YES)

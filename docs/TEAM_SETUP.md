@@ -89,6 +89,14 @@ capstoneproject/
 | 폰 화면을 PC에 띄워 조작·녹화(시연용) | **scrcpy**(무료 오픈소스) — USB 디버깅 켠 폰을 연결하고 `scrcpy` 실행 | scrcpy 설치 |
 | 로그 보기 | `adb logcat | grep -i pause` (Android Studio 없이 SDK Platform-Tools만 있어도 됨) | Platform-Tools |
 | 화면 모양만 보기 | Android Studio의 Compose **Preview**(각 Screen 파일의 라이트·다크 미리보기) | Android Studio |
+| 화면 PNG 뽑기(에뮬레이터 없이) | `./gradlew recordRoborazziDebug` → 루트 `build/screenshots/<모듈>/*_light.png`·`*_dark.png`. 아래 '화면 PNG 뽑기' 참고 | JDK |
+
+### 화면 PNG 뽑기 (Roborazzi + Robolectric)
+- 명령 하나: `./gradlew recordRoborazziDebug`(PowerShell은 `.\gradlew.bat recordRoborazziDebug`). 1분 안팎.
+- 결과: 루트 `build/screenshots/` 아래 모듈별 폴더. 오늘·리포트·코치·친구·설정 화면과 숏폼 위 알림 카드 1~4단계를 라이트·다크로 찍는다. 가로 360dp(갤럭시 S22), xxhdpi.
+- 그리는 상태는 각 화면의 `@Preview` 가짜 상태 그대로다. 시험 파일은 각 모듈의 `src/test/.../*ScreenshotTest.kt`. 화면을 더 찍으려면 미리보기 함수를 `internal`로 두고 그 파일에 `@Test` 한 줄을 더한다.
+- 평소 `./gradlew check`에서는 그리기만 하고 파일은 만들지 않는다(그리다 죽으면 시험 실패). 기준 이미지 비교(verify)는 쓰지 않는다.
+- **PNG는 커밋하지 않는다.** 전후 비교가 필요하면 루트 `before/`, `after/`에 복사해 둔다(`.gitignore`에 있음).
 
 ## 6. 자주 막히는 곳
 - **Gradle 동기화 실패 / JDK 오류**: Android Studio › Settings › Build Tools › Gradle › Gradle JDK를 "JetBrains Runtime(JBR) 21 이상"으로. 그래도 안 되면 File › Invalidate Caches › Restart.
