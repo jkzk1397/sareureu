@@ -39,7 +39,33 @@ data class FriendsOverview(
     val blocked: Set<String>,
     val reported: Set<String>,
     val challenge: List<ChallengeRow>,
+    /** 친구 서버 공유 상태. NOT_CONSENTED면 친구 탭이 동의 화면을 보인다. */
+    val sharing: SharingState = SharingState.UNAVAILABLE,
 )
+
+/** 초대 코드(6자리, [expiresAt]까지 한 번만 쓸 수 있다). */
+data class InviteCode(val code: String, val expiresAt: java.time.Instant)
+
+/** 초대 코드로 연결한 결과. */
+sealed interface ConnectResult {
+    /** 연결됨. */
+    data class Connected(val nickname: String) : ConnectResult
+
+    /** 코드가 없거나 시간이 지났음. */
+    data object NotFound : ConnectResult
+
+    /** 내 코드. */
+    data object OwnCode : ConnectResult
+
+    /** 이미 친구. */
+    data object AlreadyFriends : ConnectResult
+
+    /** 차단 관계라 연결할 수 없음(어느 쪽이 차단했는지는 알리지 않는다). */
+    data object Unavailable : ConnectResult
+
+    /** 네트워크·서버 문제. */
+    data object Failed : ConnectResult
+}
 
 /** 주간 리그 상태(P1). */
 sealed interface LeagueState {

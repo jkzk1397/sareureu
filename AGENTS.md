@@ -141,7 +141,8 @@
 | 코치 채팅 | `CoachChat` |
 | 기준선 / 감소율 | `Baseline` / `reductionRate` |
 | 친구 랭킹 / 주간 리그 | `FriendRanking` / `WeeklyLeague` |
-| 또래 비교 | `PeerBaseline` |
+| 또래 비교 | `PeerBaseline` (서버 그룹 집계 `PeerStats`) |
+| 랭킹 공유 동의 / 초대 코드 | `SharingRepository`·`SharingState` / `InviteCode` |
 | 기록된 비율(감시 범위) | `coverage` |
 | 시연 모드 | `DemoMode` |
 | AI 감사 로그 | `AiCallLog` |
