@@ -68,6 +68,7 @@ compose-gradle-plugin = { group = "org.jetbrains.kotlin", name = "compose-compil
 firebase-ai = { group = "com.google.firebase", name = "firebase-ai" }
 firebase-appcheck-debug = { group = "com.google.firebase", name = "firebase-appcheck-debug" }
 firebase-appcheck-playintegrity = { group = "com.google.firebase", name = "firebase-appcheck-playintegrity" }
+firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 genai-prompt = { group = "com.google.mlkit", name = "genai-prompt", version.ref = "genaiPrompt" }
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
