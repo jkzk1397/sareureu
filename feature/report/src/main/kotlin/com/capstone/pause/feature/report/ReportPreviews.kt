@@ -81,7 +81,7 @@ internal fun previewReport(withAi: Boolean) = WeeklyReportState(
 @Preview(name = "light", heightDp = 2000)
 @Preview(name = "dark", heightDp = 2000, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun ReportScreenPreview() {
+internal fun ReportScreenPreview() {
     PauseTheme {
         ReportScreen(
             uiState = ReportUiState.Ready(previewReport(withAi = true), ReportLocal(), previewCharts()),
@@ -93,7 +93,7 @@ private fun ReportScreenPreview() {
 @Preview(name = "light before ai")
 @Preview(name = "dark before ai", uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun ReportScreenBeforeAiPreview() {
+internal fun ReportScreenBeforeAiPreview() {
     PauseTheme {
         ReportScreen(uiState = ReportUiState.Ready(previewReport(withAi = false), ReportLocal()), onAction = {})
     }

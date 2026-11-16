@@ -41,14 +41,14 @@ private fun previewState(): FriendsUiState {
 @Preview(name = "light", heightDp = 2000)
 @Preview(name = "dark", heightDp = 2000, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun FriendsScreenPreview() {
+internal fun FriendsScreenPreview() {
     PauseTheme { FriendsScreen(uiState = previewState(), onAction = {}) }
 }
 
 @Preview(name = "light unavailable")
 @Preview(name = "dark unavailable", uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun FriendsUnavailablePreview() {
+internal fun FriendsUnavailablePreview() {
     val base = previewState()
     PauseTheme {
         FriendsScreen(

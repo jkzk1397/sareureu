@@ -63,13 +63,13 @@ private fun previewState(live: Boolean): TodayUiState.Ready {
 @Preview(name = "light", heightDp = 1400)
 @Preview(name = "dark", heightDp = 1400, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun TodayScreenPreview() {
+internal fun TodayScreenPreview() {
     PauseTheme { TodayScreen(uiState = previewState(live = false), onAction = {}) }
 }
 
 @Preview(name = "light live", heightDp = 1400)
 @Preview(name = "dark live", heightDp = 1400, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun TodayScreenLivePreview() {
+internal fun TodayScreenLivePreview() {
     PauseTheme { TodayScreen(uiState = previewState(live = true), onAction = {}) }
 }

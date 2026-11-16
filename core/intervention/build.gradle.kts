@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.pause.android.library.compose)
     alias(libs.plugins.pause.android.hilt)
+    alias(libs.plugins.pause.android.screenshot)
 }
 
 dependencies {

@@ -330,6 +330,6 @@ private fun ThemeMode.labelRes(): Int = when (this) {
 @Preview(name = "light")
 @Preview(name = "dark", uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun SettingsScreenPreview() {
+internal fun SettingsScreenPreview() {
     PauseTheme { SettingsScreen(uiState = SettingsUiState(demoMode = true), onAction = {}) }
 }

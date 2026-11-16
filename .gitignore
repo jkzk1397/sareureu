@@ -26,3 +26,7 @@ secrets.properties
 
 # AI 평가 결과(필요하면 docs/로 복사해서 커밋)
 core/ai/build/reports/
+
+# 화면 PNG 전후 보관(커밋하지 않는다, docs/TEAM_SETUP.md)
+/before/
+/after/

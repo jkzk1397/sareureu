@@ -24,6 +24,7 @@ lifecycle = "2.11.0"
 lifecycleViewmodelNavigation3 = "2.11.0"
 navigation3 = "1.2.1"
 robolectric = "4.17"
+roborazzi = "1.79.0"
 room = "2.8.5"
 spotless = "8.11.0"
 turbine = "1.2.1"
@@ -82,6 +83,9 @@ kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-cor
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 ksp-gradle-plugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
+roborazzi = { group = "io.github.takahirom.roborazzi", name = "roborazzi", version.ref = "roborazzi" }
+roborazzi-compose = { group = "io.github.takahirom.roborazzi", name = "roborazzi-compose", version.ref = "roborazzi" }
+roborazzi-gradle-plugin = { group = "io.github.takahirom.roborazzi", name = "roborazzi-gradle-plugin", version.ref = "roborazzi" }
 room-gradle-plugin = { group = "androidx.room", name = "room-gradle-plugin", version.ref = "room" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 
@@ -95,6 +99,7 @@ kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 room = { id = "androidx.room", version.ref = "room" }
+roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 
 # 컨벤션 플러그인 (build-logic)
@@ -103,4 +108,5 @@ pause-android-feature = { id = "pause.android.feature" }
 pause-android-hilt = { id = "pause.android.hilt" }
 pause-android-library = { id = "pause.android.library" }
 pause-android-library-compose = { id = "pause.android.library.compose" }
+pause-android-screenshot = { id = "pause.android.screenshot" }
 pause-jvm-library = { id = "pause.jvm.library" }
