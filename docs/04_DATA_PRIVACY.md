@@ -129,9 +129,11 @@ enum class MeltStage { NONE, SOFT, PUDDLE, MELTED }                       // 0~3
   "riskWindows": [ { "day": "TUE", "hour": 23, "min": 64 } ],
   "topFlows": [ { "entry": "MESSENGER", "app": "YOUTUBE", "exit": "SCREEN_OFF", "count": 7, "medianMin": 18 } ],
   "nudges": { "shown": 14, "stopRate": 0.43, "extensions": 11 },
-  "observations": [ { "id": "o1", "text": "자기 전 세션 9개 중 7개가 메신저에서 시작" } ]
+  "observations": [ { "id": "o1", "text": "자기 전 세션 9개 중 7개가 메신저에서 시작" } ],
+  "pastHypotheses": [ { "text": "자기 전에 메신저 보다가 숏폼으로 넘어가는 것 같아", "verdict": "NO" } ]
 }
 ```
+`pastHypotheses`(weekly_report v6부터): 최근 2주 리포트에서 AI가 쓴 추측 문장과 사용자가 고른 답(`YES`=맞아, `PARTLY`=반쯤, `NO`=아니야)만, 최대 6개. 답하지 않은 추측과 사용자가 직접 쓴 글은 넣지 않는다. 추측 문장은 원래 AI가 만든 문장이라 새로운 개인 정보는 늘지 않고, 늘어나는 것은 "그 추측이 맞는지에 대한 내 답"이다. 설정 › AI › 무엇을 보내고 안 보내는지, 설정 › 개인정보 문구에도 같은 내용을 적었다.
 보내지 않는 것: 패키지 목록 전체, 세션별 정확한 시각 목록(채팅의 도구 호출 결과는 예외: 사용자가 물은 범위만), 친구 이름, 연락처, 위치.
 ※ **무료 등급(Spark, Unpaid Services)의 Gemini API는 입력·출력을 Google이 서비스 개선에 쓰고 사람 검토자가 볼 수 있으며, 약관이 개인·민감 정보를 보내지 말라고 한다**(`02_RESEARCH.md` 5절). 그래서 위 예시처럼 **집계 숫자와 범주만** 보낸다. 닉네임·자유 입력 메모·친구 이름은 보내지 않고, 채팅의 사용자 문장은 `SafetyFilter`와 개인정보 마스킹(전화번호·이메일·이름 패턴)을 거친다.
 ※ 프롬프트가 Google 서버(국외)로 가므로 **개인정보 보호법 제28조의8(국외 이전)** 에 따라 이전받는 자·국가·항목·목적을 처리방침과 AI 동의 화면에 적는다. 실제 사용자 대상 운영(베타 이후)은 유료 등급(Blaze, 입력을 개선에 쓰지 않음)으로 옮긴다.

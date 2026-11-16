@@ -11,6 +11,7 @@ import com.capstone.pause.core.ai.engine.schema.ContextCheckInput
 import com.capstone.pause.core.ai.engine.schema.ContextCheckOut
 import com.capstone.pause.core.ai.engine.schema.CopyPackInput
 import com.capstone.pause.core.ai.engine.schema.HypothesisOut
+import com.capstone.pause.core.ai.engine.schema.PastHypothesis
 import com.capstone.pause.core.ai.engine.schema.PokeDraftInput
 import com.capstone.pause.core.ai.engine.schema.PokeDraftOut
 import com.capstone.pause.core.ai.engine.schema.StrategyPickOut
@@ -23,6 +24,7 @@ import com.capstone.pause.core.model.ContextSlot
 import com.capstone.pause.core.model.CopyPack
 import com.capstone.pause.core.model.Strategy
 import com.capstone.pause.core.model.Tone
+import com.capstone.pause.core.model.Verdict
 
 /**
  * 규칙·틀로 만드는 모의 제공자(05 문서 8절). 같은 입력이면 같은 출력이고, 숫자는 입력·도구 결과에서만 나온다.
@@ -51,6 +53,24 @@ class MockLlmClient(
 
     override suspend fun chat(req: ChatRequest): ChatResult = chat.step(req, strategies)
 
+    /**
+     * 지난 답 반영(weekly_report v6 규칙과 같은 뜻): '아니야'라고 한 추측은 빼고 남은 후보로 채운다.
+     * '맞아'라고 한 추측은 앞에 둔다. 다 빠지면 원래 목록을 쓴다(가설이 비면 검증을 못 넘는다).
+     */
+    private fun withFeedback(
+        primary: List<HypothesisOut>,
+        extras: List<HypothesisOut>,
+        past: List<PastHypothesis>,
+    ): List<HypothesisOut> {
+        if (past.isEmpty()) return primary
+        fun key(text: String) = text.trim()
+        val rejected = past.filter { it.verdict == Verdict.NO.name }.map { key(it.text) }.toSet()
+        val confirmed = past.filter { it.verdict == Verdict.YES.name }.map { key(it.text) }.toSet()
+        val pool = (primary + extras.filter { it.evidence.size >= 2 }).distinctBy { key(it.text) }
+        val kept = pool.filter { key(it.text) !in rejected }.ifEmpty { return primary }
+        return kept.sortedByDescending { key(it.text) in confirmed }.take(primary.size.coerceAtLeast(1))
+    }
+
     /** 주간 리포트(검증기를 통과하는 결정적 출력). */
     fun weekly(input: WeeklyReportInput): WeeklyReportOut {
         val tone = input.profile.tone
@@ -66,18 +86,19 @@ class MockLlmClient(
             return picked
         }
 
-        val hypotheses = buildList {
+        val entry = templates.hypothesisEntry.let {
+            HypothesisOut(it.text, Confidence.LOW, evidence("o7", "o8"), it.question)
+        }
+        val second = templates.hypothesisSecond.let {
+            HypothesisOut(it.text, Confidence.LOW, evidence("o4", "o3"), it.question)
+        }
+        val primary = buildList {
             val t = templates.hypothesisContext[top] ?: templates.hypothesisContext.getValue(ContextSlot.OTHER)
             add(HypothesisOut(t.text, Confidence.MEDIUM, evidence("o3", "o12", "o1"), t.question))
-            if ("o7" in byId) {
-                val e = templates.hypothesisEntry
-                add(HypothesisOut(e.text, Confidence.LOW, evidence("o7", "o8"), e.question))
-            }
-            if ("o4" in byId) {
-                val s = templates.hypothesisSecond
-                add(HypothesisOut(s.text, Confidence.LOW, evidence("o4", "o3"), s.question))
-            }
+            if ("o7" in byId) add(entry)
+            if ("o4" in byId) add(second)
         }.filter { it.evidence.size >= 2 }.take(3)
+        val hypotheses = withFeedback(primary, listOf(entry, second), input.pastHypotheses)
 
         val usable = strategies.filter { TextRules.problems(it.thenText, MAX_SENTENCE).isEmpty() }
         val picks = (usable.filter { it.context == top } + usable.filter { it.context == null })

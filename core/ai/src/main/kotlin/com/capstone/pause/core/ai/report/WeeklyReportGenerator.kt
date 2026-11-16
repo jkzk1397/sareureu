@@ -140,7 +140,16 @@ internal class DefaultWeeklyReportGenerator @Inject constructor(
         status.value = GenerationStatus.RUNNING
         return runCatching {
             val profile = ProfileSummary.from(profileRepository.profile.first())
-            val input = WeeklyReportInput.from(week, profile, coverage = null)
+            // 지난 리포트(오늘 창 시작일 포함, 최근 2주)의 추측과 사용자의 답. 답한 것만 간다(04 문서 5절).
+            val stored = (0L..WeekMath.PAST_LOOKBACK_DAYS).flatMap {
+                reportRepository.observeHypotheses(window.start.minusDays(it)).first()
+            }
+            val input = WeeklyReportInput.from(
+                week,
+                profile,
+                coverage = null,
+                pastHypotheses = WeekMath.pastHypotheses(stored),
+            )
             val outcome = runner.weeklyReport(router.clientFor(AiFeature.WEEKLY_REPORT), input)
             val callId = logger.log(outcome.record)
             val createdAtMs = clock.now().toEpochMilli()

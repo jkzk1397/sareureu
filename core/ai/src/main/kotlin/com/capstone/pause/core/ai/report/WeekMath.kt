@@ -2,6 +2,7 @@ package com.capstone.pause.core.ai.report
 
 import com.capstone.pause.core.ai.engine.llm.Provider
 import com.capstone.pause.core.ai.engine.run.CallOutcome
+import com.capstone.pause.core.ai.engine.schema.PastHypothesis
 import com.capstone.pause.core.common.DayBoundary
 import com.capstone.pause.core.data.report.StoredHypothesis
 import com.capstone.pause.core.insights.Baseline
@@ -84,6 +85,26 @@ object WeekMath {
     /** 화면용 관찰 목록. */
     fun observations(week: WeeklyObservations): List<ReportObservation> =
         week.observations.map { ReportObservation(it.id, it.kind.name, it.numbers, it.labels) }
+
+    /**
+     * 지난 리포트의 추측 중 사용자가 맞아/반쯤/아니야로 답한 것 → 다음 리포트 입력(weekly_report v6).
+     * 최근에 만든 리포트의 것부터, 같은 문장은 한 번만, 최대 [limit]개. 답하지 않은 추측은 보내지 않는다.
+     */
+    fun pastHypotheses(stored: List<StoredHypothesis>, limit: Int = MAX_PAST_HYPOTHESES): List<PastHypothesis> =
+        stored.filter { it.verdict != null && it.text.isNotBlank() }
+            .sortedByDescending { createdAtOf(it.id) }
+            .distinctBy { it.text.trim() }
+            .take(limit)
+            .map { PastHypothesis(it.text, it.verdict?.name) }
+
+    /** [hypothesisId]에서 만든 시각을 꺼낸다. 모양이 다르면 0. */
+    private fun createdAtOf(id: String): Long = id.split('#').getOrNull(1)?.toLongOrNull() ?: 0L
+
+    /** 다음 리포트에 넘기는 지난 추측 최대 수(입력을 짧게). */
+    const val MAX_PAST_HYPOTHESES = 6
+
+    /** 지난 추측을 찾아볼 날 수(리포트는 최근 7일 창이라 시작일이 매일 바뀐다). */
+    const val PAST_LOOKBACK_DAYS = 14L
 
     /** 가설 ID: 주 + 만든 시각 + 순서. 다시 만들면 새 ID라 예전 판정이 섞이지 않는다. */
     fun hypothesisId(weekStart: LocalDate, createdAtMs: Long, index: Int) = "$weekStart#$createdAtMs#$index"

@@ -64,7 +64,7 @@
   <string name="settings_ai_mode_device_desc">지원하는 폰에서만. 밖으로 보내지 않아.</string>
   <string name="settings_ai_mode_off">쓰지 않기</string>
   <string name="settings_ai_mode_off_desc">AI 없이 기본 문장만 써.</string>
-  <string name="settings_ai_cloud_send">보내는 것: 앱이 센 요약 숫자(어떤 때 몇 분 봤는지, 시작할 때보다 얼마나 줄었는지, 기록된 비율, 자주 길어지는 시간, 앱 종류), 연령대·신분·관심사·목표·말투, 채팅 중 내가 쓴 문장(전화번호·이메일은 가림).</string>
+  <string name="settings_ai_cloud_send">보내는 것: 앱이 센 요약 숫자(어떤 때 몇 분 봤는지, 시작할 때보다 얼마나 줄었는지, 기록된 비율, 자주 길어지는 시간, 앱 종류), 연령대·신분·관심사·목표·말투, 지난 리포트에서 AI가 짐작한 문장과 내 답(맞아·반쯤·아니야), 채팅 중 내가 쓴 문장(전화번호·이메일은 가림).</string>
   <string name="settings_ai_cloud_not_send">보내지 않는 것: 닉네임, 앱을 열고 닫은 기록, 설치 앱 목록, 연락처, 정확한 위치, 친구 이름.</string>
   <string name="settings_ai_cloud_transfer">국외 이전 안내: 입력은 Google LLC(미국)의 서버로 전송돼 AI 응답을 만드는 데 쓰여. 무료 등급에서는 Google이 서비스 개선에 쓸 수 있고 사람 검토자가 볼 수 있어. 그래서 합계 숫자와 종류만 보내. 언제든 여기서 끌 수 있어.</string>
   <string name="settings_ai_cloud_agree">동의하고 클라우드 AI 쓰기</string>
@@ -104,7 +104,7 @@
   <string name="settings_privacy_device_title">기록은 이 폰 안에만 남아.</string>
   <string name="settings_privacy_device_body">이 폰 안에만 남는 것: 앱을 열고 닫은 시각과 순서, 숏폼을 본 기록, 알림에 대한 내 답, 채팅, 프로필. 본 기록은 90일, 앱을 열고 닫은 기록은 7일 뒤 지워져.</string>
   <string name="settings_privacy_cloud_title">동의하면 요약 숫자만 밖으로 나가.</string>
-  <string name="settings_privacy_cloud_body">AI를 켜면: 앱이 센 요약 숫자(어떤 때 몇 분 봤는지, 얼마나 줄었는지 등)와 연령대·신분·관심사. 친구 기능을 켜면: 하루에 얼마나 줄었는지와 기록된 비율만.</string>
+  <string name="settings_privacy_cloud_body">AI를 켜면: 앱이 센 요약 숫자(어떤 때 몇 분 봤는지, 얼마나 줄었는지 등)와 연령대·신분·관심사, 리포트 추측에 내가 한 답(맞아·반쯤·아니야). 친구 기능을 켜면: 하루에 얼마나 줄었는지와 기록된 비율만.</string>
   <string name="settings_privacy_never_title">화면 글자는 저장하지 않아.</string>
   <string name="settings_privacy_never_body">절대 하지 않는 것: 화면 글자·영상 제목·메시지를 저장하지 않아. 다른 앱을 대신 누르거나 닫지 않아. 설치 앱 목록·연락처·위치를 보내지 않아.</string>
   <string name="settings_export">내 기록 내보내기 (JSON)</string>
