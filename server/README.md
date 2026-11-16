@@ -48,8 +48,10 @@
 | `GET /api/v1/friends` | `{"friends":[{"id","nickname","reductionRate","coverage","validDays"}],"blocked":[{"id","nickname"}]}`. `id`는 공개 ID(Firebase uid 아님). 순위·꼴찌 숨기기는 앱이 `Ranking.build`로 | 5-3 |
 | `DELETE /api/v1/friends/{id}` | 연결 끊기(양쪽 목록에서 빠짐) | 5-3 |
 | `PUT/DELETE /api/v1/blocks/{id}` | 차단(연결도 끊음)·차단 풀기(연결은 되살리지 않음) | 5-3 |
+| `POST /api/v1/pokes` | `{"to":"<친구 공개 ID>","text":"40자까지"}` 잔소리 맡기기. 친구에게만(차단하면 연결이 끊겨 403), 하루 10개(429). 금지 표현 검사는 앱이 보내기 전에 | 5-4 |
+| `GET /api/v1/pokes` | 나에게 온 잔소리 `{"pokes":[{"id","fromId","fromNickname","text","createdAtMs","expiresAtMs"}]}`(20개까지). **내려 주면 서버에서 지운다.** 차단한 사람 것·만료(7일)된 것도 지운다. 앱이 화면에 있을 때(15분에 한 번까지)와 WorkManager(12시간마다)만 부른다. 푸시(FCM) 없음 | 5-4 |
 
-마이그레이션: `0002_sharing_profile.sql`(닉네임·연령대·신분·공개 ID 칸, `standing` 표), `0003_friends.sql`(`invite`·`friendship`·`block`). 동의 행을 지우면 모두 함께 지워진다. 매일 cron이 시간이 지난 초대 코드를 지운다.
+마이그레이션: `0002_sharing_profile.sql`(닉네임·연령대·신분·공개 ID 칸, `standing` 표), `0003_friends.sql`(`invite`·`friendship`·`block`), `0004_pokes.sql`(`poke`, 하루 한도용 `poke_sent`). 동의 행을 지우면 모두 함께 지워진다. 매일 cron이 시간이 지난 초대 코드·잔소리를 지운다.
 
 ## 테스트
 

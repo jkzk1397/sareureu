@@ -81,8 +81,7 @@ fun FriendsScreen(uiState: FriendsUiState, onAction: (FriendsAction) -> Unit, mo
         val remote = overview.sharing == SharingState.CONSENTED
         if (remote) InviteCard(invite = uiState.invite, onAction = onAction)
         RankingCard(overview)
-        // 서버로 잔소리를 전하는 것은 5-4에서. 그전에는 가상 친구에게만 맡길 수 있다.
-        if (overview.isDemo) PokeCard(overview = overview, poke = uiState.poke, onAction = onAction)
+        if (overview.friends.isNotEmpty()) PokeCard(overview = overview, poke = uiState.poke, onAction = onAction)
         ChallengeCard(overview.challenge)
         ManageCard(overview = overview, onAction = onAction)
         if (remote) StopSharingButton(sharing = uiState.sharing, onAction = onAction)

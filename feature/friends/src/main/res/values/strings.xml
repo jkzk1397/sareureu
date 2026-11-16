@@ -95,4 +95,6 @@
   <string name="friends_connect_unavailable">이 코드로는 연결할 수 없어.</string>
   <string name="friends_connect_failed">연결하지 못했어. 인터넷을 확인하고 다시 해 줘.</string>
   <string name="friends_disconnect">연결 끊기</string>
+  <!-- 5-4 잔소리 전달 -->
+  <string name="friends_poke_sent_remote_eul">%1$s에게 맡겨 뒀어. 친구가 숏폼을 오래 볼 때 도착해.</string>
 </resources>

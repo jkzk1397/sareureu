@@ -17,6 +17,7 @@ import androidx.lifecycle.lifecycleScope
 import com.capstone.pause.core.data.settings.ThemeMode
 import com.capstone.pause.core.designsystem.theme.PauseTheme
 import com.capstone.pause.core.intervention.service.MonitoringController
+import com.capstone.pause.core.social.PokeInbox
 import com.capstone.pause.navigation.PauseAppShell
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -29,6 +30,8 @@ class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels()
 
     @Inject lateinit var monitoringController: MonitoringController
+
+    @Inject lateinit var pokeInbox: PokeInbox
 
     /** 알림에서 열 때 고를 탭("coach" 등). 한 번 쓰면 비운다. */
     private val openTab = MutableStateFlow<String?>(null)
@@ -70,6 +73,8 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         // 켜 둔 감지가 제조사 절전 등으로 멈춰 있으면, 앱을 연 김에 다시 켠다(앱이 화면에 있을 때만 가능).
         lifecycleScope.launch { monitoringController.ensureRunning() }
+        // 친구가 맡긴 잔소리 받기(공유 동의 + 시연 아님일 때만, 15분에 한 번까지). 푸시는 쓰지 않는다.
+        lifecycleScope.launch { runCatching { pokeInbox.fetch() } }
     }
 
     override fun onNewIntent(intent: Intent) {
