@@ -60,6 +60,16 @@ internal fun LevelThreePreview() = PreviewFrame { NudgeCard(sample(3), onAction 
 @Composable
 internal fun LevelFourPreview() = PreviewFrame { NudgeCard(sample(4), onAction = {}) }
 
+@Preview(name = "L1 plan light")
+@Preview(name = "L1 plan dark", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+internal fun LevelOnePlanPreview() = PreviewFrame { NudgeCard(sample(1).copy(planText = "폰은 책상 충전기에"), onAction = {}) }
+
+@Preview(name = "L2 plan light", heightDp = 1000)
+@Preview(name = "L2 plan dark", heightDp = 1000, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+internal fun LevelTwoPlanPreview() = PreviewFrame { NudgeCard(sample(2).copy(planText = "폰은 책상 충전기에"), onAction = {}) }
+
 @Preview(name = "praise light")
 @Preview(name = "praise dark", uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable

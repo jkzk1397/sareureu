@@ -56,4 +56,6 @@
   <string name="intervention_panel_keep">계속 볼게</string>
   <!-- 화면 쉽게 만들기: 따라 쓰기 안내 한 줄 -->
   <string name="intervention_type_label">%1$d분 더 보려면 그대로 따라 써 줘</string>
+  <!-- 저장한 계획을 카드에 잇기 -->
+  <string name="intervention_card_plan">네가 정한 계획: %1$s</string>
 </resources>
