@@ -7,6 +7,7 @@ import com.capstone.pause.core.designsystem.theme.PauseTheme
 import com.capstone.pause.core.social.ChallengeRow
 import com.capstone.pause.core.social.FriendsOverview
 import com.capstone.pause.core.social.Ranking
+import com.capstone.pause.core.social.SharingState
 import com.capstone.pause.core.social.Standing
 
 /** 미리보기용 값(목업 08 수치, 시연용 가상 친구). */
@@ -53,6 +54,21 @@ internal fun FriendsUnavailablePreview() {
     PauseTheme {
         FriendsScreen(
             uiState = base.copy(overview = base.overview?.copy(available = false, isDemo = false)),
+            onAction = {},
+        )
+    }
+}
+
+@Preview(name = "light sharing consent", heightDp = 1200)
+@Preview(name = "dark sharing consent", heightDp = 1200, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun FriendsSharingConsentPreview() {
+    val base = previewState()
+    PauseTheme {
+        FriendsScreen(
+            uiState = base.copy(
+                overview = base.overview?.copy(available = false, isDemo = false, sharing = SharingState.NOT_CONSENTED),
+            ),
             onAction = {},
         )
     }

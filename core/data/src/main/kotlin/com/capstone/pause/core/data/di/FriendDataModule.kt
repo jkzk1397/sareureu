@@ -9,6 +9,8 @@ import com.capstone.pause.core.common.ApplicationScope
 import com.capstone.pause.core.data.friend.DataStoreFriendLocalStore
 import com.capstone.pause.core.data.friend.FriendLocalStore
 import com.capstone.pause.core.data.friend.FriendStore
+import com.capstone.pause.core.data.insight.DataStorePeerStatsRepository
+import com.capstone.pause.core.data.insight.PeerStatsRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -38,4 +40,7 @@ internal object FriendDataProvidesModule {
 internal abstract class FriendDataBindsModule {
     @Binds
     abstract fun friendLocalStore(impl: DataStoreFriendLocalStore): FriendLocalStore
+
+    @Binds
+    abstract fun peerStatsRepository(impl: DataStorePeerStatsRepository): PeerStatsRepository
 }

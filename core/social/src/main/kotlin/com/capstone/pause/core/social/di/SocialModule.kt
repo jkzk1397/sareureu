@@ -6,9 +6,15 @@ import com.capstone.pause.core.social.FriendRepository
 import com.capstone.pause.core.social.LeagueRepository
 import com.capstone.pause.core.social.LocalPokeInbox
 import com.capstone.pause.core.social.PokeInbox
+import com.capstone.pause.core.social.SharingRepository
 import com.capstone.pause.core.social.remote.FirebaseAnonymousAuth
+import com.capstone.pause.core.social.remote.HttpSocialTransport
+import com.capstone.pause.core.social.remote.RemoteSharingRepository
 import com.capstone.pause.core.social.remote.SocialAuth
 import com.capstone.pause.core.social.remote.SocialServer
+import com.capstone.pause.core.social.remote.SocialTransport
+import com.capstone.pause.core.social.remote.UploadScheduler
+import com.capstone.pause.core.social.remote.WorkUploadScheduler
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -30,6 +36,15 @@ internal abstract class SocialModule {
 
     @Binds
     abstract fun socialAuth(impl: FirebaseAnonymousAuth): SocialAuth
+
+    @Binds
+    abstract fun socialTransport(impl: HttpSocialTransport): SocialTransport
+
+    @Binds
+    abstract fun sharingRepository(impl: RemoteSharingRepository): SharingRepository
+
+    @Binds
+    abstract fun uploadScheduler(impl: WorkUploadScheduler): UploadScheduler
 
     /** 서버 주소(빌드 설정). */
     companion object {

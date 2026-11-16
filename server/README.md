@@ -33,7 +33,18 @@
 ```
 
 - 동의를 철회하면 업로드를 중단하고 대기 중인 업로드를 취소한 뒤 `DELETE /api/v1/sharing`을 호출한다. 서버는 해당 사용자의 일일 합계를 함께 삭제한다. 365일보다 오래된 집계는 예약 작업으로 삭제한다.
-- 현재 앱의 소셜 구현은 시연용이다. 실제 앱 연동에는 Firebase 로그인, 별도 랭킹 공유 동의 화면, 집계 전송 작업이 필요하다. 친구 관계 및 랭킹 조회는 이 수집 API와 별도다. 기존 랭킹은 개인 기준선 대비 감소율을 사용한다(ADR-0005).
+- 앱은 `core:social`의 `RemoteSharingRepository`(동의·철회)와 `SocialUploadWorker`(하루 1번)로 이 계약을 쓴다. 서버 주소가 없거나 시연 모드면 부르지 않는다.
+
+## 임시로 넣은 것 (5단계)
+
+> 팀원이 서버를 새로 만들고 있어서 **아래는 모두 임시**다. 바뀌면 앱의 `core:social/remote`만 고친다.
+
+| 경로 | 무엇 | 단계 |
+|---|---|---|
+| `PUT /api/v1/sharing` | 동의 몸통에 `nickname`(12자까지, 친구에게 보임), `ageBand`·`occupation`(enum 이름, 또래 그룹용)을 더 받는다(모두 선택). 다른 칸은 400 | 5-2 |
+| `PUT /api/v1/standing` | `{"reductionRate":0.23,"coverage":0.9,"validDays":6,"measuredAtMs":…}` 랭킹 숫자. 계산은 앱(`core:insights`)이 하고 서버는 저장만. 동의 전이면 403 | 5-2 |
+
+마이그레이션: `0002_sharing_profile.sql`(닉네임·연령대·신분·공개 ID 칸, `standing` 표). 동의 행을 지우면 모두 함께 지워진다.
 
 ## 테스트
 
