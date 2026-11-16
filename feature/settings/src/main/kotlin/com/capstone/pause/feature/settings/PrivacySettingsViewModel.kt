@@ -10,6 +10,7 @@ import com.capstone.pause.core.data.trackedapp.TrackedAppRepository
 import com.capstone.pause.core.intervention.reminder.ReminderScheduler
 import com.capstone.pause.core.intervention.service.MonitoringController
 import com.capstone.pause.core.model.TrackedApp
+import com.capstone.pause.core.social.SharingRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -53,8 +54,9 @@ sealed interface PrivacyAction {
 
 /**
  * 추적 앱·개인정보 ViewModel.
- * '모든 기록 삭제' 순서: 감지 끄기 → 예약 알림 비우기 → WorkManager 작업 취소 → 로컬 저장소 지우기(Room·DataStore·캐시).
- * 프로필이 사라지면 앱 셸이 온보딩으로 돌아간다. 친구 서버(원격)는 아직 꺼져 있어 지울 것이 없다.
+ * '모든 기록 삭제' 순서: 감지 끄기 → 예약 알림 비우기 → WorkManager 작업 취소 → 친구 서버의 내 기록 지우기
+ * → 로컬 저장소 지우기(Room·DataStore·캐시). 프로필이 사라지면 앱 셸이 온보딩으로 돌아간다.
+ * 서버를 지우지 못하면(오프라인) 실패 목록에 남기고, 네트워크가 될 때 다시 지우는 작업을 예약한다.
  */
 @HiltViewModel
 class PrivacySettingsViewModel @Inject constructor(
@@ -62,6 +64,7 @@ class PrivacySettingsViewModel @Inject constructor(
     private val privacyRepository: PrivacyRepository,
     private val monitoringController: MonitoringController,
     private val reminderScheduler: ReminderScheduler,
+    private val sharingRepository: SharingRepository,
     @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
@@ -105,6 +108,8 @@ class PrivacySettingsViewModel @Inject constructor(
             runCatching { monitoringController.stop() }.onFailure { failed += "monitoring" }
             runCatching { reminderScheduler.setReminderTimes(emptyList()) }.onFailure { failed += "reminders" }
             runCatching { WorkManager.getInstance(context).cancelAllWork() }.onFailure { failed += "work" }
+            // 작업을 모두 취소한 뒤에 지워야 '다시 지우기' 예약이 살아남는다.
+            if (!runCatching { sharingRepository.revoke() }.getOrDefault(false)) failed += "friends_server"
             failed += privacyRepository.eraseLocal()
             // 성공하면 프로필이 사라져 앱이 온보딩으로 바뀌므로 이 화면은 곧 사라진다.
             local.value = local.value.copy(erasing = false, eraseFailed = failed)

@@ -13,6 +13,7 @@ import com.capstone.pause.core.social.LeagueRepository
 import com.capstone.pause.core.social.LeagueState
 import com.capstone.pause.core.social.PokeInbox
 import com.capstone.pause.core.social.PokeRules
+import com.capstone.pause.core.social.SharingRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -50,6 +51,7 @@ data class FriendsUiState(
     val overview: FriendsOverview? = null,
     val league: LeagueState = LeagueState.ComingSoon,
     val poke: PokeDraftState = PokeDraftState(),
+    val sharing: SharingUiState = SharingUiState(),
 )
 
 /** 친구 탭 동작. */
@@ -80,6 +82,12 @@ sealed interface FriendsAction {
 
     /** 안내 닫기. */
     data object DismissFeedback : FriendsAction
+
+    /** 랭킹 공유 동의(버튼을 눌렀을 때만). */
+    data object GrantSharing : FriendsAction
+
+    /** 공유 그만하기(확인 창 뒤). */
+    data object RevokeSharing : FriendsAction
 }
 
 /** 잔소리 글 검사: 길이(코어) + 금지 표현(AI 엔진 목록). 통과하면 null. */
@@ -96,19 +104,22 @@ class FriendsViewModel @Inject constructor(
     private val pokeInbox: PokeInbox,
     private val pokeDrafter: PokeDrafter,
     private val profileRepository: ProfileRepository,
+    private val sharingRepository: SharingRepository,
     leagueRepository: LeagueRepository,
 ) : ViewModel() {
     private val poke = MutableStateFlow(PokeDraftState())
+    private val sharing = MutableStateFlow(SharingUiState())
 
     /** 화면 상태. */
     val uiState: StateFlow<FriendsUiState> = combine(
         friendRepository.observe(),
         leagueRepository.observe(),
         poke,
-    ) { overview, league, p ->
+        sharing,
+    ) { overview, league, p, sh ->
         val selected = p.friendId?.takeIf { id -> overview.friends.any { it.id == id } }
             ?: overview.friends.firstOrNull()?.id
-        FriendsUiState(overview, league, p.copy(friendId = selected))
+        FriendsUiState(overview, league, p.copy(friendId = selected), sh)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), FriendsUiState())
 
     /** 동작 처리. */
@@ -135,6 +146,19 @@ class FriendsViewModel @Inject constructor(
             is FriendsAction.Report -> viewModelScope.launch { friendRepository.report(action.id) }
 
             FriendsAction.DismissFeedback -> poke.update { it.copy(result = null) }
+
+            FriendsAction.GrantSharing -> changeSharing(stop = false) { sharingRepository.grant() }
+
+            FriendsAction.RevokeSharing -> changeSharing(stop = true) { sharingRepository.revoke() }
+        }
+    }
+
+    private fun changeSharing(stop: Boolean, block: suspend () -> Boolean) {
+        if (sharing.value.busy) return
+        sharing.value = SharingUiState(busy = true)
+        viewModelScope.launch {
+            val ok = runCatching { block() }.getOrDefault(false)
+            sharing.value = SharingUiState(failed = !ok && !stop, stopFailed = !ok && stop)
         }
     }
 

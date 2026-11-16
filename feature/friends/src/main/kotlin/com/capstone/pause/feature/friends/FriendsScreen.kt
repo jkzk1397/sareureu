@@ -33,6 +33,7 @@ import com.capstone.pause.core.designsystem.component.Reveal
 import com.capstone.pause.core.designsystem.theme.PauseTheme
 import com.capstone.pause.core.social.FriendsOverview
 import com.capstone.pause.core.social.RankingView
+import com.capstone.pause.core.social.SharingState
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -52,6 +53,21 @@ fun FriendsRoute(viewModel: FriendsViewModel = hiltViewModel()) {
 fun FriendsScreen(uiState: FriendsUiState, onAction: (FriendsAction) -> Unit, modifier: Modifier = Modifier) {
     PauseScreenColumn(title = stringResource(R.string.friends_title), modifier = modifier) {
         val overview = uiState.overview ?: return@PauseScreenColumn
+        if (overview.sharing == SharingState.NOT_CONSENTED) {
+            SharingConsentCard(sharing = uiState.sharing, onAction = onAction)
+            return@PauseScreenColumn
+        }
+        if (overview.sharing == SharingState.CONSENTED && !overview.available) {
+            PauseCard(title = stringResource(R.string.friends_sharing_on_title)) {
+                Text(
+                    text = stringResource(R.string.friends_sharing_on_body),
+                    style = PauseTheme.type.bodySmall,
+                    color = PauseTheme.colors.ink2,
+                )
+                StopSharingButton(sharing = uiState.sharing, onAction = onAction)
+            }
+            return@PauseScreenColumn
+        }
         if (!overview.available) {
             PauseCard(title = stringResource(R.string.friends_unavailable_title)) {
                 Text(

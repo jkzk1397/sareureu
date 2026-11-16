@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import { test } from 'node:test';
 import worker from '../src/index.mjs';
@@ -11,6 +11,12 @@ test('동의한 계정의 일일 합계만 저장하고 철회하면 삭제한�
     const sql = new DatabaseSync(':memory:');
     t.after(() => sql.close());
     sql.exec(readFileSync(new URL('../migrations/0001_daily_watch.sql', import.meta.url), 'utf8'));
+    // 뒤 마이그레이션도 함께 적용해서 기존 동작이 그대로인지 본다.
+    const later = readdirSync(new URL('../migrations/', import.meta.url))
+        .filter((name) => name.endsWith('.sql') && name !== '0001_daily_watch.sql').sort();
+    for (const file of later) {
+        sql.exec(readFileSync(new URL(`../migrations/${file}`, import.meta.url), 'utf8'));
+    }
     const db = {
         prepare(query) {
             const statement = sql.prepare(query);

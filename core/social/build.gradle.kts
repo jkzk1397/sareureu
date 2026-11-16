@@ -26,4 +26,8 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(libs.kotlinx.coroutines.android)
+    // 하루 합계 올리기(5-2). 카탈로그에 이미 있는 항목만 쓴다(core:intervention과 같음).
+    implementation(libs.androidx.work.runtime)
+    implementation(libs.androidx.hilt.work)
+    ksp(libs.androidx.hilt.compiler)
 }

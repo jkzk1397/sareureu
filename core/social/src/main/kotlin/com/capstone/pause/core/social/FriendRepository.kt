@@ -78,6 +78,7 @@ internal class DemoFriendRepository @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val profileRepository: ProfileRepository,
     private val localStore: FriendLocalStore,
+    private val sharingRepository: SharingRepository,
     private val clock: AppClock,
     @Dispatcher(PauseDispatchers.IO) private val io: CoroutineDispatcher,
 ) : FriendRepository {
@@ -87,7 +88,11 @@ internal class DemoFriendRepository @Inject constructor(
         emit(withContext(io) { runCatching { readAsset() }.getOrDefault(emptyList()) })
     }
 
-    override fun observe(): Flow<FriendsOverview> = settingsRepository.settings.flatMapLatest { settings ->
+    override fun observe(): Flow<FriendsOverview> = combine(
+        settingsRepository.settings,
+        sharingRepository.state,
+        ::Pair,
+    ).flatMapLatest { (settings, sharing) ->
         val now = clock.now()
         val today = DayBoundary.logicalDate(now, clock.zone)
         val from = DayBoundary.startOf(today.minusDays(HISTORY_DAYS), clock.zone)
@@ -115,6 +120,7 @@ internal class DemoFriendRepository @Inject constructor(
                 blocked = blocked,
                 reported = reported,
                 challenge = challengeRows(friends.filter { it.id !in blocked }, sessions, me, today, now),
+                sharing = sharing,
             )
         }
     }
