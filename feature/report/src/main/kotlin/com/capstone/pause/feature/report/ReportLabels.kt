@@ -30,7 +30,9 @@ internal fun reportHourLabel(hour: Int): String = when (hour) {
 internal fun reportAppLabel(key: String): String = stringResource(
     when (key) {
         "YOUTUBE" -> R.string.report_app_youtube
+        "YOUTUBE_SHORTS" -> R.string.report_app_youtube_shorts
         "INSTAGRAM" -> R.string.report_app_instagram
+        "INSTAGRAM_REELS" -> R.string.report_app_instagram_reels
         "TIKTOK" -> R.string.report_app_tiktok
         else -> R.string.report_key_unknown
     },

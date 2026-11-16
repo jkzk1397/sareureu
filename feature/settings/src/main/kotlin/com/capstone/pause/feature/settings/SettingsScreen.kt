@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,6 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.capstone.pause.core.data.demo.DemoPattern
 import com.capstone.pause.core.data.settings.DefaultThresholds
@@ -40,11 +42,28 @@ fun SettingsRoute(
     viewModel: SettingsViewModel = hiltViewModel(),
     aiViewModel: AiSettingsViewModel = hiltViewModel(),
     privacyViewModel: PrivacySettingsViewModel = hiltViewModel(),
+    preciseViewModel: PreciseModeViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val aiState by aiViewModel.uiState.collectAsStateWithLifecycle()
     val privacyState by privacyViewModel.uiState.collectAsStateWithLifecycle()
+    val preciseState by preciseViewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    // 정밀 모드: 동의하면 시스템 접근성 설정을 연다(사용자가 거기서 직접 켠다). 돌아오면 켜졌는지 다시 본다.
+    LaunchedEffect(preciseState.openSystemSettings) {
+        if (preciseState.openSystemSettings) {
+            preciseViewModel.onAction(PreciseAction.SettingsOpened)
+            runCatching {
+                context.startActivity(
+                    Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                )
+            }
+        }
+    }
+    LifecycleResumeEffect(Unit) {
+        preciseViewModel.onAction(PreciseAction.Refresh)
+        onPauseOrDispose { }
+    }
     // 저장 위치는 사용자가 고른다(SAF). 저장소 권한이 필요 없다.
     val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(EXPORT_MIME)) {
         privacyViewModel.onAction(PrivacyAction.ExportTo(it))
@@ -60,6 +79,8 @@ fun SettingsRoute(
         onAiAction = aiViewModel::onAction,
         privacyState = privacyState,
         onPrivacyAction = privacyViewModel::onAction,
+        preciseState = preciseState,
+        onPreciseAction = preciseViewModel::onAction,
         onExport = { exportLauncher.launch(exportName) },
         versionName = versionName,
         onOpenRhythm = onOpenRhythm,
@@ -96,6 +117,8 @@ fun SettingsScreen(
     onAiAction: (AiSettingsAction) -> Unit = {},
     privacyState: PrivacyUiState = PrivacyUiState(),
     onPrivacyAction: (PrivacyAction) -> Unit = {},
+    preciseState: PreciseModeState = PreciseModeState(),
+    onPreciseAction: (PreciseAction) -> Unit = {},
     onExport: () -> Unit = {},
     versionName: String = "",
     onOpenRhythm: () -> Unit = {},
@@ -122,7 +145,15 @@ fun SettingsScreen(
                 R.string.settings_section_monitoring,
                 stringResource(if (uiState.monitoring) R.string.settings_summary_on else R.string.settings_summary_off),
             ) {
-                SensingGroup(uiState, onAction, privacyState, onPrivacyAction, onOpenBatterySettings)
+                SensingGroup(
+                    uiState,
+                    onAction,
+                    privacyState,
+                    onPrivacyAction,
+                    onOpenBatterySettings,
+                    preciseState,
+                    onPreciseAction,
+                )
             }
             group(GROUP_AI, R.string.settings_group_ai, stringResource(aiState.mode.labelRes())) {
                 SubTitle(stringResource(R.string.settings_section_ai))
@@ -218,6 +249,8 @@ private fun SensingGroup(
     privacyState: PrivacyUiState,
     onPrivacyAction: (PrivacyAction) -> Unit,
     onOpenBatterySettings: () -> Unit,
+    preciseState: PreciseModeState,
+    onPreciseAction: (PreciseAction) -> Unit,
 ) {
     if (uiState.monitoring) {
         SwitchRow(
@@ -234,7 +267,7 @@ private fun SensingGroup(
     )
     SubTitle(stringResource(R.string.settings_section_tracked))
     TrackedAppRows(privacyState.trackedApps) { pkg, on -> onPrivacyAction(PrivacyAction.SetTracked(pkg, on)) }
-    DetectionModeRows()
+    DetectionModeRows(preciseState, onPreciseAction)
     MoreNote(
         key = "battery",
         summary = stringResource(R.string.settings_battery_short),

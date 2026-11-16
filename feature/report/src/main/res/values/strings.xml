@@ -42,8 +42,8 @@
   <string name="report_key_browser">브라우저</string>
   <string name="report_key_game">게임</string>
   <string name="report_key_shopping">쇼핑</string>
-  <string name="report_app_youtube">쇼츠</string>
-  <string name="report_app_instagram">릴스</string>
+  <string name="report_app_youtube">유튜브 전체</string>
+  <string name="report_app_instagram">인스타그램 전체</string>
   <string name="report_app_tiktok">틱톡</string>
 
   <!-- AI 주간 분석(추측) -->
@@ -120,4 +120,9 @@
   <string name="report_flow_apps">본 곳: %1$s</string>
   <string name="report_detail_show">기록 더 자세히 보기 ▾</string>
   <string name="report_detail_hide">자세한 기록 접기 ▴</string>
+  <!-- 정밀 모드(ADR-0004): 숏폼 화면만 센 구간, 넘김 횟수 -->
+  <string name="report_app_youtube_shorts">쇼츠</string>
+  <string name="report_app_instagram_reels">릴스</string>
+  <string name="report_swipes">넘긴 횟수: 한 번 볼 때 평균 %1$d번</string>
+  <string name="report_swipes_interval">넘긴 횟수: 한 번 볼 때 평균 %1$d번, 보통 %2$d초마다 넘겨</string>
 </resources>

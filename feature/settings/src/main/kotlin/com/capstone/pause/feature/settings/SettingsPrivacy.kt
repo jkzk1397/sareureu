@@ -27,49 +27,6 @@ import com.capstone.pause.core.designsystem.theme.PauseTheme
 import com.capstone.pause.core.model.AppKind
 import com.capstone.pause.core.model.TrackedApp
 
-/** 감지 방식: 앱 단위(선택됨) / 정밀 모드(P1, 비활성). */
-@Composable
-internal fun DetectionModeRows() {
-    SubTitle(stringResource(R.string.settings_detection_title))
-    ModeRow(
-        label = stringResource(R.string.settings_detection_app),
-        desc = stringResource(R.string.settings_detection_app_short),
-        selected = true,
-        enabled = true,
-    )
-    ModeRow(
-        label = stringResource(R.string.settings_detection_precise),
-        desc = stringResource(R.string.settings_detection_precise_short),
-        selected = false,
-        enabled = false,
-    )
-    MoreNote(
-        key = "detection",
-        summary = stringResource(R.string.settings_detection_more),
-        detail = stringResource(R.string.settings_detection_app_desc) + PARAGRAPH +
-            stringResource(R.string.settings_detection_precise_desc),
-    )
-}
-
-@Composable
-private fun ModeRow(label: String, desc: String, selected: Boolean, enabled: Boolean) {
-    val colors = PauseTheme.colors
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = PauseTheme.spacing.minTouch)
-            .selectable(selected = selected, enabled = enabled, role = Role.RadioButton, onClick = {}),
-    ) {
-        RadioButton(selected = selected, onClick = null, enabled = enabled)
-        Spacer(Modifier.width(PauseTheme.spacing.xs))
-        Column {
-            Text(label, style = PauseTheme.type.body, color = if (enabled) colors.ink else colors.ink3)
-            Text(desc, style = PauseTheme.type.bodySmall, color = colors.ink2)
-        }
-    }
-}
-
 /** 추적 앱 켜기·끄기. 이름은 앱 고유 이름(데이터), 아래 줄은 패키지 이름. */
 @Composable
 internal fun TrackedAppRows(apps: List<TrackedApp>, onToggle: (String, Boolean) -> Unit) {
