@@ -62,7 +62,7 @@ internal fun FriendsUnavailablePreview() {
 @Preview(name = "light sharing consent", heightDp = 1200)
 @Preview(name = "dark sharing consent", heightDp = 1200, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun FriendsSharingConsentPreview() {
+internal fun FriendsSharingConsentPreview() {
     val base = previewState()
     PauseTheme {
         FriendsScreen(
@@ -77,7 +77,7 @@ private fun FriendsSharingConsentPreview() {
 @Preview(name = "light server friends", heightDp = 1600)
 @Preview(name = "dark server friends", heightDp = 1600, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun FriendsServerPreview() {
+internal fun FriendsServerPreview() {
     val base = previewState()
     PauseTheme {
         FriendsScreen(
