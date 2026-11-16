@@ -57,6 +57,7 @@ internal class DefaultWeekChartRepository @Inject constructor(
     private val sessionRepository: SessionRepository,
     private val settingsRepository: SettingsRepository,
     private val profileRepository: ProfileRepository,
+    private val peerStatsRepository: PeerStatsRepository,
     private val clock: AppClock,
     private val log: AppLog,
     @Dispatcher(PauseDispatchers.DEFAULT) private val dispatcher: CoroutineDispatcher,
@@ -85,8 +86,9 @@ internal class DefaultWeekChartRepository @Inject constructor(
             sessionRepository.observeSessions(from, to),
             settingsRepository.settings,
             profileRepository.profile,
-        ) { sessions, settings, profile ->
-            compute(sessions, today, now, settings.demoMode, profile)
+            peerStatsRepository.stats,
+        ) { sessions, settings, profile, peerStats ->
+            compute(sessions, today, now, settings.demoMode, profile, peerStats)
         }
     }.flowOn(dispatcher)
 
@@ -96,6 +98,7 @@ internal class DefaultWeekChartRepository @Inject constructor(
         now: Instant,
         isDemo: Boolean,
         profile: Profile?,
+        peerStats: PeerStats?,
     ): WeekChartData? {
         val zone = clock.zone
         val dates = (WEEK - 1 downTo 0L).map { today.minusDays(it) }
@@ -142,7 +145,7 @@ internal class DefaultWeekChartRepository @Inject constructor(
             lengthShares = SessionStats.lengthDistribution(week, now).let { dist ->
                 LengthBucket.entries.map { dist[it] ?: 0.0 }
             },
-            peer = peer(avg, baseline(all, dates.first(), now), profile, isDemo),
+            peer = peer(avg, baseline(all, dates.first(), now), profile, isDemo, peerStats),
         )
     }
 
@@ -154,10 +157,24 @@ internal class DefaultWeekChartRepository @Inject constructor(
         return if (first < 0) null else Baseline.compute(days.drop(first))
     }
 
-    private fun peer(avg: Double, baseline: Double?, profile: Profile?, isDemo: Boolean): PeerSummary? {
+    /**
+     * 또래 그룹: 시연 모드면 가상 분포(`assets/demo/cohort.json`), 실제 모드면 친구 서버가 계산한 그룹 집계(5-5).
+     * 실제 모드에서 서버 값이 없거나 내 그룹이 10명 미만이면 카드를 숨긴다(가상 분포를 실제처럼 보이지 않게).
+     */
+    private fun peer(
+        avg: Double,
+        baseline: Double?,
+        profile: Profile?,
+        isDemo: Boolean,
+        server: PeerStats?,
+    ): PeerSummary? {
         val p = profile ?: return null
-        val file = cohort ?: return null
-        val group = file.groups.firstOrNull { it.ageBand == p.ageBand.name && it.occupation == p.occupation.name }
+        val groups = if (isDemo) {
+            cohort?.groups?.map { PeerGroupStat(it.ageBand, it.occupation, it.n, it.p50, it.p75) }
+        } else {
+            server?.groups
+        } ?: return null
+        val group = groups.firstOrNull { it.ageBand == p.ageBand.name && it.occupation == p.occupation.name }
             ?.takeIf { it.n >= MIN_GROUP } ?: return null
         val largest = listOfNotNull(avg.roundToInt(), group.p75, baseline?.roundToInt()).max()
         val scale = maxOf(MIN_SCALE, ((largest + HOUR - 1) / HOUR + 1) * HOUR)
@@ -167,7 +184,7 @@ internal class DefaultWeekChartRepository @Inject constructor(
             peerP75 = group.p75,
             myBaseline = baseline?.roundToInt(),
             groupSize = group.n,
-            isDemo = file.isDemo || isDemo,
+            isDemo = isDemo,
             scaleMaxMinutes = scale,
         )
     }

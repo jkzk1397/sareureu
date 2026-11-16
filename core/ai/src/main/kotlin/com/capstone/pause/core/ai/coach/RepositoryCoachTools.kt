@@ -20,9 +20,11 @@ import com.capstone.pause.core.ai.engine.coach.StrategyItem
 import com.capstone.pause.core.ai.engine.coach.SummaryResult
 import com.capstone.pause.core.common.AppClock
 import com.capstone.pause.core.common.DayBoundary
+import com.capstone.pause.core.data.insight.PeerStatsRepository
 import com.capstone.pause.core.data.plan.PlanRepository
 import com.capstone.pause.core.data.profile.ProfileRepository
 import com.capstone.pause.core.data.session.SessionRepository
+import com.capstone.pause.core.data.settings.SettingsRepository
 import com.capstone.pause.core.data.strategy.StrategyRepository
 import com.capstone.pause.core.insights.FlowKeys
 import com.capstone.pause.core.insights.RiskWindows
@@ -50,6 +52,8 @@ internal class RepositoryCoachTools @Inject constructor(
     private val planRepository: PlanRepository,
     private val profileRepository: ProfileRepository,
     private val strategyRepository: StrategyRepository,
+    private val peerStatsRepository: PeerStatsRepository,
+    private val settingsRepository: SettingsRepository,
     private val clock: AppClock,
 ) : CoachTools {
 
@@ -172,18 +176,29 @@ internal class RepositoryCoachTools @Inject constructor(
                 w.now,
             ).toDouble() / w.days
             ).roundToInt()
-        val cohort = runCatching { loadCohort() }.getOrNull()
-        val group = cohort?.groups?.firstOrNull {
-            it.ageBand == profile?.ageBand?.name && it.occupation == profile.occupation.name
+        // 시연 모드면 가상 분포, 실제 모드면 친구 서버의 그룹 집계(10명 이상, 5-5). 없으면 값 없음.
+        val demo = settingsRepository.settings.first().demoMode
+        val median = if (demo) {
+            runCatching { loadCohort() }.getOrNull()?.groups?.firstOrNull {
+                it.ageBand == profile?.ageBand?.name && it.occupation == profile.occupation.name && it.n >= MIN_GROUP
+            }?.p50
+        } else {
+            peerStatsRepository.stats.first()?.groups?.firstOrNull {
+                it.ageBand == profile?.ageBand?.name && it.occupation == profile.occupation.name && it.n >= MIN_GROUP
+            }?.p50
         }
         return PeerBaselineResult(
             key = "peer",
             ageBand = profile?.ageBand?.name,
             occupation = profile?.occupation?.name,
-            peerMedianMinPerDay = group?.p50,
+            peerMedianMinPerDay = median,
             myAvgMinPerDay = my,
-            source = if (cohort?.isDemo == true) SOURCE_DEMO else SOURCE_NONE,
-            isDemo = cohort?.isDemo ?: true,
+            source = when {
+                median == null -> SOURCE_NONE
+                demo -> SOURCE_DEMO
+                else -> SOURCE_SERVER
+            },
+            isDemo = demo,
         )
     }
 
@@ -268,6 +283,8 @@ internal class RepositoryCoachTools @Inject constructor(
         const val COHORT_ASSET = "demo/cohort.json"
         const val SOURCE_DEMO = "DEMO_COHORT"
         const val SOURCE_NONE = "NONE"
+        const val SOURCE_SERVER = "PEER_STATS"
+        const val MIN_GROUP = 10
         val json = Json { ignoreUnknownKeys = true }
 
         /** 패키지 → 앱 키(화면 문구가 아니라 코드). */

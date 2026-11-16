@@ -81,6 +81,23 @@ class SharingTest {
     }
 
     @Test
+    fun peersKeepOnlyGroupsOfTenOrMore() {
+        val body = kotlinx.serialization.json.Json.parseToJsonElement(
+            """
+            {"groups":[
+              {"ageBand":"AGE_18_24","occupation":"UNIVERSITY","n":12,"p50":110,"p75":150},
+              {"ageBand":"AGE_25_29","occupation":"UNIVERSITY","n":9,"p50":80,"p75":100},
+              {"ageBand":"AGE_30_39","occupation":"OTHER","p50":80}
+            ],"computedAtMs":1}
+            """,
+        )
+        val stats = SharingPayloads.peers(body, now)
+        assertEquals(listOf("AGE_18_24"), stats?.groups?.map { it.ageBand })
+        assertEquals(110, stats?.groups?.single()?.p50)
+        assertNull(SharingPayloads.peers(null, now))
+    }
+
+    @Test
     fun dailyBodyMatchesServerContract() {
         val body = SharingPayloads.daily(37, now, zone)
         assertEquals(setOf("shortformMinutes", "coverage", "measuredAtMs", "timeZone"), body.keys)
@@ -122,7 +139,10 @@ class SharingTest {
         f.transport.calls.clear()
         f.sessions.value = listOf(session(today.minusDays(2), 20), session(today.minusDays(1), 30))
         assertTrue(f.repo.upload())
-        assertEquals(listOf("PUT /api/v1/daily/2026-11-15", "PUT /api/v1/standing"), f.transport.calls.map { it.first })
+        assertEquals(
+            listOf("PUT /api/v1/daily/2026-11-15", "PUT /api/v1/standing", "GET /api/v1/peers"),
+            f.transport.calls.map { it.first },
+        )
         assertEquals("30", f.transport.calls.first().second?.getValue("shortformMinutes")?.jsonPrimitive?.content)
     }
 

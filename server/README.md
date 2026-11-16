@@ -50,8 +50,11 @@
 | `PUT/DELETE /api/v1/blocks/{id}` | 차단(연결도 끊음)·차단 풀기(연결은 되살리지 않음) | 5-3 |
 | `POST /api/v1/pokes` | `{"to":"<친구 공개 ID>","text":"40자까지"}` 잔소리 맡기기. 친구에게만(차단하면 연결이 끊겨 403), 하루 10개(429). 금지 표현 검사는 앱이 보내기 전에 | 5-4 |
 | `GET /api/v1/pokes` | 나에게 온 잔소리 `{"pokes":[{"id","fromId","fromNickname","text","createdAtMs","expiresAtMs"}]}`(20개까지). **내려 주면 서버에서 지운다.** 차단한 사람 것·만료(7일)된 것도 지운다. 앱이 화면에 있을 때(15분에 한 번까지)와 WorkManager(12시간마다)만 부른다. 푸시(FCM) 없음 | 5-4 |
+| `GET /api/v1/peers` | 또래 비교 `{"groups":[{"ageBand","occupation","n","p50","p75"}],"computedAtMs"}`. **그룹 집계만**, 10명 미만 그룹은 없음. 공유 동의한 사람만 받는다. 앱은 하루 1번 올리기 때 같이 받는다 | 5-5 |
 
-마이그레이션: `0002_sharing_profile.sql`(닉네임·연령대·신분·공개 ID 칸, `standing` 표), `0003_friends.sql`(`invite`·`friendship`·`block`), `0004_pokes.sql`(`poke`, 하루 한도용 `poke_sent`). 동의 행을 지우면 모두 함께 지워진다. 매일 cron이 시간이 지난 초대 코드·잔소리를 지운다.
+또래 집계(5-5): 이미 있는 하루 한 번 cron이 동의한 사용자 중 연령대·신분이 있고 최근 7일에 3일 이상 기록이 있는 사람마다 하루 평균을 내고, 그룹마다 사람 수·중앙값·상위 25%만 `peer_stat`에 통째로 바꿔 넣는다. 개인별 평균은 계산 중에만 쓰고 저장하지 않는다.
+
+마이그레이션: `0002_sharing_profile.sql`(닉네임·연령대·신분·공개 ID 칸, `standing` 표), `0003_friends.sql`(`invite`·`friendship`·`block`), `0004_pokes.sql`(`poke`, 하루 한도용 `poke_sent`), `0005_peer_stats.sql`(`peer_stat`, 그룹 집계). 동의 행을 지우면 모두 함께 지워진다. 매일 cron이 시간이 지난 초대 코드·잔소리를 지운다.
 
 ## 테스트
 
