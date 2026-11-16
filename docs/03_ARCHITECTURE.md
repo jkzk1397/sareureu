@@ -154,7 +154,8 @@ sequenceDiagram
 | `ClockBins`, `Baseline`, `ReductionRate`, `Coverage`, `RiskWindows`, `ViewerTypeClassifier`, `WeeklyObservations` | insights | 순수 계산 + 테스트 |
 | `LlmClient`, `MockLlmClient`, `RestGeminiClient`(평가 전용), `PromptRegistry`, `*Validator`, `SafetyFilter`, `CoachEngine`, `eval/` | ai-engine | 순수 JVM, 05 문서 |
 | `AiRouter`, `CloudLlmClient`, `OnDeviceLlmClient`, `AiCallLogger`, `WeeklyReportGenerator`, `CopyPackGenerator`, `PokeDrafter` | ai | 안드로이드, 05 문서 |
-| `FriendRepository`, `PokeInbox`, `LeagueRepository` | social | Firestore, 오프라인이면 가상 친구 |
+| `FriendRepository`, `PokeInbox`, `LeagueRepository`, `SharingRepository` | social | 친구 서버(Cloudflare Worker, `server/`), 주소가 없거나 시연 모드면 가상 친구 |
+| `PeerStatsRepository` | data | 서버가 계산한 또래 그룹 집계(10명 이상) 캐시. 없으면 실제 모드 또래 비교는 숨김 |
 
 ## 5. 권한·매니페스트 (각 모듈 Manifest에 선언, 앱 Manifest는 병합만)
 | 권한 / 선언 | 모듈 | 왜 | 비고 |

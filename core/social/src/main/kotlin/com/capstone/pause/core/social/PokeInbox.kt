@@ -33,6 +33,9 @@ interface PokeInbox {
 
     /** 친구에게 잔소리 맡기기. 사람이 쓴 글이라 숫자는 허용하고 길이만 본다(금지 표현은 화면이 먼저 거른다). */
     suspend fun entrust(friendId: String, text: String): EntrustResult
+
+    /** 친구가 나에게 맡긴 잔소리를 서버에서 받아 `core:data` PokeRepository에 넣는다(앱이 화면에 있을 때·WorkManager). 받은 개수. */
+    suspend fun fetch(): Int = 0
 }
 
 /** 잔소리 글 기본 검사(순수). 금지 표현 검사는 화면(feature:friends)이 `BannedWords`로 먼저 한다. */
