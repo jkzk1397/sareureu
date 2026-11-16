@@ -1,6 +1,7 @@
 import { verifyFirebaseUser } from './firebase-auth.mjs';
 import { friendRoutes } from './friends.mjs';
 import { error, noContent, readBody } from './http.mjs';
+import { computePeerStats, peerRoutes } from './peers.mjs';
 import { cleanPokes, pokeRoutes } from './pokes.mjs';
 
 const consentVersion = 1;
@@ -142,6 +143,7 @@ const routes = [
         handle: ({ request, db, userId, now }) => saveStanding(request, db, userId, now) },
     ...friendRoutes,
     ...pokeRoutes,
+    ...peerRoutes,
 ];
 
 export default {
@@ -176,5 +178,7 @@ export default {
         await env.DB.prepare('DELETE FROM invite WHERE expires_at_ms <= ?').bind(controller.scheduledTime).run();
         // 임시(5-4): 만료된 잔소리 정리.
         await cleanPokes(env.DB, controller.scheduledTime);
+        // 임시(5-5): 또래 그룹 집계 다시 계산(이미 있는 하루 한 번 cron).
+        await computePeerStats(env.DB, controller.scheduledTime);
     },
 };

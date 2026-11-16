@@ -3,6 +3,8 @@ package com.capstone.pause.core.social.remote
 import com.capstone.pause.core.common.AppClock
 import com.capstone.pause.core.common.AppLog
 import com.capstone.pause.core.common.DayBoundary
+import com.capstone.pause.core.data.insight.PeerGroupStat
+import com.capstone.pause.core.data.insight.PeerStats
 import com.capstone.pause.core.data.insight.PeerStatsRepository
 import com.capstone.pause.core.data.profile.ConsentItem
 import com.capstone.pause.core.data.profile.ConsentRepository
@@ -26,9 +28,14 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 /** 하루 합계 올리기 예약(WorkManager). 테스트에서는 가짜로 바꾼다. */
 interface UploadScheduler {
@@ -99,6 +106,31 @@ object SharingPayloads {
         if (day.isBefore(first)) return null
         return day to ShortformMinutes.onDay(real, day, zone, now)
     }
+
+    /**
+     * `GET /api/v1/peers` → 또래 그룹 집계(5-5). 서버가 이미 10명 미만을 빼지만 앱도 한 번 더 거른다.
+     * 모양이 이상하면 null.
+     */
+    fun peers(body: JsonElement?, fetchedAt: Instant): PeerStats? = runCatching {
+        val groups = body?.jsonObject?.get("groups")?.jsonArray ?: return null
+        PeerStats(
+            groups = groups.mapNotNull { e ->
+                val g = e.jsonObject
+                val n = g["n"]?.jsonPrimitive?.intOrNull ?: return@mapNotNull null
+                PeerGroupStat(
+                    ageBand = g.getValue("ageBand").jsonPrimitive.content,
+                    occupation = g.getValue("occupation").jsonPrimitive.content,
+                    n = n,
+                    p50 = g["p50"]?.jsonPrimitive?.intOrNull ?: return@mapNotNull null,
+                    p75 = g["p75"]?.jsonPrimitive?.intOrNull ?: return@mapNotNull null,
+                ).takeIf { it.n >= MIN_GROUP }
+            },
+            fetchedAt = fetchedAt,
+        )
+    }.getOrNull()
+
+    /** 또래 그룹 최소 인원. */
+    const val MIN_GROUP = 10
 
     private const val MAX_DAY_MINUTES = 1500
     private const val MIN_RATE = -10.0
@@ -189,6 +221,9 @@ internal class RemoteSharingRepository @Inject constructor(
         val nickname = profileRepository.profile.first()?.nickname.orEmpty()
         val me = MyStanding.compute(sessions, today, zone, now, nickname)
         ok = transport.call("PUT", "/api/v1/standing", SharingPayloads.standing(me, now)).ok && ok
+        // 또래 통계(5-5): 서버가 하루 한 번 계산한 그룹 집계만 받는다. 개인별 값은 없다.
+        val peers = transport.call("GET", "/api/v1/peers")
+        if (peers.ok) SharingPayloads.peers(peers.body, now)?.let { peerStats.save(it) }
         if (!ok) log.w(TAG, "upload failed")
         return ok
     }
