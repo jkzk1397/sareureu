@@ -1,6 +1,7 @@
 import { verifyFirebaseUser } from './firebase-auth.mjs';
 import { friendRoutes } from './friends.mjs';
 import { error, noContent, readBody } from './http.mjs';
+import { cleanPokes, pokeRoutes } from './pokes.mjs';
 
 const consentVersion = 1;
 const dayMs = 86_400_000;
@@ -140,6 +141,7 @@ const routes = [
     { pattern: /^\/api\/v1\/standing$/, methods: ['PUT'],
         handle: ({ request, db, userId, now }) => saveStanding(request, db, userId, now) },
     ...friendRoutes,
+    ...pokeRoutes,
 ];
 
 export default {
@@ -172,5 +174,7 @@ export default {
         await env.DB.prepare('DELETE FROM daily_watch WHERE watch_date < ?').bind(cutoff).run();
         // 임시(5-3): 시간이 지난 초대 코드 정리.
         await env.DB.prepare('DELETE FROM invite WHERE expires_at_ms <= ?').bind(controller.scheduledTime).run();
+        // 임시(5-4): 만료된 잔소리 정리.
+        await cleanPokes(env.DB, controller.scheduledTime);
     },
 };

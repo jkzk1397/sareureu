@@ -11,6 +11,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import com.capstone.pause.core.social.PokeInbox
 import com.capstone.pause.core.social.SharingRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -37,6 +38,19 @@ class SocialUploadWorker @AssistedInject constructor(
 
     private companion object {
         const val MAX_RETRY = 1
+    }
+}
+
+/** 친구가 맡긴 잔소리 받기(5-4). 12시간마다, 네트워크가 있을 때만. 앱이 화면에 있을 때도 따로 받는다. */
+@HiltWorker
+class SocialPokeWorker @AssistedInject constructor(
+    @Assisted context: Context,
+    @Assisted params: WorkerParameters,
+    private val pokeInbox: PokeInbox,
+) : CoroutineWorker(context, params) {
+    override suspend fun doWork(): Result {
+        runCatching { pokeInbox.fetch() }
+        return Result.success()
     }
 }
 
@@ -71,6 +85,14 @@ internal class WorkUploadScheduler @Inject constructor(@ApplicationContext priva
             ExistingPeriodicWorkPolicy.KEEP,
             PeriodicWorkRequestBuilder<SocialUploadWorker>(1, TimeUnit.DAYS).setConstraints(constraints).build(),
         )
+        work.enqueueUniquePeriodicWork(
+            POKES,
+            ExistingPeriodicWorkPolicy.KEEP,
+            PeriodicWorkRequestBuilder<SocialPokeWorker>(
+                POKE_HOURS,
+                TimeUnit.HOURS,
+            ).setConstraints(constraints).build(),
+        )
         work.enqueueUniqueWork(
             NOW,
             ExistingWorkPolicy.KEEP,
@@ -82,6 +104,7 @@ internal class WorkUploadScheduler @Inject constructor(@ApplicationContext priva
         val work = WorkManager.getInstance(context)
         work.cancelUniqueWork(DAILY)
         work.cancelUniqueWork(NOW)
+        work.cancelUniqueWork(POKES)
         work.cancelUniqueWork(DELETE)
     }
 
@@ -95,6 +118,8 @@ internal class WorkUploadScheduler @Inject constructor(@ApplicationContext priva
 
     private companion object {
         const val DELETE = "social_delete"
+        const val POKES = "social_pokes"
+        const val POKE_HOURS = 12L
         const val DAILY = "social_daily_upload"
         const val NOW = "social_upload_now"
     }

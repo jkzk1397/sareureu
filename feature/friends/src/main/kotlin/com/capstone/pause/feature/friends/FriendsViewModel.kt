@@ -40,7 +40,7 @@ data class PokeDraftState(
 /** 맡기기·초안 결과 안내. */
 sealed interface PokeFeedback {
     /** 맡김. */
-    data class Entrusted(val nickname: String) : PokeFeedback
+    data class Entrusted(val nickname: String, val remote: Boolean = false) : PokeFeedback
 
     /** 검사에 걸림. */
     data class Rejected(val reason: EntrustResult) : PokeFeedback
@@ -259,7 +259,11 @@ class FriendsViewModel @Inject constructor(
             val result = pokeInbox.entrust(friendId, text)
             poke.update {
                 if (result == EntrustResult.Entrusted) {
-                    it.copy(text = "", drafts = emptyList(), result = PokeFeedback.Entrusted(nickname))
+                    it.copy(
+                        text = "",
+                        drafts = emptyList(),
+                        result = PokeFeedback.Entrusted(nickname, remote = state.overview?.isDemo == false),
+                    )
                 } else {
                     it.copy(result = PokeFeedback.Rejected(result))
                 }

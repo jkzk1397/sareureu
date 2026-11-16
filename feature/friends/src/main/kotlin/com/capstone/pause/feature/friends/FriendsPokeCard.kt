@@ -166,7 +166,10 @@ private fun StepLabel(text: String) {
 private fun FeedbackText(result: PokeFeedback) {
     val colors = PauseTheme.colors
     val (text, ok) = when (result) {
-        is PokeFeedback.Entrusted -> stringResource(R.string.friends_poke_sent_eul, result.nickname) to true
+        is PokeFeedback.Entrusted -> stringResource(
+            if (result.remote) R.string.friends_poke_sent_remote_eul else R.string.friends_poke_sent_eul,
+            result.nickname,
+        ) to true
 
         PokeFeedback.DraftFailed -> stringResource(R.string.friends_poke_draft_failed) to false
 

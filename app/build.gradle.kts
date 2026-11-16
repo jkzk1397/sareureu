@@ -29,6 +29,7 @@ dependencies {
     implementation(project(":core:intervention"))
     implementation(project(":core:model"))
     implementation(project(":core:sensing"))
+    implementation(project(":core:social"))
 
     implementation(project(":feature:coach"))
     implementation(project(":feature:friends"))
