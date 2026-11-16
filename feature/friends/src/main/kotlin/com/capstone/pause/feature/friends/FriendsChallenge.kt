@@ -125,6 +125,12 @@ internal fun ManageCard(overview: FriendsOverview, onAction: (FriendsAction) -> 
                         onAction(if (blocked) FriendsAction.Unblock(id) else FriendsAction.Block(id))
                     },
                     onReport = { reportTarget = id },
+                    // 서버 친구만 끊을 수 있다(가상 친구는 그대로).
+                    onDisconnect = if (overview.isDemo || id in overview.blocked) {
+                        null
+                    } else {
+                        { onAction(FriendsAction.Disconnect(id)) }
+                    },
                 )
             }
         }
@@ -159,6 +165,7 @@ private fun FriendRow(
     reported: Boolean,
     onBlockToggle: (Boolean) -> Unit,
     onReport: () -> Unit,
+    onDisconnect: (() -> Unit)? = null,
 ) {
     val colors = PauseTheme.colors
     var menu by rememberSaveable(name) { mutableStateOf(false) }
@@ -189,6 +196,15 @@ private fun FriendRow(
                 Text(stringResource(R.string.friends_menu_mark), style = PauseTheme.type.title, color = colors.ink)
             }
             DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
+                onDisconnect?.let { disconnect ->
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.friends_disconnect)) },
+                        onClick = {
+                            menu = false
+                            disconnect()
+                        },
+                    )
+                }
                 DropdownMenuItem(
                     text = { Text(stringResource(if (blocked) R.string.friends_unblock else R.string.friends_block)) },
                     onClick = {

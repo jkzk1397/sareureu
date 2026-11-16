@@ -43,8 +43,13 @@
 |---|---|---|
 | `PUT /api/v1/sharing` | 동의 몸통에 `nickname`(12자까지, 친구에게 보임), `ageBand`·`occupation`(enum 이름, 또래 그룹용)을 더 받는다(모두 선택). 다른 칸은 400 | 5-2 |
 | `PUT /api/v1/standing` | `{"reductionRate":0.23,"coverage":0.9,"validDays":6,"measuredAtMs":…}` 랭킹 숫자. 계산은 앱(`core:insights`)이 하고 서버는 저장만. 동의 전이면 403 | 5-2 |
+| `POST /api/v1/invites` | 내 초대 코드(6자, 헷갈리는 글자 뺌) `{"code","expiresAtMs"}`. 24시간, 한 번만, 새로 만들면 이전 코드는 없어진다 | 5-3 |
+| `POST /api/v1/invites/{code}/accept` | 코드로 연결(코드를 만든 사람 + 입력한 사람 = 양쪽 동의). 404 없음·만료, 409 `own_invite`·`already_friends`·`unavailable`(차단, 누가 했는지 알리지 않음)·`too_many_friends`(50명) | 5-3 |
+| `GET /api/v1/friends` | `{"friends":[{"id","nickname","reductionRate","coverage","validDays"}],"blocked":[{"id","nickname"}]}`. `id`는 공개 ID(Firebase uid 아님). 순위·꼴찌 숨기기는 앱이 `Ranking.build`로 | 5-3 |
+| `DELETE /api/v1/friends/{id}` | 연결 끊기(양쪽 목록에서 빠짐) | 5-3 |
+| `PUT/DELETE /api/v1/blocks/{id}` | 차단(연결도 끊음)·차단 풀기(연결은 되살리지 않음) | 5-3 |
 
-마이그레이션: `0002_sharing_profile.sql`(닉네임·연령대·신분·공개 ID 칸, `standing` 표). 동의 행을 지우면 모두 함께 지워진다.
+마이그레이션: `0002_sharing_profile.sql`(닉네임·연령대·신분·공개 ID 칸, `standing` 표), `0003_friends.sql`(`invite`·`friendship`·`block`). 동의 행을 지우면 모두 함께 지워진다. 매일 cron이 시간이 지난 초대 코드를 지운다.
 
 ## 테스트
 

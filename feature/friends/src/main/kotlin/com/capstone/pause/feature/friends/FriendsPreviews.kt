@@ -73,3 +73,23 @@ private fun FriendsSharingConsentPreview() {
         )
     }
 }
+
+@Preview(name = "light server friends", heightDp = 1600)
+@Preview(name = "dark server friends", heightDp = 1600, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun FriendsServerPreview() {
+    val base = previewState()
+    PauseTheme {
+        FriendsScreen(
+            uiState = base.copy(
+                overview = base.overview?.copy(
+                    isDemo = false,
+                    sharing = SharingState.CONSENTED,
+                    challenge = emptyList(),
+                ),
+                invite = InviteUiState(code = "K7P2QX", expires = java.time.LocalDateTime.of(2026, 11, 17, 21, 30)),
+            ),
+            onAction = {},
+        )
+    }
+}

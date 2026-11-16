@@ -58,7 +58,7 @@ export async function testServer(t, now) {
     }));
     const encode = (data) => Buffer.from(JSON.stringify(data)).toString('base64url');
     async function token(userId) {
-        const seconds = Date.now() / 1000;
+        const seconds = Math.floor(Date.now() / 1000);
         const claims = { aud: projectId, iss: `https://securetoken.google.com/${projectId}`, sub: userId,
             exp: seconds + 300, iat: seconds - 1, auth_time: seconds - 1 };
         const data = `${encode({ alg: 'RS256', kid: 'test' })}.${encode(claims)}`;
