@@ -1,0 +1,33 @@
+name: release-apk
+
+# release-apk 브랜치에 push하면 디버그 APK를 만들어 공개 Release로 올린다.
+# 비밀값(google-services.json, local.properties)이 없는 빌드라 AI는 기본 문장, 친구는 가상 친구로 동작한다.
+on:
+  push:
+    branches: [release-apk]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v6
+      - name: 디버그 빌드
+        run: ./gradlew assembleDebug
+      - name: Release 올리기
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp app/build/outputs/apk/debug/*.apk sareureu-week12.apk
+          gh release create v0.12 sareureu-week12.apk \
+            --target "${GITHUB_SHA}" \
+            --title "사르르 12주차 (시연용)" \
+            --notes "설치 후 설정 › 더 보기 › 시연 모드 › 2주치 가상 기록 넣기를 누르면 권한 없이 모든 화면을 볼 수 있습니다. 이 APK에는 AI와 친구 서버 설정이 들어 있지 않아 AI는 기본 문장, 친구는 가상 친구로 동작합니다. main ${GITHUB_SHA::7} 기준."
