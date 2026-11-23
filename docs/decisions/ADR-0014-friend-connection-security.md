@@ -51,3 +51,9 @@
 - 서버: `limits.mjs`, `ratelimit.mjs`, `text.mjs`, `reports.mjs`, `friends.mjs`(요청·수락), `pokes.mjs`(확인 뒤 삭제), 마이그레이션 `0007_friend_requests.sql`.
 - 앱: `core:social` 계약(`FriendRequest`, 오류 종류, `SocialLimits`), `feature:friends` 연결 요청 화면·확인 창.
 - 문서: `docs/PLAY_SUBMISSION.md`(사용자 생성 콘텐츠 정책 항목), `docs/04_DATA_PRIVACY.md`, `server/README.md`.
+
+## 덧붙임 (2026-11-23): 가짜 앱 막기(App Check)는 지금 넣지 않는다
+- **될 수는 있다.** 서버가 App Check 토큰을 직접 확인하는 방법이 공식 문서에 있다(`firebase.google.com/docs/app-check/custom-resource-backend`): 앱이 `X-Firebase-AppCheck` 헤더로 토큰을 보내고, 서버는 `https://firebaseappcheck.googleapis.com/v1/jwks`의 공개 키로 서명·발급자·대상·만료를 확인한다. App Check 자체는 무료이고 Play Integrity 표준 한도는 하루 1만 번이다. Play Integrity 공급자는 Play 밖에서 배포한 앱도 지원한다(서명 인증서 SHA-256 등록).
+- **지금 켜면 친구 기능이 모두 막힌다.** 공개 APK는 디버그 빌드라 디버그 공급자를 쓰는데, 디버그 비밀값(`appCheckDebugSecret`)은 공개 APK에 넣지 않기로 했다. 그러면 공개 APK의 토큰은 등록되지 않은 값이라 서버가 거부하게 된다. 릴리스 빌드의 Play Integrity 공급자를 쓰려면 Firebase 콘솔에 앱의 서명 인증서(6-B의 공용 서명 키) SHA-256을 등록하고 Google Cloud에서 Play Integrity API를 켜야 하는데, 이것은 리드가 콘솔에서 해야 하는 일이다.
+- **구조 문제도 있다.** App Check 라이브러리는 지금 `core:ai`에만 있고 `core:social`은 `core:ai`에 의존할 수 없다. 토큰 창구를 `core:data`에 두는 계약 변경이 필요하다.
+- **그래서 순서를 정해 둔다.** (1) 6-B에서 공용 서명 키로 릴리스 빌드를 만든다. (2) 리드가 콘솔에 SHA-256을 등록하고 Play Integrity API를 켠다. (3) 계약 PR로 토큰 창구를 만들고 앱이 연결 요청·잔소리·신고에 토큰을 보낸다. (4) 서버는 먼저 "확인만 하고 통과"로 며칠 본 뒤, 연결 요청·잔소리·신고 경로부터 거부로 바꾼다(프로젝트 번호는 `wrangler.toml` 변수로). 그 전까지는 계정 기준 한도, 신고, 요청 뒤 수락이 방어선이다.
