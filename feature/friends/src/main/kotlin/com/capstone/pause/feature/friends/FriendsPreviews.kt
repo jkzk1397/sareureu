@@ -89,10 +89,80 @@ internal fun FriendsServerPreview() {
                     challenge = emptyList(),
                 ),
                 invite = InviteUiState(
-                    code = "K7P2QX",
+                    code = "K7P2QXM4",
                     expires = java.time.LocalDateTime.of(2026, 11, 17, 21, 30),
-                    qr = InviteQr.encode("https://sareureu.example.workers.dev/invite/K7P2QX"),
+                    qr = InviteQr.encode("https://sareureu.example.workers.dev/invite/K7P2QXM4"),
+                    link = "https://sareureu.example.workers.dev/invite/K7P2QXM4",
+                    qrOpen = true,
+                    qrWatching = true,
                 ),
+                requests = previewRequests(),
+                pokeFeedback = null,
+            ),
+            onAction = {},
+        )
+    }
+}
+
+private fun previewRequests(): RequestsUiState {
+    val at = java.time.Instant.parse("2026-11-17T03:00:00Z")
+    return RequestsUiState(
+        received = listOf(
+            com.capstone.pause.core.social.ReceivedRequest("r1", "준호", at, at.plusSeconds(WEEK_SECONDS)),
+            com.capstone.pause.core.social.ReceivedRequest("r2", "하은", at, at.plusSeconds(WEEK_SECONDS)),
+        ),
+        sent = listOf(com.capstone.pause.core.social.SentRequest("s1", at, at.plusSeconds(WEEK_SECONDS))),
+    )
+}
+
+private const val WEEK_SECONDS = 604_800L
+
+/** 서버에 닿지 못해 저장해 둔 목록을 보이는 상태: 안내 띠, 초록 점과 잔소리 버튼 꺼짐, 서버 기록 지우는 중 안내. */
+@Preview(name = "light offline", heightDp = 1800)
+@Preview(name = "dark offline", heightDp = 1800, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+internal fun FriendsOfflinePreview() {
+    val base = previewState()
+    PauseTheme {
+        FriendsScreen(
+            uiState = base.copy(
+                overview = base.overview?.let { o ->
+                    val friends = o.friends.map { it.copy(watching = false) }
+                    o.copy(
+                        isDemo = false,
+                        sharing = SharingState.CONSENTED,
+                        challenge = emptyList(),
+                        friends = friends,
+                        allFriends = friends,
+                        ranking = StreakRanking.build(friends + o.me),
+                        offline = true,
+                    )
+                },
+                staleMinutes = 12,
+                pokeFeedback = null,
+                invite = InviteUiState(input = "K0P2", result = null),
+            ),
+            onAction = {},
+        )
+    }
+}
+
+/** 초대 링크로 열렸을 때 먼저 뜨는 확인 창. */
+@Preview(name = "light link confirm", heightDp = 900)
+@Preview(name = "dark link confirm", heightDp = 900, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+internal fun FriendsLinkConfirmPreview() {
+    val base = previewState()
+    PauseTheme {
+        FriendsScreen(
+            uiState = base.copy(
+                overview = base.overview?.copy(
+                    isDemo = false,
+                    sharing = SharingState.CONSENTED,
+                    challenge = emptyList(),
+                ),
+                invite = InviteUiState(pending = "K7P2QXM4", linkToConfirm = "K7P2QXM4"),
+                pokeFeedback = null,
             ),
             onAction = {},
         )

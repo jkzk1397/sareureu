@@ -3,6 +3,7 @@ package com.capstone.pause.core.social.remote
 import com.capstone.pause.core.common.AppClock
 import com.capstone.pause.core.common.AppLog
 import com.capstone.pause.core.common.DayBoundary
+import com.capstone.pause.core.data.friend.FriendLocalStore
 import com.capstone.pause.core.data.insight.PeerGroupStat
 import com.capstone.pause.core.data.insight.PeerStats
 import com.capstone.pause.core.data.insight.PeerStatsRepository
@@ -21,6 +22,7 @@ import com.capstone.pause.core.model.ShortformSession
 import com.capstone.pause.core.social.MyStanding
 import com.capstone.pause.core.social.SharingRepository
 import com.capstone.pause.core.social.SharingState
+import com.capstone.pause.core.social.SocialLimits
 import com.capstone.pause.core.social.Standing
 import java.time.Instant
 import java.time.LocalDate
@@ -61,7 +63,7 @@ object SharingPayloads {
     const val CONSENT_VERSION = 2
 
     /** 닉네임 최대 글자(서버와 같음). */
-    const val MAX_NICKNAME = 12
+    const val MAX_NICKNAME = SocialLimits.MAX_NICKNAME
 
     /** 동의: 닉네임(친구에게 보임), 연령대·신분(또래 그룹 집계용). 실명·연락처는 없다. */
     fun sharing(profile: Profile?): JsonObject = JsonObject(
@@ -98,8 +100,8 @@ object SharingPayloads {
         ),
     )
 
-    /** 지금 시청 중 신호(ADR-0012). 앱·영상·시간은 담지 않는다. */
-    fun presence(watching: Boolean): JsonObject = JsonObject(mapOf("watching" to JsonPrimitive(watching)))
+    /** 지금 시청 중 신호(ADR-0012). 앱·영상·시간은 담지 않는다. 받은 잔소리 확인은 [PokePayloads.presence]. */
+    fun presence(watching: Boolean): JsonObject = PokePayloads.presence(watching, emptyList())
 
     /**
      * 올릴 하루: 어제(새벽 4시 경계). **실제 기록만** 쓰고, 첫 기록보다 앞선 날이면 null(설치 전 날을 0분으로 올리지 않는다).
@@ -164,9 +166,12 @@ internal class RemoteSharingRepository @Inject constructor(
     private val sessionRepository: SessionRepository,
     private val peerStats: PeerStatsRepository,
     private val gapRepository: MonitoringGapRepository,
+    private val localStore: FriendLocalStore,
     private val clock: AppClock,
     private val log: AppLog,
 ) : SharingRepository {
+
+    override val deletingRemote: Flow<Boolean> = localStore.remoteDeletePending
 
     override val state: Flow<SharingState> = combine(
         settingsRepository.settings,
@@ -184,6 +189,7 @@ internal class RemoteSharingRepository @Inject constructor(
         if (state.first() == SharingState.UNAVAILABLE) return false
         // 예전 철회에서 남은 지우기 작업이 새 동의를 지우지 않게 먼저 취소한다.
         scheduler.cancel()
+        localStore.setRemoteDeletePending(false)
         val body = SharingPayloads.sharing(profileRepository.profile.first())
         val response = transport.call("PUT", "/api/v1/sharing", body)
         if (!response.ok) {
@@ -202,17 +208,26 @@ internal class RemoteSharingRepository @Inject constructor(
             consentRepository.record(ConsentItem.FRIENDS, SharingPayloads.CONSENT_VERSION, granted = false)
         }
         peerStats.clear()
+        localStore.clearFriendsCache()
         // 한 번도 동의한 적 없으면 서버에 내 기록이 없다(지우려고 익명 로그인을 새로 만들지 않는다).
         if (!server.enabled || record == null) return true
+        // 지울 때까지 "서버 기록 지우는 중"으로 보이고, 실패하면 성공할 때까지 WorkManager가 계속 시도한다.
+        localStore.setRemoteDeletePending(true)
         val ok = deleteRemote()
         if (!ok) scheduler.scheduleDelete()
         return ok
     }
 
-    /** 서버가 사용자 행을 지우면 일일 합계·랭킹 숫자·친구 관계·잔소리가 함께 지워진다. 지운 뒤에만 로그아웃한다. */
+    /**
+     * 서버가 사용자 행을 지우면 일일 합계·랭킹 숫자·친구 관계·요청·잔소리가 함께 지워진다.
+     * 지운 뒤에는 Firebase 익명 계정도 지운다(되찾을 수 없는 계정이라 남길 이유가 없다).
+     */
     suspend fun deleteRemote(): Boolean {
         val ok = transport.call("DELETE", "/api/v1/sharing").ok
-        if (ok) auth.signOut()
+        if (ok) {
+            runCatching { auth.deleteAccount() }.onFailure { auth.signOut() }
+            localStore.setRemoteDeletePending(false)
+        }
         return ok
     }
 

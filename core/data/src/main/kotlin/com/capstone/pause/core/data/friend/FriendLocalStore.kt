@@ -2,7 +2,9 @@ package com.capstone.pause.core.data.friend
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import java.time.Instant
 import javax.inject.Inject
@@ -102,6 +104,31 @@ internal class DataStoreFriendLocalStore @Inject constructor(@FriendStore privat
         store.edit { it.clear() }
     }
 
+    override val friendsCache: Flow<FriendsCache?> = store.data.map { prefs ->
+        val body = prefs[FRIENDS_CACHE] ?: return@map null
+        FriendsCache(body, Instant.ofEpochMilli(prefs[FRIENDS_CACHE_AT] ?: 0))
+    }
+
+    override suspend fun saveFriendsCache(cache: FriendsCache) {
+        store.edit { prefs ->
+            prefs[FRIENDS_CACHE] = cache.json.take(MAX_CACHE_CHARS)
+            prefs[FRIENDS_CACHE_AT] = cache.savedAt.toEpochMilli()
+        }
+    }
+
+    override suspend fun clearFriendsCache() {
+        store.edit { prefs ->
+            prefs.remove(FRIENDS_CACHE)
+            prefs.remove(FRIENDS_CACHE_AT)
+        }
+    }
+
+    override val remoteDeletePending: Flow<Boolean> = store.data.map { it[DELETE_PENDING] ?: false }
+
+    override suspend fun setRemoteDeletePending(pending: Boolean) {
+        store.edit { prefs -> if (pending) prefs[DELETE_PENDING] = true else prefs.remove(DELETE_PENDING) }
+    }
+
     private suspend fun editSet(key: Preferences.Key<String>, change: (Set<String>) -> Set<String>) {
         store.edit { prefs -> prefs[key] = json.encodeToString(change(decodeSet(prefs[key])).toList()) }
     }
@@ -116,6 +143,12 @@ internal class DataStoreFriendLocalStore @Inject constructor(@FriendStore privat
         val ENTRUSTED = stringPreferencesKey("entrusted_pokes")
         val BLOCKED = stringPreferencesKey("blocked_friends")
         val REPORTED = stringPreferencesKey("reported_friends")
+        val FRIENDS_CACHE = stringPreferencesKey("friends_cache")
+        val FRIENDS_CACHE_AT = longPreferencesKey("friends_cache_at")
+        val DELETE_PENDING = booleanPreferencesKey("remote_delete_pending")
+
+        // 친구 50명 × 한 줄 약 200자보다 넉넉하게.
+        const val MAX_CACHE_CHARS = 40_000
         const val MAX_ENTRUSTED = 50
     }
 }

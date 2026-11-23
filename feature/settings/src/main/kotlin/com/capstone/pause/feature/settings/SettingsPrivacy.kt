@@ -105,6 +105,13 @@ internal fun PrivacyRows(state: PrivacyUiState, onExport: () -> Unit, onAction: 
             color = colors.nudgeText,
         )
     }
+    if (state.deletingRemote) {
+        Text(
+            stringResource(R.string.settings_deleting_remote),
+            style = PauseTheme.type.bodySmall,
+            color = colors.ink2,
+        )
+    }
     if (state.eraseFailed.isNotEmpty()) {
         Text(
             stringResource(R.string.settings_erase_failed, state.eraseFailed.joinToString()),

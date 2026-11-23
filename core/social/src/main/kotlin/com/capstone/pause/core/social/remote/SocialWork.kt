@@ -54,22 +54,17 @@ class SocialPokeWorker @AssistedInject constructor(
     }
 }
 
-/** 철회 때 못 지운 서버 기록을 네트워크가 될 때 지운다(최대 몇 번만). */
+/**
+ * 철회 때 못 지운 서버 기록을 네트워크가 될 때 지운다. 성공할 때까지 계속 시도한다(WorkManager가 간격을 늘려 가며 다시 부른다).
+ * 그동안 친구 탭과 설정이 "서버 기록 지우는 중"이라고 보인다. 다시 동의하면 이 작업은 취소된다.
+ */
 @HiltWorker
 internal class SocialDeleteWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
     private val sharing: RemoteSharingRepository,
 ) : CoroutineWorker(context, params) {
-    override suspend fun doWork(): Result = when {
-        sharing.deleteRemote() -> Result.success()
-        runAttemptCount < MAX_DELETE_RETRY -> Result.retry()
-        else -> Result.failure()
-    }
-
-    private companion object {
-        const val MAX_DELETE_RETRY = 5
-    }
+    override suspend fun doWork(): Result = if (sharing.deleteRemote()) Result.success() else Result.retry()
 }
 
 /** WorkManager 예약. 네트워크가 있을 때만. */

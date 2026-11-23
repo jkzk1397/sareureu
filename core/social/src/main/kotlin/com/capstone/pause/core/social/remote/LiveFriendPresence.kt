@@ -3,6 +3,7 @@ package com.capstone.pause.core.social.remote
 import com.capstone.pause.core.common.AppClock
 import com.capstone.pause.core.common.ApplicationScope
 import com.capstone.pause.core.data.friend.FriendPokeAlert
+import com.capstone.pause.core.data.friend.PokeTextFilter
 import com.capstone.pause.core.data.monitoring.LiveSessionSource
 import com.capstone.pause.core.model.DataSource
 import com.capstone.pause.core.model.ShortformSession
@@ -45,6 +46,9 @@ internal class LiveFriendPresence @Inject constructor(
     private val sharing: RemoteSharingRepository,
     private val transport: SocialTransport,
     private val alert: FriendPokeAlert,
+    private val ledger: PokeLedger,
+    private val filter: PokeTextFilter,
+    private val recent: RecentPokes,
     private val clock: AppClock,
     @ApplicationScope private val scope: CoroutineScope,
 ) : FriendPresence {
@@ -76,13 +80,21 @@ internal class LiveFriendPresence @Inject constructor(
     }
 
     private suspend fun beat(watching: Boolean) {
+        // 지난 응답으로 받은 잔소리 id를 실어 보낸다: 서버는 이 확인을 받아야 지운다(응답이 끊겨도 사라지지 않게).
+        val ack = ledger.pendingAck()
         val response = runCatching {
-            transport.call("PUT", "/api/v1/presence", SharingPayloads.presence(watching))
+            transport.call("PUT", "/api/v1/presence", PokePayloads.presence(watching, ack))
         }.getOrNull() ?: return
         if (!response.ok) return
+        ledger.acked(ack)
         val now = clock.now()
-        PokePayloads.inbox(response.body).filter { it.expiresAt.isAfter(now) }.forEach {
-            alert.show(it.id, it.fromNickname, it.text)
-        }
+        // 확인 전까지 서버가 같은 것을 다시 내려 주므로 처음 본 것만 띄운다. 금지 표현이 있으면 띄우지 않는다.
+        val fresh = PokePayloads.ids(response.body).filter(ledger::firstTime).toSet()
+        PokePayloads.inbox(response.body)
+            .filter { it.id in fresh && it.expiresAt.isAfter(now) && filter.allowed(it.text) }
+            .forEach {
+                recent.remember(it.fromId, it.text)
+                alert.show(it.id, it.fromNickname, it.text)
+            }
     }
 }

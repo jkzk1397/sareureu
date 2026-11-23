@@ -122,6 +122,19 @@ internal fun PokeDialog(friend: Standing, poke: PokeDraftState, onAction: (Frien
     )
 }
 
+/** 보내지 못한 이유 한 줄. 한도·정지·서버 오류는 종류마다 다른 말을 한다(ADR-0014). */
+@Composable
+private fun entrustFailureText(reason: EntrustResult): String = when (reason) {
+    EntrustResult.Empty, EntrustResult.Entrusted -> stringResource(R.string.friends_poke_empty)
+    EntrustResult.TooLong -> stringResource(R.string.friends_poke_too_long)
+    EntrustResult.Banned -> stringResource(R.string.friends_poke_banned)
+    EntrustResult.Failed -> stringResource(R.string.friends_poke_failed)
+    EntrustResult.NotWatching -> stringResource(R.string.friends_poke_not_watching)
+    is EntrustResult.Limited -> stringResource(R.string.friends_poke_limited)
+    EntrustResult.Suspended -> stringResource(R.string.friends_poke_suspended)
+    is EntrustResult.Error -> socialErrorText(reason.error)
+}
+
 /** 보내기·초안 결과 한 줄. */
 @Composable
 internal fun PokeFeedbackText(result: PokeFeedback) {
@@ -134,25 +147,7 @@ internal fun PokeFeedbackText(result: PokeFeedback) {
 
         PokeFeedback.DraftFailed -> stringResource(R.string.friends_poke_draft_failed) to false
 
-        is PokeFeedback.Rejected -> stringResource(
-            when (result.reason) {
-                EntrustResult.Empty -> R.string.friends_poke_empty
-
-                EntrustResult.TooLong -> R.string.friends_poke_too_long
-
-                EntrustResult.Banned -> R.string.friends_poke_banned
-
-                EntrustResult.Failed -> R.string.friends_poke_failed
-
-                // TODO(#59, 5-B): 한도·정지·오류 종류별 문구는 5-B에서.
-                is EntrustResult.Limited, EntrustResult.Suspended, is EntrustResult.Error ->
-                    R.string.friends_poke_failed
-
-                EntrustResult.NotWatching -> R.string.friends_poke_not_watching
-
-                EntrustResult.Entrusted -> R.string.friends_poke_empty
-            },
-        ) to false
+        is PokeFeedback.Rejected -> entrustFailureText(result.reason) to false
     }
     Text(text = text, style = PauseTheme.type.bodySmall, color = if (ok) colors.success else colors.nudgeText)
 }

@@ -33,6 +33,7 @@ import com.capstone.pause.core.designsystem.theme.PauseSizes
 import com.capstone.pause.core.designsystem.theme.PauseTheme
 import com.capstone.pause.core.social.ChallengeRow
 import com.capstone.pause.core.social.FriendsOverview
+import com.capstone.pause.core.social.ReportReason
 import java.time.DayOfWeek
 import java.time.format.TextStyle
 import java.util.Locale
@@ -141,14 +142,33 @@ internal fun ManageCard(overview: FriendsOverview, onAction: (FriendsAction) -> 
         AlertDialog(
             onDismissRequest = { reportTarget = null },
             title = { Text(stringResource(R.string.friends_report_title, name)) },
-            text = { Text(stringResource(R.string.friends_report_body)) },
-            confirmButton = {
-                TextButton(onClick = {
-                    onAction(FriendsAction.Report(target))
-                    reportTarget = null
-                }) { Text(stringResource(R.string.friends_report_confirm)) }
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xxs)) {
+                    Text(
+                        stringResource(
+                            if (overview.isDemo) R.string.friends_report_body else R.string.friends_report_body_v2,
+                        ),
+                    )
+                    // 사유를 고르면 바로 신고한다. 상대에게는 알리지 않는다.
+                    for ((label, reason) in listOf(
+                        R.string.friends_report_reason_poke to ReportReason.POKE,
+                        R.string.friends_report_reason_nickname to ReportReason.NICKNAME,
+                        R.string.friends_report_reason_harassment to ReportReason.HARASSMENT,
+                        R.string.friends_report_reason_other to ReportReason.OTHER,
+                    )) {
+                        TextButton(
+                            onClick = {
+                                onAction(FriendsAction.Report(target, reason))
+                                reportTarget = null
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = PauseTheme.spacing.minTouch),
+                        ) { Text(stringResource(label), color = colors.ink) }
+                    }
+                }
             },
-            dismissButton = {
+            confirmButton = {
                 TextButton(onClick = { reportTarget = null }) { Text(stringResource(R.string.friends_cancel)) }
             },
         )
