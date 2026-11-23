@@ -32,6 +32,8 @@ data class PrivacyUiState(
     val erasing: Boolean = false,
     /** 지우지 못한 단계 이름(비어 있으면 실패 없음). */
     val eraseFailed: List<String> = emptyList(),
+    /** 친구 서버의 내 기록을 아직 지우는 중(오프라인 등). 성공할 때까지 계속 시도한다. */
+    val deletingRemote: Boolean = false,
 )
 
 /** 추적 앱·개인정보 동작. */
@@ -71,8 +73,12 @@ class PrivacySettingsViewModel @Inject constructor(
     private val local = MutableStateFlow(PrivacyUiState())
 
     /** 화면 상태. */
-    val uiState: StateFlow<PrivacyUiState> = combine(trackedAppRepository.trackedApps, local) { apps, l ->
-        l.copy(trackedApps = apps)
+    val uiState: StateFlow<PrivacyUiState> = combine(
+        trackedAppRepository.trackedApps,
+        local,
+        sharingRepository.deletingRemote,
+    ) { apps, l, deleting ->
+        l.copy(trackedApps = apps, deletingRemote = deleting)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), PrivacyUiState())
 
     /** 동작 처리. */

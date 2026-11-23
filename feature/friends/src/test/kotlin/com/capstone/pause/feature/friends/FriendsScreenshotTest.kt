@@ -28,7 +28,13 @@ class FriendsScreenshotTest {
     fun friendsSharingConsent() = shoot("friends_sharing_consent", heightDp = 1200) { FriendsSharingConsentPreview() }
 
     @Test
-    fun friendsServer() = shoot("friends_server", heightDp = 2200) { FriendsServerPreview() }
+    fun friendsServer() = shoot("friends_server", heightDp = 2800) { FriendsServerPreview() }
+
+    @Test
+    fun friendsOffline() = shoot("friends_offline", heightDp = 1800) { FriendsOfflinePreview() }
+
+    @Test
+    fun friendsLinkConfirm() = shoot("friends_link_confirm", heightDp = 900) { FriendsLinkConfirmPreview() }
 
     @Test
     fun friendsPokeDialog() = shoot("friends_poke_dialog", heightDp = 900) { FriendsPokeDialogPreview() }

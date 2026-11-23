@@ -184,4 +184,5 @@
   <string name="settings_monitoring_off_confirm_body">지금 끄면 오늘 기록이 여기서 멈춰. 그래도 끌래?\n꺼 둔 시간은 리포트의 기록된 비율에서 빠지고, 오늘 알림 단계는 다시 켜도 그대로 이어져.</string>
   <string name="settings_monitoring_off_confirm_yes">그래도 끌래</string>
   <string name="settings_monitoring_off_confirm_no">계속 켜 둘게</string>
+  <string name="settings_deleting_remote">친구 서버 기록 지우는 중이야. 인터넷이 연결되면 끝까지 지울게.</string>
 </resources>
