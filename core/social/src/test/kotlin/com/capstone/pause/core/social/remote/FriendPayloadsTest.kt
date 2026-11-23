@@ -146,6 +146,15 @@ class FriendPayloadsTest {
     }
 
     @Test
+    fun dailyUploadTimeIsSpreadAcrossTheDay() {
+        assertEquals(0L, UploadJitter.initialDelayMinutes(0.0))
+        assertEquals(720L, UploadJitter.initialDelayMinutes(0.5))
+        // 하루를 넘지 않는다(다음 날 업로드를 건너뛰지 않게).
+        assertEquals(1439L, UploadJitter.initialDelayMinutes(1.0))
+        assertEquals(1439L, UploadJitter.initialDelayMinutes(7.0))
+    }
+
+    @Test
     fun retriesBackOffWithJitterAndOnlyForConnectionOrServerErrors() {
         // 0.5초에서 시작해 두 배씩, 0.5~1.5배로 흩어진다.
         assertEquals(250L, RetryBackoff.delayMs(0, 0.0))
