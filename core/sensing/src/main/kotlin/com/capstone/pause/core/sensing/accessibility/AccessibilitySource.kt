@@ -43,6 +43,9 @@ class AccessibilitySource @Inject constructor(
     @Volatile
     private var shortformPackage: String? = null
 
+    /** 앱마다 마지막으로 읽은 판단(창을 못 읽은 순간에 이어 쓴다). */
+    private val lastJudged = java.util.concurrent.ConcurrentHashMap<String, Boolean>()
+
     /** 판별 규칙. 읽지 못하면 비어 있고, 그러면 모든 앱을 앱 단위로 센다. */
     val rules: SurfaceRules by lazy {
         runCatching { context.assets.open(RULES_ASSET).bufferedReader().use { SurfaceRules.parse(it.readText()) } }
@@ -79,11 +82,16 @@ class AccessibilitySource @Inject constructor(
     internal fun onDisconnected() {
         connected.value = false
         shortformPackage = null
+        lastJudged.clear()
     }
 
-    /** 창 판단 하나. [shortform]이 null이면(창을 못 읽음) 앱 단위로 센다. */
+    /**
+     * 창 판단 하나. [shortform]이 null이면(창을 못 읽음) 그 앱의 마지막 판단을 이어 쓰고,
+     * 아직 판단한 적이 없으면 세지 않는다(앱을 켠 것만으로 숏폼으로 치지 않는다).
+     */
     internal fun onSurface(packageName: String, shortform: Boolean?) {
-        val counted = shortform != false
+        val counted = PreciseMerge.resolve(shortform, lastJudged[packageName])
+        if (shortform != null) lastJudged[packageName] = shortform
         shortformPackage = if (counted) packageName else null
         val pkg = if (counted) packageName else PreciseMerge.otherScreen(packageName)
         flow.tryEmit(ForegroundEvent.AppForeground(pkg, clock.now()))
@@ -110,6 +118,9 @@ object PreciseMerge {
 
     /** 같은 앱의 숏폼이 아닌 화면을 나타내는 가짜 패키지. 추적 앱 목록에 없으니 세션이 아니다. */
     fun otherScreen(packageName: String): String = packageName + OTHER_SUFFIX
+
+    /** 이번 판단([judged], null = 창을 못 읽음)과 그 앱의 마지막 판단([previous])으로 숏폼 화면인지 정한다. 모르면 아니다. */
+    fun resolve(judged: Boolean?, previous: Boolean?): Boolean = judged ?: previous ?: false
 
     /** 사용 기록 이벤트 중 그대로 쓸 것: 규칙이 있는 앱의 앱 단위 '앞에 옴'만 뺀다. */
     fun keepUsageEvent(event: ForegroundEvent, covered: Set<String>): Boolean =
