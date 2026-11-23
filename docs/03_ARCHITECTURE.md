@@ -202,6 +202,7 @@ sequenceDiagram
 | Firebase | firebase-bom | 35.1.0 | `firebase-ai` 18.1.0, App Check 20.0.0 |
 | Firebase | google-services 플러그인 | 4.5.0 | `google-services.json`이 있을 때만 적용 |
 | AI | ML Kit `genai-prompt` (선택) | 1.0.0-beta5 | 베타, 앱이 화면에 있을 때만 |
+| QR | zxing `core` | 3.5.4 | 초대 QR 만들기만(`feature:friends`, ADR-0012). 순수 자바 |
 | 테스트 | junit / turbine / robolectric | 4.13.2 / 1.2.1 / 4.17 | |
 | 테스트 | androidx.test ext-junit / espresso / core·runner·rules | 1.3.0 / 3.7.0 / 1.7.0 | |
 | 품질 | Spotless / ktlint | 8.11.0 / 1.8.0 | `ktlint("1.8.0")` |

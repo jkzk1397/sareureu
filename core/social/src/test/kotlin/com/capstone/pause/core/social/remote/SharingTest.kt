@@ -147,6 +147,42 @@ class SharingTest {
     }
 
     @Test
+    fun standingCarriesGoalStreakAndCanBeUploadedAlone() = runTest {
+        val f = Fixture(responseCode = 204)
+        f.repo.grant()
+        f.transport.calls.clear()
+        // 하루 목표 60분(PROFILE): 그제 20분·어제 30분 → 연속 2일.
+        f.sessions.value = listOf(session(today.minusDays(2), 20), session(today.minusDays(1), 30))
+        assertTrue(f.repo.uploadStanding())
+        val (call, body) = f.transport.calls.single()
+        assertEquals("PUT /api/v1/standing", call)
+        assertEquals(
+            setOf("reductionRate", "coverage", "validDays", "streakDays", "measuredAtMs"),
+            body?.keys,
+        )
+        assertEquals("2", body?.getValue("streakDays")?.jsonPrimitive?.content)
+    }
+
+    @Test
+    fun olderConsentVersionMustConsentAgain() = runTest {
+        val f = Fixture(responseCode = 204)
+        f.consents.value = mapOf(
+            ConsentItem.FRIENDS to ConsentRecord(ConsentItem.FRIENDS, 1, true, Instant.EPOCH),
+        )
+        assertEquals(SharingState.NOT_CONSENTED, f.repo.state.first())
+        assertFalse(f.repo.uploadStanding())
+        assertTrue(f.repo.grant())
+        assertEquals("2", f.transport.calls.first().second?.getValue("consentVersion")?.jsonPrimitive?.content)
+        assertEquals(SharingState.CONSENTED, f.repo.state.first())
+    }
+
+    @Test
+    fun presenceBodyIsOnlyWatchingFlag() {
+        assertEquals(setOf("watching"), SharingPayloads.presence(true).keys)
+        assertEquals("false", SharingPayloads.presence(false).getValue("watching").jsonPrimitive.content)
+    }
+
+    @Test
     fun noServerMeansUnavailableAndNoCalls() = runTest {
         val f = Fixture(responseCode = 204, server = SocialServer(""))
         assertEquals(SharingState.UNAVAILABLE, f.repo.state.first())

@@ -7,8 +7,15 @@ const now = Date.parse('2026-11-16T12:00:00.000Z');
 test('임시: 잔소리는 친구에게만, 받으면 서버에서 지우고, 차단·철회·만료면 사라진다', async (t) => {
     const { call, sql, worker, env } = await testServer(t, now);
     for (const [user, nickname] of [['alice', '민지'], ['bob', '준호'], ['carol', '하은']]) {
-        assert.equal((await call('PUT', '/api/v1/sharing', user, { consentVersion: 1, nickname })).status, 204);
+        assert.equal((await call('PUT', '/api/v1/sharing', user, { consentVersion: 2, nickname })).status, 204);
     }
+    // 6단계: 지금 시청 중인 친구에게만 보낼 수 있다(presence.test.mjs). 여기서는 모두 보는 중으로 둔다.
+    const watchAll = async () => {
+        for (const user of ['alice', 'bob', 'carol']) {
+            assert.equal((await call('PUT', '/api/v1/presence', user, { watching: true })).status, 200);
+        }
+    };
+    await watchAll();
     const id = (user) => sql.prepare('SELECT public_id FROM sharing_consent WHERE user_id = ?').get(user).public_id;
     const invite = await call('POST', '/api/v1/invites', 'alice');
     assert.equal((await call('POST', `/api/v1/invites/${invite.body.code}/accept`, 'bob')).status, 201);
@@ -45,10 +52,12 @@ test('임시: 잔소리는 친구에게만, 받으면 서버에서 지우고, �
     const again = await call('POST', '/api/v1/invites', 'bob');
     assert.equal((await call('POST', `/api/v1/invites/${again.body.code}/accept`, 'alice')).status, 201);
     Date.now.mock.mockImplementation(() => now + 86_400_001);
+    await watchAll();
     assert.equal((await poke('alice', 'bob', '첫 번째')).status, 201);
     assert.equal((await poke('bob', 'alice', '두 번째')).status, 201);
     await worker.scheduled({ scheduledTime: now + 9 * 86_400_000 }, env);
     assert.equal(sql.prepare('SELECT COUNT(*) AS n FROM poke').get().n, 0);
+    await watchAll();
     assert.equal((await poke('alice', 'bob', '세 번째')).status, 201);
     assert.equal((await call('DELETE', '/api/v1/sharing', 'alice')).status, 204);
     assert.equal(sql.prepare('SELECT COUNT(*) AS n FROM poke').get().n, 0);

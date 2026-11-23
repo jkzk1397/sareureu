@@ -34,7 +34,8 @@ test('임시: 초대 코드로 서로 연결하고 친구 숫자는 닉네임·�
 
     const list = await call('GET', '/api/v1/friends', 'bob');
     assert.equal(list.status, 200);
-    assert.deepEqual(Object.keys(list.body.friends[0]).sort(), ['coverage', 'id', 'nickname', 'reductionRate', 'validDays']);
+    assert.deepEqual(Object.keys(list.body.friends[0]).sort(),
+        ['coverage', 'id', 'nickname', 'reductionRate', 'streakDays', 'validDays', 'watching']);
     assert.equal(list.body.friends[0].nickname, '민지');
     assert.equal(list.body.friends[0].reductionRate, 0.3);
     assert.equal((await call('GET', '/api/v1/friends', 'alice')).body.friends[0].nickname, '준호');

@@ -140,9 +140,10 @@
 | 관찰(코드가 센 것) / 추측(AI) | `Observation` / `Hypothesis` |
 | 코치 채팅 | `CoachChat` |
 | 기준선 / 감소율 | `Baseline` / `reductionRate` |
-| 친구 랭킹 / 주간 리그 | `FriendRanking` / `WeeklyLeague` |
+| 친구 랭킹(연속 일수) / 주간 리그 | `StreakRanking` / `WeeklyLeague` |
 | 또래 비교 | `PeerBaseline` (서버 그룹 집계 `PeerStats`) |
-| 랭킹 공유 동의 / 초대 코드 | `SharingRepository`·`SharingState` / `InviteCode` |
+| 랭킹 공유 동의 / 초대 코드·초대 QR | `SharingRepository`·`SharingState` / `InviteCode`·`InviteLinks` |
+| 목표 지킴 연속 일수 / 지금 시청 중 | `GoalStreak`·`streakDays` / `FriendPresence`·`watching` |
 | 기록된 비율(감시 범위) | `coverage` |
 | 시연 모드 | `DemoMode` |
 | AI 감사 로그 | `AiCallLog` |

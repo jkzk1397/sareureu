@@ -1,6 +1,7 @@
 // 임시(5-3): 친구 연결·끊기·차단·친구 목록(랭킹 숫자). 팀원 서버가 바뀌면 달라질 수 있다(server/README.md).
 // 친구에게는 닉네임·감소율·기록된 비율·유효한 날만 내려 준다(ADR-0005). 순위 매기기·꼴찌 숨기기는 앱이 한다.
 import { error, json, noContent } from './http.mjs';
+import { watchingWindowMs } from './presence.mjs';
 
 const dayMs = 86_400_000;
 const inviteTtlMs = dayMs;
@@ -8,7 +9,7 @@ const maxFriends = 50;
 // 헷갈리는 글자(0·O·1·I·L)를 뺀 32글자.
 const codeAlphabet = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const codeLength = 6;
-const codePattern = new RegExp(`^[${codeAlphabet}]{${codeLength}}$`);
+export const codePattern = new RegExp(`^[${codeAlphabet}]{${codeLength}}$`);
 const publicIdPattern = /^[0-9a-f-]{36}$/;
 
 function newCode() {
@@ -83,17 +84,22 @@ async function acceptInvite({ db, userId, now, params }) {
     return json({ friend: { id: friend.public_id, nickname: friend.nickname } }, 201);
 }
 
-async function listFriends({ db, userId }) {
+async function listFriends({ db, userId, now }) {
     if (!await consented(db, userId)) return error('sharing_consent_required', 403);
-    const { results: friends } = await db.prepare(`
+    // 6단계(ADR-0012): 목표 이하로 본 연속 일수와 '지금 시청 중'(최근 5초 안 신호)을 더한다.
+    const { results: rows } = await db.prepare(`
         SELECT c.public_id AS id, c.nickname AS nickname, s.reduction_rate AS reductionRate,
-               s.coverage AS coverage, COALESCE(s.valid_days, 0) AS validDays
+               s.coverage AS coverage, COALESCE(s.valid_days, 0) AS validDays,
+               COALESCE(s.streak_days, 0) AS streakDays,
+               CASE WHEN p.last_seen_ms > ? THEN 1 ELSE 0 END AS watching
         FROM friendship f
         JOIN sharing_consent c ON c.user_id = CASE WHEN f.user_a = ? THEN f.user_b ELSE f.user_a END
         LEFT JOIN standing s ON s.user_id = c.user_id
+        LEFT JOIN presence p ON p.user_id = c.user_id
         WHERE f.user_a = ? OR f.user_b = ?
         ORDER BY c.nickname
-    `).bind(userId, userId, userId).all();
+    `).bind(now - watchingWindowMs, userId, userId, userId).all();
+    const friends = rows.map((f) => ({ ...f, watching: f.watching === 1 }));
     const { results: blocked } = await db.prepare(`
         SELECT c.public_id AS id, c.nickname AS nickname FROM block b
         JOIN sharing_consent c ON c.user_id = b.blocked WHERE b.blocker = ? ORDER BY c.nickname

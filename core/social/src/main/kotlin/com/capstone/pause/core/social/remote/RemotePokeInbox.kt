@@ -31,6 +31,12 @@ import kotlinx.serialization.json.longOrNull
 
 /** 잔소리 서버 몸통(순수). */
 object PokePayloads {
+    /** 받는 친구가 지금 시청 중이 아니라서 거절됨(409 `not_watching`). */
+    fun notWatching(response: ApiResponse): Boolean = response.code == CONFLICT &&
+        (response.body as? JsonObject)?.get("error")?.jsonPrimitive?.contentOrNull == "not_watching"
+
+    private const val CONFLICT = 409
+
     /** `POST /api/v1/pokes`. 받는 사람은 공개 ID. */
     fun send(friendId: String, text: String): JsonObject =
         JsonObject(mapOf("to" to JsonPrimitive(friendId), "text" to JsonPrimitive(text.trim())))
@@ -57,8 +63,9 @@ object PokePayloads {
 
 /**
  * 잔소리 서버 구현(5-4). 공유에 동의했고 시연 모드가 아닐 때만 서버를 쓰고, 아니면 [LocalPokeInbox](가상 친구)에 맡긴다.
- * 받기는 앱이 화면에 있을 때(15분에 한 번까지)와 WorkManager(12시간마다)만. 푸시(FCM)는 쓰지 않는다.
- * 금지 표현 검사는 화면(feature:friends)이 보내기 전에 한다.
+ * 6단계(ADR-0012): 시청 중인 친구에게만 보내고, 친구 앱은 '시청 중' 신호 응답([LiveFriendPresence])으로 몇 초 안에 받아 알림을 띄운다.
+ * [fetch]는 그 사이 놓친 것(친구가 바로 멈춘 경우)을 앱이 화면에 있을 때(15분에 한 번까지)와 WorkManager(12시간마다) 받는다.
+ * 푸시(FCM)는 쓰지 않는다. 금지 표현 검사는 화면(feature:friends)이 보내기 전에 한다.
  */
 @Singleton
 internal class RemotePokeInbox @Inject constructor(
@@ -80,6 +87,7 @@ internal class RemotePokeInbox @Inject constructor(
         PokeRules.check(text)?.let { return it }
         if (!remote()) return local.entrust(friendId, text)
         val response = transport.call("POST", "/api/v1/pokes", PokePayloads.send(friendId, text))
+        if (PokePayloads.notWatching(response)) return EntrustResult.NotWatching
         if (!response.ok) return EntrustResult.Failed
         val id = (response.body as? JsonObject)?.get("id")?.jsonPrimitive?.contentOrNull ?: return EntrustResult.Failed
         localStore.addEntrusted(EntrustedPoke(id, friendId, text.trim(), clock.now()))

@@ -27,22 +27,33 @@ import com.capstone.pause.core.designsystem.theme.PauseTheme
 data class SharingUiState(val busy: Boolean = false, val failed: Boolean = false, val stopFailed: Boolean = false)
 
 /**
- * 랭킹 공유 동의 화면(5-2). 무엇이 나가는지·안 나가는지·친구에게 무엇이 보이는지를 먼저 보여 주고,
- * 버튼을 눌렀을 때만 동의한다(뒤로 가기는 동의가 아님).
+ * 랭킹 공유 동의 화면(5-2, 동의 버전 2 = ADR-0012). 무엇이 나가는지·안 나가는지·친구에게 무엇이 보이는지를 먼저 보여 주고,
+ * 버튼을 눌렀을 때만 동의한다(뒤로 가기는 동의가 아님). QR로 받은 초대가 있으면 동의하자마자 연결된다고 알린다.
  */
 @Composable
-internal fun SharingConsentCard(sharing: SharingUiState, onAction: (FriendsAction) -> Unit) {
+internal fun SharingConsentCard(sharing: SharingUiState, pendingInvite: String?, onAction: (FriendsAction) -> Unit) {
     PauseCard(title = stringResource(R.string.friends_sharing_title)) {
+        if (pendingInvite != null) {
+            Text(
+                text = stringResource(R.string.friends_invite_pending),
+                style = PauseTheme.type.bodySmall,
+                color = PauseTheme.colors.onAccentContainer,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(PauseTheme.colors.accentContainer, PauseTheme.shapes.small)
+                    .padding(PauseTheme.spacing.sm),
+            )
+        }
         Text(
             text = stringResource(R.string.friends_sharing_intro),
             style = PauseTheme.type.bodySmall,
             color = PauseTheme.colors.ink2,
         )
-        ConsentBlock(R.string.friends_sharing_send_title, R.string.friends_sharing_send_body)
-        ConsentBlock(R.string.friends_sharing_visible_title, R.string.friends_sharing_visible_body)
+        ConsentBlock(R.string.friends_sharing_send_title, R.string.friends_sharing_send_body_v2)
+        ConsentBlock(R.string.friends_sharing_visible_title, R.string.friends_sharing_visible_body_v2)
         ConsentBlock(R.string.friends_sharing_never_title, R.string.friends_sharing_never_body)
         Text(
-            text = stringResource(R.string.friends_sharing_when),
+            text = stringResource(R.string.friends_sharing_when_v2),
             style = PauseTheme.type.bodySmall,
             color = PauseTheme.colors.ink2,
         )

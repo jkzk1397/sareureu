@@ -2,6 +2,7 @@ package com.capstone.pause.feature.friends
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -32,16 +33,35 @@ data class InviteUiState(
     val busy: Boolean = false,
     val inviteFailed: Boolean = false,
     val result: ConnectResult? = null,
+    /** 초대 QR(친구 서버의 `/invite/{코드}` 주소, ADR-0012). */
+    val qr: QrCode? = null,
+    /** QR로 앱이 열려 받은, 아직 연결하지 않은 코드(공유 동의를 기다리는 중). */
+    val pending: String? = null,
 )
 
 /**
- * 친구 초대(5-3): 내 코드 만들기 → 친구에게 직접 알려 주기, 친구 코드 입력 → 연결.
- * 코드를 만든 사람과 입력한 사람이 각각 동의한 것이 된다. 이름·연락처는 묻지 않는다.
+ * 친구 초대(5-3, ADR-0012): 내 코드 만들기 → QR을 친구가 찍거나 코드를 직접 알려 주기, 친구 코드 입력 → 연결.
+ * QR을 찍으면 앱이 열려 바로 연결되고, 앱이 없으면 설치 파일 화면으로 간다.
+ * 코드를 만든 사람과 입력한 사람(또는 찍은 사람)이 각각 동의한 것이 된다. 이름·연락처는 묻지 않는다.
  */
 @Composable
 internal fun InviteCard(invite: InviteUiState, onAction: (FriendsAction) -> Unit) {
     PauseCard(title = stringResource(R.string.friends_invite_card_title)) {
         val code = invite.code
+        invite.qr?.let { qr ->
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
+                QrImage(
+                    code = qr,
+                    description = stringResource(R.string.friends_invite_qr_a11y),
+                    modifier = Modifier.fillMaxWidth(QR_WIDTH_FRACTION),
+                )
+            }
+            Text(
+                text = stringResource(R.string.friends_invite_qr_hint),
+                style = PauseTheme.type.bodySmall,
+                color = PauseTheme.colors.ink2,
+            )
+        }
         if (code != null) {
             val label = code.chunked(CODE_GROUP).joinToString(" ")
             val a11y = stringResource(R.string.friends_invite_code_a11y, code.toList().joinToString(" "))
@@ -119,6 +139,13 @@ internal fun InviteCard(invite: InviteUiState, onAction: (FriendsAction) -> Unit
                 Text(stringResource(R.string.friends_invite_connect), color = PauseTheme.colors.ink)
             }
         }
+        if (invite.busy && invite.code == null && invite.input.isBlank()) {
+            Text(
+                text = stringResource(R.string.friends_invite_connecting),
+                style = PauseTheme.type.bodySmall,
+                color = PauseTheme.colors.ink2,
+            )
+        }
         invite.result?.let { result ->
             Text(
                 text = when (result) {
@@ -149,3 +176,4 @@ internal fun InviteCard(invite: InviteUiState, onAction: (FriendsAction) -> Unit
 }
 
 private const val CODE_GROUP = 3
+private const val QR_WIDTH_FRACTION = 0.7f

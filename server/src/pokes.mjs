@@ -1,6 +1,9 @@
 // 임시(5-4): 잔소리 맡기기·받기. 팀원 서버가 바뀌면 달라질 수 있다(server/README.md).
 // 금지 표현 검사는 보내기 전에 앱이 한다(BannedWords). 서버는 길이·친구 관계·차단·하루 한도만 본다.
+// 6단계(ADR-0012): 지금 시청 중인 친구에게만 보낼 수 있다. 받는 쪽 앱이 '시청 중' 신호(presence.mjs)의 응답으로
+// 몇 초 안에 받아 알림으로 띄운다.
 import { error, json, readBody } from './http.mjs';
+import { isWatching } from './presence.mjs';
 
 const dayMs = 86_400_000;
 const pokeTtlMs = 7 * dayMs;
@@ -24,6 +27,7 @@ async function sendPoke({ request, db, userId, now }) {
     const friends = await db.prepare('SELECT 1 FROM friendship WHERE user_a = ? AND user_b = ?').bind(a, b).first();
     // 차단하면 연결이 끊기므로 친구가 아니면 보낼 수 없다.
     if (!friends) return error('not_friends', 403);
+    if (!await isWatching(db, to.user_id, now)) return error('not_watching', 409);
     const sent = await db.prepare('SELECT COUNT(*) AS n FROM poke_sent WHERE from_user = ? AND sent_at_ms > ?')
         .bind(userId, now - dayMs).first();
     if (sent.n >= maxPerDay) return error('daily_limit', 429);
@@ -38,7 +42,8 @@ async function sendPoke({ request, db, userId, now }) {
     return json({ id }, 201);
 }
 
-async function receivePokes({ db, userId, now }) {
+/** 나에게 온 잔소리를 꺼내고 서버에서 지운다(GET /pokes와 시청 중 신호 응답이 함께 쓴다). */
+export async function takePokes(db, userId, now) {
     const { results } = await db.prepare(`
         SELECT p.id AS id, c.public_id AS fromId, c.nickname AS fromNickname, p.text AS text,
                p.created_at_ms AS createdAtMs, p.expires_at_ms AS expiresAtMs
@@ -53,7 +58,11 @@ async function receivePokes({ db, userId, now }) {
             expires_at_ms <= ? OR id IN (SELECT value FROM json_each(?)) OR
             from_user IN (SELECT blocked FROM block WHERE blocker = ?))
     `).bind(userId, now, JSON.stringify(results.map((p) => p.id)), userId).run();
-    return json({ pokes: results });
+    return results;
+}
+
+async function receivePokes({ db, userId, now }) {
+    return json({ pokes: await takePokes(db, userId, now) });
 }
 
 /** 잔소리 경로표(index.mjs가 붙인다). */
