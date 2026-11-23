@@ -119,6 +119,33 @@ class BuddyFaceGeometryTest {
     }
 
     @Test
+    fun friendCharactersAreEightAndTheirFacesStayInsideTheBody() {
+        assertEquals(FriendCharacter.COUNT, FriendCharacter.entries.size)
+        // 번호는 0~7로 접어 쓴다(음수·큰 수도).
+        assertEquals(FriendCharacter.BROWN, FriendCharacter.of(0))
+        assertEquals(FriendCharacter.STAR, FriendCharacter.of(7))
+        assertEquals(FriendCharacter.BROWN, FriendCharacter.of(8))
+        assertEquals(FriendCharacter.STAR, FriendCharacter.of(-1))
+        // 친구 목록에서 쓰는 두 표정이 목록 크기(40dp)에서도 그림 안(앞면 위 모서리 아래, 바닥 위)에 들어온다.
+        listOf(40, 64).forEach { dp ->
+            val size = sizePx(dp)
+            val u = size / 100f
+            FriendCharacter.entries.forEach { character ->
+                listOf(BuddyExpression.NEUTRAL, BuddyExpression.WATCHING).forEach { expr ->
+                    BuddyFaceGeometry.shapes(expr, size, density, character.anchor).forEach { shape ->
+                        points(shape).forEach { (x, y) ->
+                            assertTrue(
+                                x in 10 * u..90 * u && y >= character.anchor.frontTop * u && y <= 90 * u,
+                                "$character $expr@$dp: (${x / u}, ${y / u})",
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
     fun smallFaceIsReadable() {
         // 28dp에서도 눈 높이 4dp(반높이 2dp) 이상.
         val size = sizePx(28)

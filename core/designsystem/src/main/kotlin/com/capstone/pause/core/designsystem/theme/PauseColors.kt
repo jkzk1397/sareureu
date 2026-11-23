@@ -45,6 +45,9 @@ data class PauseColors(
         /** 르르 얼굴 잉크(라이트·다크 동일, 06 문서 8절). */
         val BuddyInk = Color(0xFF141416)
 
+        /** 몸이 어두운 친구 캐릭터(초콜릿)의 얼굴 색. 라이트·다크 같은 값. */
+        val FriendInkLight = Color(0xFFFFF3E0)
+
         /** 녹은 웅덩이 색(06 문서 8절, 95%). */
         val BuddyPuddle = Color(0xF2ECF0E8)
 
