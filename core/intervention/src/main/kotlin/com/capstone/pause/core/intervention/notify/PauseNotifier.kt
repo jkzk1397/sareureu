@@ -153,6 +153,47 @@ class PauseNotifier @Inject constructor(
             .build()
     }
 
+    /**
+     * 버블을 숨긴 동안 상단바 타이머. [endAtMs]가 있으면 다음 카드까지 거꾸로 세고(끝나면 카드가 뜬다),
+     * 없으면('오늘은 그만') 세션 시작부터 센다. 지원하는 기기(Android 16+)에서는 상단바 칩으로 보이게 요청한다.
+     * 소리·진동 없음. 알림 권한이 없으면 아무것도 하지 않는다(카드는 그대로 뜬다).
+     */
+    fun postBubbleTimer(endAtMs: Long?, sessionStartMs: Long, appLabel: String) {
+        if (!canNotify()) return
+        ensureChannels()
+        val app = appLabel.ifBlank { context.getString(R.string.intervention_app_other) }
+        val builder = NotificationCompat.Builder(context, CHANNEL_STATUS)
+            .setSmallIcon(DesignR.drawable.designsystem_ic_buddy_silhouette)
+            .setContentTitle(
+                if (endAtMs != null) {
+                    context.getString(R.string.intervention_timer_title, app)
+                } else {
+                    context.getString(R.string.intervention_timer_title_snoozed, app)
+                },
+            )
+            .setContentText(
+                context.getString(
+                    if (endAtMs != null) R.string.intervention_timer_body else R.string.intervention_timer_body_snoozed,
+                    buddyName,
+                ),
+            )
+            .setOngoing(true)
+            .setSilent(true)
+            .setOnlyAlertOnce(true)
+            .setShowWhen(true)
+            .setUsesChronometer(true)
+            .setWhen(endAtMs ?: sessionStartMs)
+            .setChronometerCountDown(endAtMs != null)
+            .setCategory(NotificationCompat.CATEGORY_STOPWATCH)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setRequestPromotedOngoing(true)
+            .setContentIntent(openTab(TAB_TODAY, REQUEST_TIMER))
+        notifySafely(TIMER_ID, builder.build())
+    }
+
+    /** 상단바 타이머 지우기(세션이 끝났거나 숏폼을 떠났을 때). */
+    fun clearBubbleTimer() = manager.cancel(TIMER_ID)
+
     /** 메시지 알림 지우기(세션이 끝났을 때). */
     fun clearBuddyMessage() = manager.cancel(MESSAGE_ID)
 
@@ -221,12 +262,16 @@ class PauseNotifier @Inject constructor(
         /** 메시지 알림 ID(세션마다 갱신). */
         const val MESSAGE_ID = 1002
 
+        /** 버블을 숨겼을 때 상단바 타이머 알림 ID. */
+        const val TIMER_ID = 1003
+
         private const val GROUP_BUDDY = "buddy"
         private const val GROUP_FRIENDS = "friends"
         private const val LARGE_ICON_PX = 144
         private const val REQUEST_MESSAGE = 11
         private const val REQUEST_STATUS = 12
         private const val REQUEST_FRIEND_POKE = 13
+        private const val REQUEST_TIMER = 14
         private const val FRIEND_POKE_ID_BASE = 3000
         private const val FRIEND_POKE_ID_SPAN = 1000
     }

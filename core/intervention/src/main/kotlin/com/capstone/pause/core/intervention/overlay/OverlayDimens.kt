@@ -27,4 +27,19 @@ internal object OverlayDimens {
 
     /** 오버레이 카드 바깥 여백. */
     val cardOuterPadding = 12.dp
+
+    /** 버블 숨기기 과녁(아래 가운데 X). */
+    val dismissTarget = 64.dp
+
+    /** 과녁 위에 버블이 들어오면 커지는 크기. */
+    val dismissTargetActive = 80.dp
+
+    /** 과녁과 화면 아래 사이. */
+    val dismissTargetBottom = 72.dp
+
+    /** 버블 중심이 과녁 중심에서 이 거리 안이면 숨긴다. */
+    val dismissRadius = 72.dp
+
+    /** 버블이 화면 위·아래 끝에 붙지 않게 두는 여백. */
+    val bubbleEdgeMargin = 48.dp
 }

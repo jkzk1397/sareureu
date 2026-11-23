@@ -23,6 +23,10 @@ sealed interface NudgeCommand {
         val appLabel: String = "",
         /** '오늘은 그만 알려 줘' 상태라 카드가 오지 않음. */
         val snoozed: Boolean = false,
+        /** 세션 시작(실제 시각, 밀리초). 버블을 숨긴 세션을 구분하고 상단바 타이머가 센다. */
+        val sessionStartMs: Long = 0,
+        /** 다음 카드까지 실제로 남은 밀리초(시연 배속을 풀어 둔 값). 오늘은 그만이면 null. */
+        val realMsToNext: Long? = null,
     ) : NudgeCommand {
         /** 이번 구간 진행(0~1). */
         val progress: Float get() = (windowElapsedSec.toFloat() / windowSec.coerceAtLeast(1)).coerceIn(0f, 1f)
@@ -104,6 +108,9 @@ sealed interface NudgeUserAction {
 
     /** 버블 탭(미니 패널 열기). */
     data object BubbleTapped : NudgeUserAction
+
+    /** 버블을 아래 가운데 X로 끌어 숨김(이 세션 동안 상단바 타이머로 바뀐다). 엔진의 타이머·카드는 그대로. */
+    data object BubbleDismissed : NudgeUserAction
 
     /** 카드가 오기 전에 버블 패널에서 '그만 볼래'(스스로 멈춤, 홈으로). */
     data object StopNow : NudgeUserAction

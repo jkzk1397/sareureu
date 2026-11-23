@@ -48,6 +48,38 @@ class NudgeEngineTest {
     }
 
     @Test
+    fun bubbleCarriesSessionAndRealTimeToNextCard() {
+        val bubble = engine().tick(at(10.0), live()).single() as NudgeCommand.ShowBubble
+        assertEquals(start.toEpochMilli(), bubble.sessionStartMs)
+        assertEquals(5 * 60_000L, bubble.realMsToNext)
+        // 시연 60배속: 엔진 시간 5분 = 실제 5초(상단바 타이머는 실제 시간으로 센다).
+        val demo = engine(speed = 60.0).tick(at(10.0 / 60), live()).single() as NudgeCommand.ShowBubble
+        assertEquals(5_000L, demo.realMsToNext)
+    }
+
+    @Test
+    fun hidingTheBubbleDoesNotChangeTheTimerOrCards() {
+        val e = engine()
+        e.tick(at(5.0), live())
+        assertTrue(e.onAction(at(5.1), NudgeUserAction.BubbleDismissed, live()).isEmpty())
+        assertEquals(1, e.tick(at(15.0), live()).card()?.level, "card still comes when the timer ends")
+        assertTrue(
+            e.onAction(at(15.1), NudgeUserAction.BubbleDismissed, live()).isEmpty(),
+            "ignored while a card is up",
+        )
+        assertEquals(1, e.tick(at(15.2), live()).let { e.onAction(at(15.3), NudgeUserAction.Extend(1), live()) }.size)
+    }
+
+    @Test
+    fun snoozedBubbleHasNoCountdown() {
+        val e = engine()
+        e.tick(at(15.0), live())
+        val after = e.onAction(at(15.1), NudgeUserAction.SnoozeToday(1), live()).single() as NudgeCommand.ShowBubble
+        assertTrue(after.snoozed)
+        assertEquals(null, after.realMsToNext)
+    }
+
+    @Test
     fun ladderGoesOneTwoThreeFourThenStaysAtFourWithThreeMinuteExtensions() {
         val e = engine()
         assertEquals(1, e.tick(at(15.0), live()).card()?.level)

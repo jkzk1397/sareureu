@@ -58,4 +58,11 @@
   <string name="intervention_type_label">%1$d분 더 보려면 그대로 따라 써 줘</string>
   <!-- 저장한 계획을 카드에 잇기 -->
   <string name="intervention_card_plan">네가 정한 계획: %1$s</string>
+  <!-- 버블 숨기기(아래 가운데 X로 끌기)와 상단바 타이머 -->
+  <string name="intervention_dismiss_target">여기로 끌어 놓으면 숨겨져. 대신 상단바에 타이머가 떠.</string>
+  <string name="intervention_panel_hide">숨기고 상단바 타이머로 보기</string>
+  <string name="intervention_timer_title">%1$s · 다음 알림까지</string>
+  <string name="intervention_timer_title_snoozed">%1$s · 보는 중</string>
+  <string name="intervention_timer_body">시간이 다 되면 %1$s가 말 걸게</string>
+  <string name="intervention_timer_body_snoozed">오늘은 %1$s가 알림 없이 시간만 셀게</string>
 </resources>

@@ -131,7 +131,7 @@ class NudgeEngine(private val zone: ZoneId, private val writer: NudgeWriter, pri
     /** 사용자 동작. 카드가 없을 때 온 동작(늦게 온 탭 등)은 무시한다. */
     fun onAction(now: Instant, action: NudgeUserAction, live: LiveInput?): List<NudgeCommand> {
         val s = current ?: return emptyList()
-        if (action is NudgeUserAction.BubbleTapped) return emptyList()
+        if (action is NudgeUserAction.BubbleTapped || action is NudgeUserAction.BubbleDismissed) return emptyList()
         if (action is NudgeUserAction.StopNow && s.card == null) return stopFromBubble(s, now, live)
         val card = s.card ?: return emptyList()
         val elapsed = elapsedSec(s.start, now)
@@ -169,7 +169,7 @@ class NudgeEngine(private val zone: ZoneId, private val writer: NudgeWriter, pri
                 listOf(bubble(s, elapsed, live, now))
             }
 
-            NudgeUserAction.BubbleTapped -> emptyList()
+            NudgeUserAction.BubbleTapped, NudgeUserAction.BubbleDismissed -> emptyList()
         }
     }
 
@@ -200,6 +200,8 @@ class NudgeEngine(private val zone: ZoneId, private val writer: NudgeWriter, pri
             expression = expression,
             appLabel = live?.appLabel.orEmpty(),
             snoozed = snoozed,
+            sessionStartMs = s.start.toEpochMilli(),
+            realMsToNext = if (snoozed) null else ((windowSec - windowElapsed) * MILLIS_PER_SEC / speed).toLong(),
         )
     }
 

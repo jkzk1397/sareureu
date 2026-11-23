@@ -6,6 +6,10 @@
   <!-- 메시지 알림·예약 알림(13+ 런타임 요청). 거절하면 오버레이 카드만 쓴다. -->
   <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+  <!-- 버블을 숨겼을 때 상단바 타이머를 Android 16+ 상단바 칩으로(일반 권한, 묻지 않음, ADR-0013).
+       사용자가 끄거나 지원하지 않는 기기면 보통 알림의 타이머로 보인다. -->
+  <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" />
+
   <!-- 플로팅 캐릭터·카드(특별 접근). 거절하면 알림으로 대체한다. -->
   <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
