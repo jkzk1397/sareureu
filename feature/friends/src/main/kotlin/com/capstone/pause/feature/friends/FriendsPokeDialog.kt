@@ -36,10 +36,13 @@ internal fun PokeDialog(friend: Standing, poke: PokeDraftState, onAction: (Frien
         title = { Text(stringResource(R.string.friends_poke_dialog_title, friend.nickname)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(spacing.xs)) {
+                val body = if (friend.watching) {
+                    R.string.friends_poke_dialog_body
+                } else {
+                    R.string.friends_poke_dialog_stopped
+                }
                 Text(
-                    text = stringResource(
-                        if (friend.watching) R.string.friends_poke_dialog_body else R.string.friends_poke_dialog_stopped,
-                    ),
+                    text = stringResource(body),
                     style = PauseTheme.type.bodySmall,
                     color = colors.ink2,
                 )
