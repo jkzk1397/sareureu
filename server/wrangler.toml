@@ -14,3 +14,11 @@ database_id = "726d6949-5349-479b-b097-58fd611cf9fb"
 
 [triggers]
 crons = ["0 20 * * *"]
+
+# IP 기준 요청 제한(ADR-0014). Workers Rate Limiting 바인딩: IP마다 60초에 20번(대략적, 지역마다 따로 센다).
+# 동의·연결 요청·잔소리 보내기·신고 경로에만 건다(src/index.mjs의 ipLimit). IP는 저장하지 않는다.
+# 이 설정 때문에 배포가 실패하면 이 묶음만 지우면 된다(코드는 바인딩이 없어도 동작한다).
+[[ratelimits]]
+name = "IP_LIMITER"
+namespace_id = "1001"
+simple = { limit = 20, period = 60 }
