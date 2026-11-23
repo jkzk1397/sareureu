@@ -46,6 +46,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 
 /** 개입을 어디서 돌리나: 실제 감지(포그라운드 서비스) / 시연(앱 안, 타이머 60배속). */
 enum class NudgeMode { REAL, DEMO }
@@ -224,7 +225,13 @@ class NudgeCoordinator @Inject constructor(
                     runCatching { stateStore.save(snapshot) }.onFailure { log.w(TAG, "state save failed", it) }
                 }
             }
-            delay(tickMs)
+            if (engine.idle && pipeline.liveSession.value == null && pending.isEmpty()) {
+                // 숏폼을 보고 있지 않으면 매초 깨어 있을 이유가 없다(6-C: 감지를 켜 둔 채 가만히 있을 때의 CPU).
+                // 세션이 시작될 때까지 기다리되, 날짜가 바뀌는 것 등을 놓치지 않게 가끔은 깬다.
+                withTimeoutOrNull(IDLE_WAKE_MS) { pipeline.liveSession.first { it != null } }
+            } else {
+                delay(tickMs)
+            }
         }
     }
 
@@ -320,6 +327,7 @@ class NudgeCoordinator @Inject constructor(
         private const val DEMO_PRAISE_MS = 3_000L
         private val PENDING_TTL: Duration = Duration.ofMinutes(10)
         private val SAVE_EVERY: Duration = Duration.ofSeconds(30)
+        private const val IDLE_WAKE_MS = 60_000L
     }
 }
 
