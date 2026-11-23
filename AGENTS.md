@@ -144,7 +144,7 @@
 | 또래 비교 | `PeerBaseline` (서버 그룹 집계 `PeerStats`) |
 | 랭킹 공유 동의 / 초대 코드·초대 QR | `SharingRepository`·`SharingState` / `InviteCode`·`InviteLinks` |
 | 목표 지킴 연속 일수 / 지금 시청 중 | `GoalStreak`·`streakDays` / `FriendPresence`·`watching` |
-| 기록된 비율(감시 범위) | `coverage` |
+| 기록된 비율(감시 범위) / 감지를 꺼 둔 구간 | `coverage` / `MonitoringGap` |
 | 시연 모드 | `DemoMode` |
 | AI 감사 로그 | `AiCallLog` |
 

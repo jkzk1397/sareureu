@@ -28,6 +28,18 @@ object Coverage {
         return (covered.toDouble() / total).coerceIn(0.0, 1.0)
     }
 
+    /**
+     * 감지를 끈 구간([off])만 아는 하루의 기록된 비율: [day] 중 [now]까지 지난 시간에서 끈 시간을 뺀 비율(0~1).
+     * 아직 시작하지 않은 날은 1.0(끈 적이 없으니 깎지 않는다).
+     */
+    fun ofDay(day: TimeSpan, off: List<TimeSpan>, now: Instant): Double {
+        val end = minOf(day.end, now)
+        val total = TimeSpan(day.start, end).seconds
+        if (total == 0L) return 1.0
+        val lost = merge(off).sumOf { TimeSpan(maxOf(it.start, day.start), minOf(it.end, end)).seconds }
+        return (1.0 - lost.toDouble() / total).coerceIn(0.0, 1.0)
+    }
+
     /** 겹치는 구간을 합친다. */
     fun merge(spans: List<TimeSpan>): List<TimeSpan> {
         val sorted = spans.filter { it.seconds > 0 }.sortedBy { it.start }
