@@ -3,6 +3,8 @@ package com.capstone.pause.core.social.remote
 import com.capstone.pause.core.common.AppClock
 import com.capstone.pause.core.common.AppLog
 import com.capstone.pause.core.data.demo.DemoPattern
+import com.capstone.pause.core.data.friend.EntrustedPoke
+import com.capstone.pause.core.data.friend.FriendLocalStore
 import com.capstone.pause.core.data.insight.PeerStats
 import com.capstone.pause.core.data.insight.PeerStatsRepository
 import com.capstone.pause.core.data.monitoring.MonitoringGap
@@ -226,6 +228,30 @@ class SharingTest {
     }
 
     @Test
+    fun serverDeleteStaysPendingUntilItSucceedsThenTheAnonymousAccountIsDeleted() = runTest {
+        val f = Fixture(responseCode = 204)
+        f.repo.grant()
+        // 오프라인: 철회는 되지만 서버 기록은 아직 남아 있다 → "지우는 중"으로 보이고 다시 지우기를 예약한다.
+        f.transport.code = 0
+        assertFalse(f.repo.revoke())
+        assertTrue(f.repo.deletingRemote.first())
+        assertEquals(1, f.scheduler.deleteScheduled)
+        assertEquals(0, f.auth.deleted)
+        assertEquals(1, f.store.cacheCleared)
+        // 예약된 작업이 실패하면 계속 대기, 성공하면 대기가 풀리고 익명 계정도 지운다.
+        assertFalse(f.repo.deleteRemote())
+        assertTrue(f.repo.deletingRemote.first())
+        f.transport.code = 204
+        assertTrue(f.repo.deleteRemote())
+        assertFalse(f.repo.deletingRemote.first())
+        assertEquals(1, f.auth.deleted)
+        // 지우는 중에 다시 동의하면 대기를 풀고 지우기를 취소한다.
+        f.store.setRemoteDeletePending(true)
+        assertTrue(f.repo.grant())
+        assertFalse(f.repo.deletingRemote.first())
+    }
+
+    @Test
     fun revokeWithoutAnyConsentDoesNotCallServer() = runTest {
         val f = Fixture(responseCode = 204)
         assertTrue(f.repo.revoke())
@@ -241,6 +267,7 @@ class SharingTest {
         val sessions = MutableStateFlow<List<ShortformSession>>(emptyList())
         val peer = FakePeer()
         val gaps = MutableStateFlow<List<MonitoringGap>>(emptyList())
+        val store = FakeStore()
         val repo = RemoteSharingRepository(
             server = server,
             transport = transport,
@@ -273,14 +300,41 @@ class SharingTest {
                 override suspend fun recordOn(at: Instant) = Unit
                 override suspend fun clear() = Unit
             },
+            localStore = store,
             clock = AppClock(Clock.fixed(Instant.parse("2026-11-16T03:00:00Z"), ZoneId.of("Asia/Seoul"))),
             log = AppLog.None,
         )
     }
 
+    /** 삭제 대기 표시와 친구 목록 저장만 흉내 낸다. */
+    private class FakeStore : FriendLocalStore {
+        override val entrusted: Flow<List<EntrustedPoke>> = MutableStateFlow(emptyList())
+        override val blocked: Flow<Set<String>> = MutableStateFlow(emptySet())
+        override val reported: Flow<Set<String>> = MutableStateFlow(emptySet())
+        override suspend fun addEntrusted(poke: EntrustedPoke) = Unit
+        override suspend fun block(friendId: String) = Unit
+        override suspend fun unblock(friendId: String) = Unit
+        override suspend fun report(friendId: String) = Unit
+        override suspend fun clear() = Unit
+        override val remoteDeletePending = MutableStateFlow(false)
+        override suspend fun setRemoteDeletePending(pending: Boolean) {
+            remoteDeletePending.value = pending
+        }
+        var cacheCleared = 0
+        override suspend fun clearFriendsCache() {
+            cacheCleared++
+        }
+    }
+
     private class FakeTransport(var code: Int) : SocialTransport {
         val calls = mutableListOf<Pair<String, JsonObject?>>()
-        override suspend fun call(method: String, path: String, body: JsonObject?): ApiResponse {
+        override suspend fun call(
+            method: String,
+            path: String,
+            body: JsonObject?,
+            idempotencyKey: String?,
+            retries: Int,
+        ): ApiResponse {
             calls += "$method $path" to body
             return ApiResponse(code, null)
         }
@@ -303,9 +357,16 @@ class SharingTest {
 
     private class FakeAuth : SocialAuth {
         var signedOut = 0
-        override suspend fun idToken(): String = "token"
+        var deleted = 0
+        override suspend fun idToken(forceRefresh: Boolean): String = "token"
         override fun signOut() {
             signedOut++
+        }
+        override suspend fun deleteAccount(): Boolean {
+            // 계정을 지우면 로그아웃도 된다.
+            deleted++
+            signedOut++
+            return true
         }
     }
 

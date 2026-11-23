@@ -52,8 +52,15 @@ internal fun SharingConsentCard(sharing: SharingUiState, pendingInvite: String?,
         ConsentBlock(R.string.friends_sharing_send_title, R.string.friends_sharing_send_body_v2)
         ConsentBlock(R.string.friends_sharing_visible_title, R.string.friends_sharing_visible_body_v2)
         ConsentBlock(R.string.friends_sharing_never_title, R.string.friends_sharing_never_body)
+        // 친구에게 보이는 글(닉네임·잔소리)의 규칙: 동의해야 쓸 수 있다(Google Play 사용자 생성 콘텐츠 정책).
+        ConsentBlock(R.string.friends_sharing_rules_title, R.string.friends_sharing_rules_body)
         Text(
             text = stringResource(R.string.friends_sharing_when_v2),
+            style = PauseTheme.type.bodySmall,
+            color = PauseTheme.colors.ink2,
+        )
+        Text(
+            text = stringResource(R.string.friends_sharing_lost_note),
             style = PauseTheme.type.bodySmall,
             color = PauseTheme.colors.ink2,
         )

@@ -3,6 +3,7 @@ package com.capstone.pause.core.ai.di
 import android.content.Context
 import com.capstone.pause.core.ai.AiCallLogger
 import com.capstone.pause.core.ai.AiRouter
+import com.capstone.pause.core.ai.coach.BannedWordsPokeFilter
 import com.capstone.pause.core.ai.coach.CoachConversation
 import com.capstone.pause.core.ai.coach.CoachSession
 import com.capstone.pause.core.ai.coach.RepositoryCoachTools
@@ -15,6 +16,7 @@ import com.capstone.pause.core.ai.log.RoomAiCallLogger
 import com.capstone.pause.core.ai.router.DefaultAiRouter
 import com.capstone.pause.core.common.AppClock
 import com.capstone.pause.core.data.copy.CopyPackRepository
+import com.capstone.pause.core.data.friend.PokeTextFilter
 import com.capstone.pause.core.data.strategy.StrategyRepository
 import com.capstone.pause.core.designsystem.R as DesignR
 import dagger.Binds
@@ -97,4 +99,7 @@ internal abstract class AiBindsModule {
 
     @Binds
     abstract fun coachConversation(impl: CoachSession): CoachConversation
+
+    @Binds
+    abstract fun pokeTextFilter(impl: BannedWordsPokeFilter): PokeTextFilter
 }
