@@ -19,6 +19,7 @@ import com.capstone.pause.core.social.LeagueRepository
 import com.capstone.pause.core.social.LeagueState
 import com.capstone.pause.core.social.PokeInbox
 import com.capstone.pause.core.social.PokeRules
+import com.capstone.pause.core.social.PollBackoff
 import com.capstone.pause.core.social.ReportReason
 import com.capstone.pause.core.social.SharingRepository
 import com.capstone.pause.core.social.SharingState
@@ -244,7 +245,7 @@ class FriendsViewModel @Inject constructor(
     // 확인 창([InviteUiState.linkToConfirm])에서 '요청하기'를 눌렀을 때만 [FriendsAction.ConfirmLink]로 요청한다.
 
     /**
-     * 친구 탭이 화면에 보이는지. 보이는 동안만 [POLL_MS]마다 친구·순위·시청 중을 새로 받는다
+     * 친구 탭이 화면에 보이는지. 보이는 동안만 [SocialLimits.FRIENDS_POLL]마다 친구·순위·시청 중을 새로 받는다
      * (시연·동의 전이면 저장소가 아무것도 부르지 않는다).
      */
     fun setVisible(visible: Boolean) {
@@ -261,13 +262,17 @@ class FriendsViewModel @Inject constructor(
             // 화면에 올 때 한 번: 받은·보낸 연결 요청.
             runCatching { friendRepository.refreshRequests() }
             var friendIds: Set<String>? = null
+            var failures = 0
             while (isActive) {
-                runCatching { friendRepository.refresh() }
+                // 서버가 거부하면(무료 한도 초과·점검·오프라인) 저장해 둔 목록을 보이면서 간격을 늘린다. 몰아서 다시 하지 않는다.
+                val ok = runCatching { friendRepository.refresh() }.getOrDefault(false)
+                val remote = uiState.value.overview?.sharing == SharingState.CONSENTED
+                failures = if (ok || !remote) 0 else failures + 1
                 // 친구 목록이 바뀌었으면(내 요청이 수락됨 등) 요청 목록도 새로 받아 끝난 요청을 치운다.
                 val now = uiState.value.overview?.friends?.map { it.id }?.toSet()
                 if (friendIds != null && now != friendIds) runCatching { friendRepository.refreshRequests() }
                 friendIds = now
-                delay(POLL_MS)
+                delay(PollBackoff.next(SocialLimits.FRIENDS_POLL, failures).toMillis())
             }
         }
         if (invite.value.qrOpen) startQrPolling()
@@ -503,8 +508,5 @@ class FriendsViewModel @Inject constructor(
 
     private companion object {
         const val STOP_TIMEOUT_MS = 5_000L
-
-        /** 친구 탭이 보이는 동안 새로 받는 간격(서버의 '시청 중' 판정 5초와 맞춘다). */
-        const val POLL_MS = 3_000L
     }
 }

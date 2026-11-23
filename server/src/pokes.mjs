@@ -123,27 +123,39 @@ export function ackIds(value) {
  * 만료된 것과 차단한 사람 것은 언제나 지운다.
  */
 export async function takePokes(db, userId, now, { ack = [], keep = false } = {}) {
-    const select = db.prepare(`
-        SELECT p.id AS id, c.public_id AS fromId, c.nickname AS fromNickname, p.text AS text,
-               p.created_at_ms AS createdAtMs, p.expires_at_ms AS expiresAtMs
-        FROM poke p JOIN sharing_consent c ON c.user_id = p.from_user
-        WHERE p.to_user = ? AND p.expires_at_ms > ?
-          AND NOT EXISTS (SELECT 1 FROM block b WHERE b.blocker = p.to_user AND b.blocked = p.from_user)
-        ORDER BY p.created_at_ms LIMIT ?
-    `).bind(userId, now, limits.maxInbox);
-    const drop = (ids) => db.prepare(`
+    const { select, drop, dropIds } = pokeStatements(db, userId, now, ack);
+    if (keep) {
+        // 확인한 것을 먼저 지우고 남은 것을 내려 준다(한 묶음 = D1 요청 한 번).
+        const [, pending] = await db.batch([drop, select]);
+        return pending.results;
+    }
+    const { results } = await select.all();
+    if (results.length) await dropIds(results.map((p) => p.id)).run();
+    return results;
+}
+
+/**
+ * 잔소리 꺼내기에 쓰는 문장들(시청 신호가 자기 묶음에 넣어 D1 요청 수를 줄인다, 6-A).
+ * `select` = 나에게 온 것, `drop` = [ack]로 확인한 것·만료된 것·차단한 사람 것 지우기, `dropIds(ids)` = 주어진 id 지우기.
+ */
+export function pokeStatements(db, userId, now, ack = []) {
+    const dropIds = (ids) => db.prepare(`
         DELETE FROM poke WHERE to_user = ? AND (
             expires_at_ms <= ? OR id IN (SELECT value FROM json_each(?)) OR
             from_user IN (SELECT blocked FROM block WHERE blocker = ?))
     `).bind(userId, now, JSON.stringify(ids), userId);
-    if (keep) {
-        // 확인한 것을 먼저 지우고 남은 것을 내려 준다(한 묶음 = D1 요청 한 번).
-        const [, pending] = await db.batch([drop(ack), select]);
-        return pending.results;
-    }
-    const { results } = await select.all();
-    await drop(results.map((p) => p.id)).run();
-    return results;
+    return {
+        select: db.prepare(`
+            SELECT p.id AS id, c.public_id AS fromId, c.nickname AS fromNickname, p.text AS text,
+                   p.created_at_ms AS createdAtMs, p.expires_at_ms AS expiresAtMs
+            FROM poke p JOIN sharing_consent c ON c.user_id = p.from_user
+            WHERE p.to_user = ? AND p.expires_at_ms > ?
+              AND NOT EXISTS (SELECT 1 FROM block b WHERE b.blocker = p.to_user AND b.blocked = p.from_user)
+            ORDER BY p.created_at_ms LIMIT ?
+        `).bind(userId, now, limits.maxInbox),
+        drop: dropIds(ack),
+        dropIds,
+    };
 }
 
 async function receivePokes({ request, db, userId, now, appVersion }) {
