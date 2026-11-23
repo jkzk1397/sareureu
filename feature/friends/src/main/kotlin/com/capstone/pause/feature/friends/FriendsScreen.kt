@@ -29,6 +29,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.capstone.pause.core.designsystem.component.PauseCard
 import com.capstone.pause.core.designsystem.component.PauseScreenColumn
 import com.capstone.pause.core.designsystem.theme.PauseTheme
+import com.capstone.pause.core.social.FriendCharacterIds
 import com.capstone.pause.core.social.SharingState
 
 /** 친구 탭 진입점. 화면에 보이는 동안만 친구·시청 중을 몇 초마다 새로 받는다. */
@@ -128,14 +129,21 @@ private fun FriendsContent(uiState: FriendsUiState, onAction: (FriendsAction) ->
             RequestsCard(requests = uiState.requests, onAction = onAction)
         }
         FriendListCard(overview = overview, feedback = uiState.pokeFeedback, onAction = onAction)
-        StreakRankingCard(overview.ranking)
+        StreakRankingCard(overview.ranking, isDemo = overview.isDemo)
         ChallengeCard(overview.challenge)
         ManageCard(overview = overview, onAction = onAction)
         if (remote) StopSharingButton(sharing = uiState.sharing, onAction = onAction)
         uiState.poke.friendId?.let { id ->
             overview.friends.firstOrNull {
                 it.id == id
-            }?.let { PokeDialog(friend = it, poke = uiState.poke, onAction = onAction) }
+            }?.let {
+                PokeDialog(
+                    friend = it,
+                    characterId = FriendCharacterIds.of(it, overview.isDemo),
+                    poke = uiState.poke,
+                    onAction = onAction,
+                )
+            }
         }
     }
 }

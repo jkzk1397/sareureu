@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -27,11 +28,13 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
+import com.capstone.pause.core.designsystem.buddy.FriendAvatar
 import com.capstone.pause.core.designsystem.component.PauseCard
 import com.capstone.pause.core.designsystem.component.Reveal
 import com.capstone.pause.core.designsystem.theme.PauseSizes
 import com.capstone.pause.core.designsystem.theme.PauseTheme
 import com.capstone.pause.core.social.ChallengeRow
+import com.capstone.pause.core.social.FriendCharacterIds
 import com.capstone.pause.core.social.FriendsOverview
 import com.capstone.pause.core.social.ReportReason
 import java.time.DayOfWeek
@@ -119,6 +122,7 @@ internal fun ManageCard(overview: FriendsOverview, onAction: (FriendsAction) -> 
         PauseCard(title = stringResource(R.string.friends_manage_title)) {
             entries.forEach { (id, name) ->
                 FriendRow(
+                    characterId = FriendCharacterIds.of(if (overview.isDemo) name else id),
                     name = name,
                     blocked = id in overview.blocked,
                     reported = id in overview.reported,
@@ -180,6 +184,7 @@ private val NAME_WIDTH = PauseSizes.rankAvatar + PauseSizes.legendDot
 /** 친구 한 줄: 이름(+상태) + ⋮ 메뉴(차단·신고). */
 @Composable
 private fun FriendRow(
+    characterId: Int,
     name: String,
     blocked: Boolean,
     reported: Boolean,
@@ -196,6 +201,8 @@ private fun FriendRow(
             .fillMaxWidth()
             .heightIn(min = PauseTheme.spacing.minTouch),
     ) {
+        FriendAvatar(characterId = characterId, size = PauseSizes.rankAvatar)
+        Spacer(Modifier.width(PauseTheme.spacing.xs))
         Column(Modifier.weight(1f)) {
             Text(name, style = PauseTheme.type.body, color = colors.ink)
             val state = listOfNotNull(

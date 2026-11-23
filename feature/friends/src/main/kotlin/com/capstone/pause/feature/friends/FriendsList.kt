@@ -30,11 +30,15 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
+import com.capstone.pause.core.designsystem.buddy.BuddyAvatar
+import com.capstone.pause.core.designsystem.buddy.FriendAvatar
 import com.capstone.pause.core.designsystem.component.PauseCard
 import com.capstone.pause.core.designsystem.component.Reveal
 import com.capstone.pause.core.designsystem.theme.PauseColors
 import com.capstone.pause.core.designsystem.theme.PauseSizes
 import com.capstone.pause.core.designsystem.theme.PauseTheme
+import com.capstone.pause.core.model.BuddyExpression
+import com.capstone.pause.core.social.FriendCharacterIds
 import com.capstone.pause.core.social.FriendsOverview
 import com.capstone.pause.core.social.RankingView
 import com.capstone.pause.core.social.Standing
@@ -54,7 +58,11 @@ internal fun FriendListCard(overview: FriendsOverview, feedback: PokeFeedback?, 
         Text(stringResource(R.string.friends_list_hint), style = PauseTheme.type.bodySmall, color = colors.ink2)
         Column {
             overview.friends.forEach { friend ->
-                FriendListRow(friend = friend, onPoke = { onAction(FriendsAction.OpenPoke(friend.id)) })
+                FriendListRow(
+                    friend = friend,
+                    characterId = FriendCharacterIds.of(friend, overview.isDemo),
+                    onPoke = { onAction(FriendsAction.OpenPoke(friend.id)) },
+                )
             }
         }
         feedback?.let { PokeFeedbackText(it) }
@@ -62,7 +70,7 @@ internal fun FriendListCard(overview: FriendsOverview, feedback: PokeFeedback?, 
 }
 
 @Composable
-private fun FriendListRow(friend: Standing, onPoke: () -> Unit) {
+private fun FriendListRow(friend: Standing, characterId: Int, onPoke: () -> Unit) {
     val colors = PauseTheme.colors
     val spacing = PauseTheme.spacing
     val rowLabel = if (friend.watching) {
@@ -89,7 +97,12 @@ private fun FriendListRow(friend: Standing, onPoke: () -> Unit) {
                 .weight(1f)
                 .clearAndSetSemantics { contentDescription = rowLabel },
         ) {
-            InitialAvatar(friend.nickname)
+            // 프로필 캐릭터: 지금 숏폼을 보는 친구는 보는 중 표정. 초록 점은 그대로 둔다(표정만으로 뜻을 전하지 않는다).
+            FriendAvatar(
+                characterId = characterId,
+                size = PauseSizes.rankAvatar,
+                expression = if (friend.watching) BuddyExpression.WATCHING else BuddyExpression.NEUTRAL,
+            )
             Text(friend.nickname, style = PauseTheme.type.body, color = colors.ink)
             if (friend.watching) WatchingDot()
         }
@@ -107,19 +120,6 @@ private fun FriendListRow(friend: Standing, onPoke: () -> Unit) {
             )
         }
         StreakFlame(days = friend.streakDays)
-    }
-}
-
-/** 이름 첫 글자 동그라미. */
-@Composable
-private fun InitialAvatar(name: String) {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .size(PauseSizes.rankAvatar)
-            .background(PauseTheme.colors.social, PauseTheme.shapes.pill),
-    ) {
-        Text(name.take(1), style = PauseTheme.type.label, color = PauseTheme.colors.surface)
     }
 }
 
@@ -152,7 +152,7 @@ internal fun StreakFlame(days: Int, modifier: Modifier = Modifier) {
  * 친구 랭킹(ADR-0012): 목표 이하 연속 일수가 긴 순서, 나를 포함해 모두. 1위 금 왕관, 2·3위 은·동 메달, 그 아래는 숫자.
  */
 @Composable
-internal fun StreakRankingCard(ranking: RankingView) {
+internal fun StreakRankingCard(ranking: RankingView, isDemo: Boolean) {
     if (ranking.rows.isEmpty()) return
     val colors = PauseTheme.colors
     PauseCard(title = stringResource(R.string.friends_streak_ranking_title)) {
@@ -188,13 +188,13 @@ internal fun StreakRankingCard(ranking: RankingView) {
             )
         }
         Column(verticalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xxs)) {
-            ranking.rows.forEach { row -> StreakRankRow(rank = row.rank, standing = row.standing) }
+            ranking.rows.forEach { row -> StreakRankRow(rank = row.rank, standing = row.standing, isDemo = isDemo) }
         }
     }
 }
 
 @Composable
-private fun StreakRankRow(rank: Int, standing: Standing) {
+private fun StreakRankRow(rank: Int, standing: Standing, isDemo: Boolean) {
     val colors = PauseTheme.colors
     val spacing = PauseTheme.spacing
     val name = if (standing.isMe) stringResource(R.string.friends_rank_me) else standing.nickname
@@ -216,6 +216,16 @@ private fun StreakRankRow(rank: Int, standing: Standing) {
             .clearAndSetSemantics { contentDescription = label },
     ) {
         RankBadge(rank)
+        // 나는 르르, 친구는 프로필 캐릭터(친구 목록과 같은 그림).
+        if (standing.isMe) {
+            BuddyAvatar(expression = BuddyExpression.NEUTRAL, size = PauseSizes.rankAvatar, shadow = false)
+        } else {
+            FriendAvatar(
+                characterId = FriendCharacterIds.of(standing, isDemo),
+                size = PauseSizes.rankAvatar,
+                expression = if (standing.watching) BuddyExpression.WATCHING else BuddyExpression.NEUTRAL,
+            )
+        }
         Text(
             text = name,
             style = PauseTheme.type.body,
