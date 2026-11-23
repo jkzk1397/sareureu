@@ -26,4 +26,14 @@ class BuddyScreenshotTest {
             captureRoboImage("buddy_melt_sheet_${if (dark) "dark" else "light"}.png") { BuddyAvatarSheetPreview() }
         }
     }
+
+    /** 친구 캐릭터 8종의 얼굴 자리 확인용 판. */
+    @Test
+    fun friendAvatarSheet() {
+        for (dark in listOf(false, true)) {
+            val mode = if (dark) "night" else "notnight"
+            RuntimeEnvironment.setQualifiers("w420dp-h320dp-$mode-xxhdpi")
+            captureRoboImage("friend_avatar_sheet_${if (dark) "dark" else "light"}.png") { FriendAvatarSheetPreview() }
+        }
+    }
 }

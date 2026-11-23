@@ -181,6 +181,29 @@ object BuddyBitmap { fun render(context: Context, expression: BuddyExpression, s
 - **플로팅 버블에서는 녹은 정도가 '이번 구간이 얼마나 지났나'**다(처음 기준 시간, 또는 5분만 더). 오늘 탭은 위 표의 하루 기준 단계다.
 - **녹아도 아파하지 않는다.** 표정은 상황(맥락·단계)으로만 정하고 녹은 정도로 바꾸지 않는다. 우는 얼굴·땀·빨간색·경고 아이콘 금지. 녹는 건 시간 표시일 뿐 벌이 아니다. 오늘 화면과 플로팅 버블에서만 보이고, 설정에서 끌 수 있다(`showMelt`).
 
+**친구 캐릭터 (`FriendAvatar`)** — 친구 목록·순위·잔소리 창·친구 관리·연결 요청에서 글자 동그라미 대신 쓰는 프로필 그림 8종. 내 캐릭터는 르르다.
+```kotlin
+enum class FriendCharacter { BROWN, CHOCO, COTTON, DROP, JELLY, MARSH, MINT, STAR }   // 순서 = 번호 0~7 (바꾸지 않는다)
+@Composable fun FriendAvatar(characterId: Int, size: Dp, modifier: Modifier = Modifier,
+                             expression: BuddyExpression = BuddyExpression.NEUTRAL)
+```
+- 몸은 그림 한 장씩(`designsystem_friend_*.webp`, 512×512, 투명 배경, 얼굴 없음). 원본 `docs/design/reference/friend_*.png` → `python docs/brand/tools/cutout.py 원본 출력 --pad 0.06`.
+- 얼굴은 르르와 같은 `BuddyFaceGeometry`로 그린다. 표정 그림 파일을 따로 만들지 않는다. 지금 숏폼을 보는 친구는 `WATCHING`, 아니면 `NEUTRAL`.
+- **배정**: 친구의 공개 ID(서버 친구) 또는 이름(가상 친구)을 FNV-1a 32비트로 해시해 8로 나눈 나머지(`core:social`의 `FriendCharacterIds`). 서버에 저장하지 않고 공개 ID만으로 정하므로 두 폰에서 같은 친구가 같은 캐릭터로 보인다. 친구끼리 겹칠 수 있다. 연결 요청은 수락 전이라 공개 ID를 모르므로 닉네임으로 정한다(수락 뒤에는 공개 ID 기준이라 달라질 수 있다).
+
+| 번호 | 캐릭터 | 파일 | 얼굴 자리 A (0~100) | 앞면 위 | 얼굴 색 |
+|---|---|---|---|---|---|
+| 0 | 흑설탕 각설탕 `BROWN` | `designsystem_friend_brown` | (40, 62) | 30 | `BuddyInk` |
+| 1 | 초콜릿 `CHOCO` | `designsystem_friend_choco` | (39, 62) | 28 | `FriendInkLight`(몸이 어두움) |
+| 2 | 솜사탕 `COTTON` | `designsystem_friend_cotton` | (48, 58) | 20 | `BuddyInk` |
+| 3 | 사탕 `DROP` | `designsystem_friend_drop` | (48, 56) | 12 | `BuddyInk` |
+| 4 | 젤리 `JELLY` | `designsystem_friend_jelly` | (40, 64) | 32 | `BuddyInk` |
+| 5 | 마시멜로 `MARSH` | `designsystem_friend_marsh` | (48, 66) | 36 | `BuddyInk` |
+| 6 | 민트 각설탕 `MINT` | `designsystem_friend_mint` | (40, 63) | 30 | `BuddyInk` |
+| 7 | 별사탕 `STAR` | `designsystem_friend_star` | (50, 57) | 30 | `BuddyInk` |
+
+얼굴 자리는 그림에 눈금자를 얹어 눈으로 재고, 친구 캐릭터 판(`BuddyScreenshotTest.friendAvatarSheet`, 8종 × 기본·보는 중 × 40·64dp)을 뽑아 확인했다. 각설탕류는 앞면 가운데, 둥근 것은 몸 가운데에서 조금 아래다.
+
 **크기와 자리**
 | 자리 | 크기 | 표정 | 비고 |
 |---|---|---|---|

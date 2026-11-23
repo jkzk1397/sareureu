@@ -141,6 +141,7 @@
 | 코치 채팅 | `CoachChat` |
 | 기준선 / 감소율 | `Baseline` / `reductionRate` |
 | 친구 랭킹(연속 일수) / 주간 리그 | `StreakRanking` / `WeeklyLeague` |
+| 친구 프로필 캐릭터 | `FriendCharacter`(그리기 `FriendAvatar`, 번호 `FriendCharacterIds`) |
 | 또래 비교 | `PeerBaseline` (서버 그룹 집계 `PeerStats`) |
 | 랭킹 공유 동의 / 초대 코드·초대 QR / 연결 요청 | `SharingRepository`·`SharingState` / `InviteCode`·`InviteLinks` / `FriendRequests` |
 | 목표 지킴 연속 일수 / 지금 시청 중 | `GoalStreak`·`streakDays` / `FriendPresence`·`watching` |
