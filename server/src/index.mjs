@@ -3,11 +3,15 @@ import { friendRoutes } from './friends.mjs';
 import { error, noContent, readBody } from './http.mjs';
 import { ensureMigrated } from './migrate.mjs';
 import { computePeerStats, peerRoutes } from './peers.mjs';
+import { invitePage, invitePagePattern } from './invite-page.mjs';
 import { cleanPokes, pokeRoutes } from './pokes.mjs';
+import { cleanPresence, presenceRoutes } from './presence.mjs';
 
-const consentVersion = 1;
+// 동의 버전: 1 = 하루 합계·랭킹 숫자, 2 = 1 + 연속 일수·지금 시청 중(ADR-0012). 낮은 버전으로 되돌리지 않는다.
+const consentVersions = [1, 2];
 const dayMs = 86_400_000;
 const retentionDays = 365;
+const maxStreakDays = 3650;
 
 function utcDate(timestamp) {
     return new Date(timestamp).toISOString().slice(0, 10);
@@ -47,7 +51,7 @@ const maxNickname = 12;
 const enumName = /^[A-Z][A-Z0-9_]{0,31}$/;
 
 function validSharing(body) {
-    if (!body || body.consentVersion !== consentVersion || Object.keys(body).some((key) =>
+    if (!body || !consentVersions.includes(body.consentVersion) || Object.keys(body).some((key) =>
         !['consentVersion', 'nickname', 'ageBand', 'occupation'].includes(key))) return false;
     const { nickname = null, ageBand = null, occupation = null } = body;
     if (nickname !== null && (typeof nickname !== 'string' || nickname.trim().length === 0 ||
@@ -75,38 +79,41 @@ async function updateSharing(request, db, userId, now) {
             nickname = excluded.nickname,
             age_band = excluded.age_band,
             occupation = excluded.occupation
-    `).bind(userId, consentVersion, now, crypto.randomUUID(), nickname, body.ageBand ?? null,
+    `).bind(userId, body.consentVersion, now, crypto.randomUUID(), nickname, body.ageBand ?? null,
         body.occupation ?? null).run();
     return noContent();
 }
 
 function validStanding(body, now) {
     if (!body || Object.keys(body).some((key) =>
-        !['reductionRate', 'coverage', 'validDays', 'measuredAtMs'].includes(key))) return false;
-    const { reductionRate, coverage, validDays, measuredAtMs } = body;
-    return (reductionRate === null || (Number.isFinite(reductionRate) && reductionRate >= -10 && reductionRate <= 1)) &&
+        !['reductionRate', 'coverage', 'validDays', 'streakDays', 'measuredAtMs'].includes(key))) return false;
+    const { reductionRate, coverage, validDays, streakDays = 0, measuredAtMs } = body;
+    return Number.isInteger(streakDays) && streakDays >= 0 && streakDays <= maxStreakDays &&
+        (reductionRate === null || (Number.isFinite(reductionRate) && reductionRate >= -10 && reductionRate <= 1)) &&
         (coverage === null || (Number.isFinite(coverage) && coverage >= 0 && coverage <= 1)) &&
         Number.isInteger(validDays) && validDays >= 0 && validDays <= 7 &&
         Number.isSafeInteger(measuredAtMs) && measuredAtMs > now - dayMs && measuredAtMs <= now;
 }
 
 // 임시(5-2): 랭킹용 내 숫자. 계산은 앱(core:insights)이 하고 서버는 저장만 한다.
+// 6단계(ADR-0012): 목표 이하로 본 연속 일수(streakDays)를 더 받는다. 없으면 0.
 async function saveStanding(request, db, userId, now) {
     const body = await readBody(request);
     if (!validStanding(body, now)) return error('invalid_standing', 400);
-    const { reductionRate, coverage, validDays, measuredAtMs } = body;
+    const { reductionRate, coverage, validDays, streakDays = 0, measuredAtMs } = body;
     const consent = db.prepare('SELECT user_id FROM sharing_consent WHERE user_id = ? AND granted_at_ms <= ?')
         .bind(userId, measuredAtMs);
     const upsert = db.prepare(`
-        INSERT INTO standing (user_id, reduction_rate, coverage, valid_days, measured_at_ms)
-        SELECT user_id, ?, ?, ?, ? FROM sharing_consent WHERE user_id = ? AND granted_at_ms <= ?
+        INSERT INTO standing (user_id, reduction_rate, coverage, valid_days, streak_days, measured_at_ms)
+        SELECT user_id, ?, ?, ?, ?, ? FROM sharing_consent WHERE user_id = ? AND granted_at_ms <= ?
         ON CONFLICT (user_id) DO UPDATE SET
             reduction_rate = excluded.reduction_rate,
             coverage = excluded.coverage,
             valid_days = excluded.valid_days,
+            streak_days = excluded.streak_days,
             measured_at_ms = excluded.measured_at_ms
         WHERE excluded.measured_at_ms > standing.measured_at_ms
-    `).bind(reductionRate, coverage, validDays, measuredAtMs, userId, measuredAtMs);
+    `).bind(reductionRate, coverage, validDays, streakDays, measuredAtMs, userId, measuredAtMs);
     const [permission] = await db.batch([consent, upsert]);
     return permission.results.length ? noContent() : error('sharing_consent_required', 403);
 }
@@ -117,19 +124,19 @@ async function saveDaily(request, db, userId, date, now) {
     const { shortformMinutes, coverage, measuredAtMs } = body;
 
     const consent = db.prepare(`
-        SELECT user_id FROM sharing_consent WHERE user_id = ? AND version = ? AND granted_at_ms <= ?
-    `).bind(userId, consentVersion, measuredAtMs);
+        SELECT user_id FROM sharing_consent WHERE user_id = ? AND version >= ? AND granted_at_ms <= ?
+    `).bind(userId, consentVersions[0], measuredAtMs);
     const upsert = db.prepare(`
         INSERT INTO daily_watch (user_id, watch_date, shortform_minutes, coverage, measured_at_ms, saved_at_ms)
         SELECT user_id, ?, ?, ?, ?, ? FROM sharing_consent
-        WHERE user_id = ? AND version = ? AND granted_at_ms <= ?
+        WHERE user_id = ? AND version >= ? AND granted_at_ms <= ?
         ON CONFLICT (user_id, watch_date) DO UPDATE SET
             shortform_minutes = excluded.shortform_minutes,
             coverage = excluded.coverage,
             measured_at_ms = excluded.measured_at_ms,
             saved_at_ms = excluded.saved_at_ms
         WHERE excluded.measured_at_ms > daily_watch.measured_at_ms
-    `).bind(date, shortformMinutes, coverage, measuredAtMs, now, userId, consentVersion, measuredAtMs);
+    `).bind(date, shortformMinutes, coverage, measuredAtMs, now, userId, consentVersions[0], measuredAtMs);
     const [permission] = await db.batch([consent, upsert]);
     return permission.results.length ? noContent() : error('sharing_consent_required', 403);
 }
@@ -145,6 +152,7 @@ const routes = [
     ...friendRoutes,
     ...pokeRoutes,
     ...peerRoutes,
+    ...presenceRoutes,
 ];
 
 export default {
@@ -156,6 +164,9 @@ export default {
                 await env.DB.prepare('SELECT 1 FROM daily_watch LIMIT 1').first();
                 return noContent();
             }
+            // 6단계: 초대 QR이 여는 안내 페이지(로그인 없음). 앱이 있으면 앱을, 없으면 설치 파일을 연다.
+            const invite = invitePagePattern.exec(path);
+            if (invite && request.method === 'GET') return invitePage(invite[1], env);
             const route = routes.map(({ pattern, methods, handle }) => ({ match: pattern.exec(path), methods, handle }))
                 .find(({ match }) => match);
             if (!route) return error('not_found', 404);
@@ -181,6 +192,8 @@ export default {
         await env.DB.prepare('DELETE FROM invite WHERE expires_at_ms <= ?').bind(controller.scheduledTime).run();
         // 임시(5-4): 만료된 잔소리 정리.
         await cleanPokes(env.DB, controller.scheduledTime);
+        // 6단계: 오래된 '시청 중' 신호 정리.
+        await cleanPresence(env.DB, controller.scheduledTime);
         // 임시(5-5): 또래 그룹 집계 다시 계산(이미 있는 하루 한 번 cron).
         await computePeerStats(env.DB, controller.scheduledTime);
     },

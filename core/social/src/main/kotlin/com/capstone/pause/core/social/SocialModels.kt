@@ -1,8 +1,9 @@
 package com.capstone.pause.core.social
 
 /**
- * 랭킹에 쓰는 한 사람(나 또는 친구). 친구에게 공유되는 숫자는 감소율과 기록률뿐이다(ADR-0005).
- * [reductionRate]는 0.23 = 23% 줄었음, 늘었으면 음수.
+ * 랭킹에 쓰는 한 사람(나 또는 친구). 친구에게 공유되는 것은 감소율·기록률·연속 일수·지금 시청 중뿐이다(ADR-0012).
+ * [reductionRate]는 0.23 = 23% 줄었음, 늘었으면 음수. [streakDays]는 목표 이하로 본 연속 일수(`GoalStreak`),
+ * [watching]은 최근 5초 안에 숏폼을 보고 있었는지(서버 판정, 나는 항상 false).
  */
 data class Standing(
     val id: String,
@@ -11,6 +12,8 @@ data class Standing(
     val coverage: Double?,
     val validDays: Int,
     val isMe: Boolean,
+    val streakDays: Int = 0,
+    val watching: Boolean = false,
 ) {
     /** 유효한 날 5일 미만이거나 기록률 80% 미만이면 '측정 중'. */
     val measuring: Boolean get() = Ranking.isMeasuring(this)
@@ -43,8 +46,11 @@ data class FriendsOverview(
     val sharing: SharingState = SharingState.UNAVAILABLE,
 )
 
-/** 초대 코드(6자리, [expiresAt]까지 한 번만 쓸 수 있다). */
-data class InviteCode(val code: String, val expiresAt: java.time.Instant)
+/**
+ * 초대 코드(6자리, [expiresAt]까지 한 번만 쓸 수 있다). [link]는 QR에 담는 주소(친구 서버의 `/invite/{코드}`):
+ * 앱이 있으면 앱이 열려 바로 연결되고, 없으면 설치 파일로 간다.
+ */
+data class InviteCode(val code: String, val expiresAt: java.time.Instant, val link: String? = null)
 
 /** 초대 코드로 연결한 결과. */
 sealed interface ConnectResult {

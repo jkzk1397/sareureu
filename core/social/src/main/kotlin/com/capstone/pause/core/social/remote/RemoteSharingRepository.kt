@@ -11,6 +11,7 @@ import com.capstone.pause.core.data.profile.ConsentRepository
 import com.capstone.pause.core.data.profile.ProfileRepository
 import com.capstone.pause.core.data.session.SessionRepository
 import com.capstone.pause.core.data.settings.SettingsRepository
+import com.capstone.pause.core.insights.GoalStreak
 import com.capstone.pause.core.insights.ShortformMinutes
 import com.capstone.pause.core.model.DataSource
 import com.capstone.pause.core.model.Profile
@@ -51,8 +52,11 @@ interface UploadScheduler {
 
 /** 서버로 보낼 몸통 만들기(순수). 키 이름은 server/README.md "앱 연결 계약"과 같다. */
 object SharingPayloads {
-    /** 공유 동의 버전(서버 `consentVersion`). 보내는 항목이 바뀌면 올린다. */
-    const val CONSENT_VERSION = 1
+    /**
+     * 공유 동의 버전(서버 `consentVersion`). 보내는 항목이 바뀌면 올린다.
+     * 2(ADR-0012): 연속 일수와 '지금 시청 중' 신호가 더해졌다. 버전 1로 동의한 사람은 다시 동의해야 한다.
+     */
+    const val CONSENT_VERSION = 2
 
     /** 닉네임 최대 글자(서버와 같음). */
     const val MAX_NICKNAME = 12
@@ -81,15 +85,19 @@ object SharingPayloads {
         ),
     )
 
-    /** 랭킹 숫자: 감소율·기록된 비율·유효한 날(ADR-0005). */
+    /** 랭킹 숫자: 감소율·기록된 비율·유효한 날(ADR-0005), 목표 이하 연속 일수(ADR-0012). */
     fun standing(s: Standing, measuredAt: Instant): JsonObject = JsonObject(
         mapOf(
             "reductionRate" to (s.reductionRate?.coerceIn(MIN_RATE, 1.0)?.let(::JsonPrimitive) ?: JsonNull),
             "coverage" to (s.coverage?.coerceIn(0.0, 1.0)?.let(::JsonPrimitive) ?: JsonNull),
             "validDays" to JsonPrimitive(s.validDays.coerceIn(0, WEEK)),
+            "streakDays" to JsonPrimitive(s.streakDays.coerceIn(0, GoalStreak.MAX_DAYS)),
             "measuredAtMs" to JsonPrimitive(measuredAt.toEpochMilli()),
         ),
     )
+
+    /** 지금 시청 중 신호(ADR-0012). 앱·영상·시간은 담지 않는다. */
+    fun presence(watching: Boolean): JsonObject = JsonObject(mapOf("watching" to JsonPrimitive(watching)))
 
     /**
      * 올릴 하루: 어제(새벽 4시 경계). **실제 기록만** 쓰고, 첫 기록보다 앞선 날이면 null(설치 전 날을 0분으로 올리지 않는다).
@@ -139,6 +147,7 @@ object SharingPayloads {
 
 /**
  * 공유 동의와 하루 합계 올리기. 동의 기록은 `ConsentItem.FRIENDS`(버전 [SharingPayloads.CONSENT_VERSION]).
+ * 예전 버전으로 동의한 사람은 [SharingState.NOT_CONSENTED]로 보여 새 내용으로 다시 동의를 받는다.
  * 서버 주소가 없거나 시연 모드면 아무것도 보내지 않는다.
  */
 @Singleton
@@ -218,9 +227,7 @@ internal class RemoteSharingRepository @Inject constructor(
         SharingPayloads.yesterday(sessions, today, zone, now)?.let { (day, minutes) ->
             ok = transport.call("PUT", "/api/v1/daily/$day", SharingPayloads.daily(minutes, now, zone)).ok
         }
-        val nickname = profileRepository.profile.first()?.nickname.orEmpty()
-        val me = MyStanding.compute(sessions, today, zone, now, nickname)
-        ok = transport.call("PUT", "/api/v1/standing", SharingPayloads.standing(me, now)).ok && ok
+        ok = putStanding(sessions, today, now) && ok
         // 또래 통계(5-5): 서버가 하루 한 번 계산한 그룹 집계만 받는다. 개인별 값은 없다.
         val peers = transport.call("GET", "/api/v1/peers")
         if (peers.ok) SharingPayloads.peers(peers.body, now)?.let { peerStats.save(it) }
@@ -228,8 +235,38 @@ internal class RemoteSharingRepository @Inject constructor(
         return ok
     }
 
+    /**
+     * 랭킹 숫자만 다시 올리기(친구 탭 새로 고침·숏폼을 멈췄을 때). 연속 일수가 하루 한 번보다 빨리 바뀌게 한다.
+     * 동의했고 시연이 아닐 때만. 올렸으면 true.
+     */
+    suspend fun uploadStanding(): Boolean {
+        if (state.first() != SharingState.CONSENTED) return false
+        val now = clock.now()
+        val today = DayBoundary.logicalDate(now, clock.zone)
+        val from = DayBoundary.startOf(today.minusDays(HISTORY_DAYS), clock.zone)
+        val sessions = sessionRepository.observeSessions(from, DayBoundary.endOf(today, clock.zone)).first()
+            .filter { it.source == DataSource.REAL }
+        if (settingsRepository.settings.first().demoMode) return false
+        return putStanding(sessions, today, now)
+    }
+
+    private suspend fun putStanding(sessions: List<ShortformSession>, today: LocalDate, now: Instant): Boolean {
+        val profile = profileRepository.profile.first()
+        val me = MyStanding.compute(
+            sessions,
+            today,
+            clock.zone,
+            now,
+            profile?.nickname.orEmpty(),
+            profile?.dailyGoalMinutes ?: 0,
+        )
+        return transport.call("PUT", "/api/v1/standing", SharingPayloads.standing(me, now)).ok
+    }
+
     private companion object {
         const val TAG = "Sharing"
-        const val HISTORY_DAYS = 35L
+
+        // 세션 보관 기간(90일)만큼: 연속 일수를 그만큼 셀 수 있다.
+        const val HISTORY_DAYS = 90L
     }
 }

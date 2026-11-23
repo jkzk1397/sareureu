@@ -4,6 +4,8 @@ compatibility_date = "2026-11-09"
 
 [vars]
 FIREBASE_PROJECT_ID = "sareureu-e7f70"
+# 초대 QR 페이지에서 앱이 없을 때 받을 설치 파일(https만).
+APK_URL = "https://github.com/jkzk1397/sareureu/releases/download/v0.12/sareureu-week12.apk"
 
 [[d1_databases]]
 binding = "DB"

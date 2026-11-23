@@ -51,8 +51,16 @@
 | `POST /api/v1/pokes` | `{"to":"<친구 공개 ID>","text":"40자까지"}` 잔소리 맡기기. 친구에게만(차단하면 연결이 끊겨 403), 하루 10개(429). 금지 표현 검사는 앱이 보내기 전에 | 5-4 |
 | `GET /api/v1/pokes` | 나에게 온 잔소리 `{"pokes":[{"id","fromId","fromNickname","text","createdAtMs","expiresAtMs"}]}`(20개까지). **내려 주면 서버에서 지운다.** 차단한 사람 것·만료(7일)된 것도 지운다. 앱이 화면에 있을 때(15분에 한 번까지)와 WorkManager(12시간마다)만 부른다. 푸시(FCM) 없음 | 5-4 |
 | `GET /api/v1/peers` | 또래 비교 `{"groups":[{"ageBand","occupation","n","p50","p75"}],"computedAtMs"}`. **그룹 집계만**, 10명 미만 그룹은 없음. 공유 동의한 사람만 받는다. 앱은 하루 1번 올리기 때 같이 받는다 | 5-5 |
+| `PUT /api/v1/sharing` (6단계) | `consentVersion` 1 또는 2. **2 = 연속 일수·지금 시청 중 공유에 동의**(ADR-0012). 낮은 버전으로 되돌리지 않는다 | 6 |
+| `PUT /api/v1/standing` (6단계) | `streakDays`(목표 이하 연속 일수, 0~3650 정수, 없으면 0)를 더 받는다. 계산은 앱(`core:insights.GoalStreak`) | 6 |
+| `GET /api/v1/friends` (6단계) | 친구마다 `streakDays`와 `watching`(최근 5초 안 시청 신호가 있으면 true)을 더 준다 | 6 |
+| `PUT /api/v1/presence` | `{"watching":true}` 또는 `{"watching":false}`만. 숏폼을 보는 동안 앱이 2초마다 `true`, 멈추면 `false` 한 번. 서버는 마지막 신호 시각만 남긴다(`false`면 지움). 동의 버전 2 미만이면 403. 응답 `{"pokes":[…]}`은 `GET /pokes`와 같은 모양이고 **내려 주면 지운다**(받는 앱이 바로 알림을 띄운다) | 6 |
+| `POST /api/v1/pokes` (6단계) | 받는 친구가 지금 시청 중(최근 5초 안 신호)이 아니면 `409 not_watching` | 6 |
+| `GET /invite/{코드}` | **로그인 없음.** 초대 QR이 여는 안내 페이지. 안드로이드는 `intent://invite/{코드}#Intent;scheme=sareureu;package=com.capstone.pause;S.browser_fallback_url=<APK>;end`로 앱을 열고, 앱이 없으면 설치 파일(`wrangler.toml`의 `APK_URL`, https만)로 간다. 틀린 코드는 404 | 6 |
 
 또래 집계(5-5): 이미 있는 하루 한 번 cron이 동의한 사용자 중 연령대·신분이 있고 최근 7일에 3일 이상 기록이 있는 사람마다 하루 평균을 내고, 그룹마다 사람 수·중앙값·상위 25%만 `peer_stat`에 통째로 바꿔 넣는다. 개인별 평균은 계산 중에만 쓰고 저장하지 않는다.
+
+6단계(ADR-0012): `0006_streak_presence.sql`(`standing.streak_days`, `presence` 표). 매일 cron이 5초 넘은 `presence` 행도 지운다. 시청 신호는 시청 1시간당 사용자 1명 약 1,800번 D1 쓰기라, 사용자가 늘면 앱의 신호 간격과 서버 판정 창(`watchingWindowMs`)을 같이 늘린다.
 
 마이그레이션: `0002_sharing_profile.sql`(닉네임·연령대·신분·공개 ID 칸, `standing` 표), `0003_friends.sql`(`invite`·`friendship`·`block`), `0004_pokes.sql`(`poke`, 하루 한도용 `poke_sent`), `0005_peer_stats.sql`(`peer_stat`, 그룹 집계). 동의 행을 지우면 모두 함께 지워진다. 매일 cron이 시간이 지난 초대 코드·잔소리를 지운다.
 

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 연속 일수 불꽃(채움, 색은 코드에서 틴트). 숫자는 코드가 위에 쓴다. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+  android:width="24dp"
+  android:height="24dp"
+  android:viewportWidth="24"
+  android:viewportHeight="24">
+  <path
+    android:fillColor="#FF000000"
+    android:pathData="M12.5,1.5C13,5 15.5,6.5 17.5,9C19,10.9 20,13 20,15.2C20,19.5 16.4,22.5 12,22.5C7.6,22.5 4,19.5 4,15.2C4,12.4 5.4,10 7.2,8.3C7.4,10 8.2,11.2 9.5,11.8C9.2,7.6 10.6,4 12.5,1.5z" />
+</vector>

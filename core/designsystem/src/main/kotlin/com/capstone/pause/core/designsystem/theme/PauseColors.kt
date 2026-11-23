@@ -24,6 +24,12 @@ data class PauseColors(
     val nudgeText: Color,
     val success: Color,
     val scrim: Color,
+    /** 연속 일수 불꽃(ADR-0012). */
+    val streak: Color,
+    /** 친구 순위 1~3위: 금(왕관)·은·동(메달). 아이콘 안 숫자는 [ink]로. */
+    val rankGold: Color,
+    val rankSilver: Color,
+    val rankBronze: Color,
     /** 하루 시계 다이얼의 밤 쪽(18시→0시→6시). */
     val dialNight: Color,
     /** 히트맵 단계 색(0분 다음 칸부터 가장 진한 칸까지). */
@@ -66,6 +72,10 @@ val LightPauseColors = PauseColors(
     nudgeText = Color(0xFFC23A22),
     success = Color(0xFF177A45),
     scrim = Color(0x7A141416),
+    streak = Color(0xFFF2711C),
+    rankGold = Color(0xFFF5B800),
+    rankSilver = Color(0xFFB9BEC7),
+    rankBronze = Color(0xFFC98249),
     dialNight = Color(0xFFE4E4DC),
     heatmap = listOf(
         Color(0xFFCDE2FB),
@@ -106,6 +116,10 @@ val DarkPauseColors = PauseColors(
     nudgeText = Color(0xFFFF7A62),
     success = Color(0xFF4CC27F),
     scrim = Color(0x99000000),
+    streak = Color(0xFFFF8A3D),
+    rankGold = Color(0xFFFFC928),
+    rankSilver = Color(0xFFC9CED6),
+    rankBronze = Color(0xFFD9925A),
     dialNight = Color(0xFF141418),
     // 다크는 어두운 쪽을 0으로 뒤집는다(06 문서 2.3절).
     heatmap = listOf(
