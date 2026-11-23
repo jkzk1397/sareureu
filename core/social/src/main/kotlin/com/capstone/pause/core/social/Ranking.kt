@@ -2,10 +2,12 @@ package com.capstone.pause.core.social
 
 import com.capstone.pause.core.common.DayBoundary
 import com.capstone.pause.core.insights.Baseline
+import com.capstone.pause.core.insights.Coverage
 import com.capstone.pause.core.insights.DayStat
 import com.capstone.pause.core.insights.GoalStreak
 import com.capstone.pause.core.insights.ReductionRate
 import com.capstone.pause.core.insights.ShortformMinutes
+import com.capstone.pause.core.insights.TimeSpan
 import com.capstone.pause.core.model.ContextSlot
 import com.capstone.pause.core.model.ShortformSession
 import java.time.DayOfWeek
@@ -70,11 +72,12 @@ object Ranking {
     }
 }
 
-/** 내 감소율·유효 날·연속 일수 계산(순수). 기록률은 아직 기록하지 않아 기록이 있는 날을 100%로 본다(BUILD_REPORT TODO#3). */
+/** 내 감소율·유효 날·연속 일수 계산(순수). 기록된 비율은 감지를 꺼 둔 구간(`MonitoringGap`)만큼 깎는다. */
 object MyStanding {
     /**
      * 이번 주 = 오늘-7 ~ 어제(새벽 4시 경계), 기준선 = 그 전 28일 중 처음 기록된 7일(리포트와 같은 규칙).
      * 연속 일수는 [goalMinutes](프로필의 하루 목표) 이하로 본 날([GoalStreak]). 목표가 0이면 0.
+     * [off]는 감지를 꺼 둔 구간: 그만큼 그날의 기록된 비율이 내려가고, 80% 아래인 날은 연속 일수에 세지 않는다.
      */
     fun compute(
         sessions: List<ShortformSession>,
@@ -83,10 +86,12 @@ object MyStanding {
         now: Instant,
         nickname: String,
         goalMinutes: Int = 0,
+        off: List<TimeSpan> = emptyList(),
     ): Standing {
         val history = (HISTORY_DAYS downTo 1).map { back ->
             val date = today.minusDays(back.toLong())
-            DayStat(date, ShortformMinutes.onDay(sessions, date, zone, now), coverage = 1.0)
+            val span = TimeSpan(DayBoundary.startOf(date, zone), DayBoundary.endOf(date, zone))
+            DayStat(date, ShortformMinutes.onDay(sessions, date, zone, now), Coverage.ofDay(span, off, now))
         }
         val firstRecorded = sessions.minOfOrNull { it.start }?.let { DayBoundary.logicalDate(it, zone) }
         val valid = history.filter { firstRecorded != null && !it.date.isBefore(firstRecorded) }
@@ -98,10 +103,10 @@ object MyStanding {
             id = ME_ID,
             nickname = nickname,
             reductionRate = rate,
-            coverage = if (week.isEmpty()) null else 1.0,
+            coverage = if (week.isEmpty()) null else week.map { it.coverage }.average(),
             validDays = week.size,
             isMe = true,
-            streakDays = GoalStreak.compute(sessions, today, zone, now, goalMinutes),
+            streakDays = GoalStreak.compute(sessions, today, zone, now, goalMinutes, off),
         )
     }
 

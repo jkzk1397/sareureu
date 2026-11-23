@@ -54,4 +54,27 @@ class GoalStreakTest {
     fun zeroGoalIsZero() {
         assertEquals(0, streak(session("2026-11-21T12:00:00", 0), goal = 0))
     }
+
+    @Test
+    fun dayWithMonitoringMostlyOffIsNotCountedAsKept() {
+        val sessions = listOf(session("2026-11-19T12:00:00", 5))
+        // 11-21 낮 12시~밤 10시(10시간) 감지를 껐다: 기록된 비율 58% → 그날은 달성이 아니다.
+        val longOff = listOf(TimeSpan(at("2026-11-21T12:00:00"), at("2026-11-21T22:00:00")))
+        assertEquals(1, GoalStreak.compute(sessions, today, zone, now, 60, longOff))
+        // 30분만 껐으면 그대로 센다.
+        val shortOff = listOf(TimeSpan(at("2026-11-21T12:00:00"), at("2026-11-21T12:30:00")))
+        assertEquals(4, GoalStreak.compute(sessions, today, zone, now, 60, shortOff))
+    }
+
+    @Test
+    fun coverageOfDayIsTimeNotSwitchedOff() {
+        val day = TimeSpan(at("2026-11-21T04:00:00"), at("2026-11-22T04:00:00"))
+        assertEquals(1.0, Coverage.ofDay(day, emptyList(), now))
+        val off = listOf(TimeSpan(at("2026-11-21T10:00:00"), at("2026-11-21T16:00:00")))
+        assertEquals(0.75, Coverage.ofDay(day, off, now))
+        // 오늘은 지금까지 지난 시간만 본다: 04~20시(16시간) 중 4시간 끔.
+        val todaySpan = TimeSpan(at("2026-11-23T04:00:00"), at("2026-11-24T04:00:00"))
+        val offToday = listOf(TimeSpan(at("2026-11-23T16:00:00"), at("2026-11-23T23:00:00")))
+        assertEquals(0.75, Coverage.ofDay(todaySpan, offToday, now))
+    }
 }
