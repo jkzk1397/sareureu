@@ -19,9 +19,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import com.capstone.pause.core.designsystem.buddy.FriendAvatar
 import com.capstone.pause.core.designsystem.component.PauseCard
+import com.capstone.pause.core.designsystem.theme.PauseSizes
 import com.capstone.pause.core.designsystem.theme.PauseTheme
 import com.capstone.pause.core.social.AcceptResult
+import com.capstone.pause.core.social.FriendCharacterIds
 import com.capstone.pause.core.social.ReceivedRequest
 import com.capstone.pause.core.social.SocialError
 
@@ -119,6 +122,8 @@ private fun ReceivedRow(request: ReceivedRequest, enabled: Boolean, onAccept: ()
         horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xs),
         modifier = Modifier.fillMaxWidth(),
     ) {
+        // 수락 전에는 공개 ID를 모르므로 닉네임으로 캐릭터를 정한다(수락 뒤에는 공개 ID 기준이라 달라질 수 있다).
+        FriendAvatar(characterId = FriendCharacterIds.of(request.fromNickname), size = PauseSizes.rankAvatar)
         Text(
             text = request.fromNickname.ifBlank { stringResource(R.string.friends_requests_no_name) },
             style = PauseTheme.type.body,

@@ -3,6 +3,7 @@ package com.capstone.pause.feature.friends
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material3.AlertDialog
@@ -13,11 +14,15 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import com.capstone.pause.core.designsystem.buddy.FriendAvatar
 import com.capstone.pause.core.designsystem.component.ChoicePill
+import com.capstone.pause.core.designsystem.theme.PauseSizes
 import com.capstone.pause.core.designsystem.theme.PauseTheme
+import com.capstone.pause.core.model.BuddyExpression
 import com.capstone.pause.core.social.EntrustResult
 import com.capstone.pause.core.social.PokeRules
 import com.capstone.pause.core.social.Standing
@@ -27,13 +32,25 @@ import com.capstone.pause.core.social.Standing
  * 친구 폰에 '내 이름 + 이 말' 알림이 뜬다. 그 사이 친구가 숏폼을 멈추면 보내기 버튼이 꺼진다.
  */
 @Composable
-internal fun PokeDialog(friend: Standing, poke: PokeDraftState, onAction: (FriendsAction) -> Unit) {
+internal fun PokeDialog(friend: Standing, characterId: Int, poke: PokeDraftState, onAction: (FriendsAction) -> Unit) {
     val colors = PauseTheme.colors
     val spacing = PauseTheme.spacing
     val canSend = friend.watching && !poke.sending
     AlertDialog(
         onDismissRequest = { onAction(FriendsAction.ClosePoke) },
-        title = { Text(stringResource(R.string.friends_poke_dialog_title, friend.nickname)) },
+        title = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(spacing.xs),
+            ) {
+                FriendAvatar(
+                    characterId = characterId,
+                    size = PauseSizes.rankAvatar,
+                    expression = if (friend.watching) BuddyExpression.WATCHING else BuddyExpression.NEUTRAL,
+                )
+                Text(stringResource(R.string.friends_poke_dialog_title, friend.nickname))
+            }
+        },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(spacing.xs)) {
                 val body = if (friend.watching) {
