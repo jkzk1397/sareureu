@@ -30,3 +30,4 @@ core/ai/build/reports/
 # 화면 PNG 전후 보관(커밋하지 않는다, docs/TEAM_SETUP.md)
 /before/
 /after/
+.kotlin/
