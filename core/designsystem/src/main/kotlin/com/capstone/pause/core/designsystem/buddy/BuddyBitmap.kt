@@ -16,17 +16,21 @@ import com.capstone.pause.core.model.BuddyExpression
 
 /** 알림 큰 아이콘 등 Compose 밖에서 쓰는 르르 비트맵. [BuddyAvatar]와 같은 기하를 쓴다. */
 object BuddyBitmap {
-    /** [expression] 얼굴의 르르를 [sizePx] 정사각형 비트맵으로 그린다. */
-    fun render(context: Context, expression: BuddyExpression, sizePx: Int): Bitmap {
+    /**
+     * [expression] 얼굴의 르르를 [sizePx] 정사각형 비트맵으로 그린다.
+     * [meltFraction](0~1)을 주면 그만큼 녹은 프레임으로 그린다(기본 0 = 녹지 않음).
+     */
+    fun render(context: Context, expression: BuddyExpression, sizePx: Int, meltFraction: Float = 0f): Bitmap {
         val out = createBitmap(sizePx, sizePx)
         val canvas = Canvas(out)
-        val body = BitmapFactory.decodeResource(context.resources, R.drawable.designsystem_buddy_body)
+        val frame = BuddyMelt.frameIndex(meltFraction)
+        val body = BitmapFactory.decodeResource(context.resources, BuddyMelt.drawableRes(frame))
         if (body != null) {
             val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
             canvas.drawBitmap(body, Rect(0, 0, body.width, body.height), Rect(0, 0, sizePx, sizePx), paint)
         }
         val density = context.resources.displayMetrics.density
-        drawFace(canvas, BuddyFaceGeometry.shapes(expression, sizePx.toFloat(), density))
+        drawFace(canvas, BuddyFaceGeometry.shapes(expression, sizePx.toFloat(), density, BuddyMelt.anchor(frame)))
         return out
     }
 

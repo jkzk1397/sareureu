@@ -44,8 +44,8 @@ sealed interface FaceShape {
  * `BuddyAvatar`(Compose)와 `BuddyBitmap`(android.graphics)이 이것 하나만 그린다.
  */
 object BuddyFaceGeometry {
-    private const val AX = 39.7f
-    private const val AY = 78.0f
+    /** 기본 얼굴 자리(녹지 않은 몸). 녹는 프레임마다의 자리는 [BuddyMelt.anchor]. */
+    val DEFAULT_ANCHOR = FaceAnchor(x = 39.7f, y = 78.0f, frontTop = 23f)
     private const val G0 = 11.3f
     private const val G_MAX = 32f
 
@@ -54,8 +54,16 @@ object BuddyFaceGeometry {
     private const val MIN_EYE_DP = 2f
     private const val MIN_STROKE_DP = 1.6f
 
-    /** 표정 [expression]을 [sizePx] 정사각형에 그릴 도형들. [density]는 1dp당 px. */
-    fun shapes(expression: BuddyExpression, sizePx: Float, density: Float): List<FaceShape> {
+    /**
+     * 표정 [expression]을 [sizePx] 정사각형에 그릴 도형들. [density]는 1dp당 px,
+     * [anchor]는 그 몸 그림의 얼굴 자리(녹는 프레임마다 다를 수 있다).
+     */
+    fun shapes(
+        expression: BuddyExpression,
+        sizePx: Float,
+        density: Float,
+        anchor: FaceAnchor = DEFAULT_ANCHOR,
+    ): List<FaceShape> {
         val unitPerDp = 100f * density / sizePx // 1dp를 0~100 단위로
         val g = minOf(maxOf(G0, MIN_GAP_DP * unitPerDp), G_MAX)
         val ry = maxOf(0.095f * g, MIN_EYE_DP * unitPerDp)
@@ -64,8 +72,8 @@ object BuddyFaceGeometry {
         val k = sizePx / 100f // 단위 → px
 
         fun px(v: Float) = v * k
-        fun x(dx: Float) = px(AX + dx * g)
-        fun y(dy: Float) = px(AY + dy * g)
+        fun x(dx: Float) = px(anchor.x + dx * g)
+        fun y(dy: Float) = px(anchor.y + dy * g)
         fun quad(x0: Float, y0: Float, cx: Float, cy: Float, x1: Float, y1: Float) =
             FaceShape.QuadStroke(x(x0), y(y0), x(cx), y(cy), x(x1), y(y1), px(sw))
 
