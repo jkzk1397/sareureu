@@ -113,3 +113,17 @@ capstoneproject/
 - `.github/CODEOWNERS`의 `@R1-github-id` 등을 실제 팀원 아이디로 바꾸고 줄 앞 `#`을 지운다.
 - `main` 보호 설정은 무료 계정의 비공개 저장소에서는 쓸 수 없다. "main 직접 push 금지, PR + CI 통과 후 squash merge"를 규칙으로 지킨다(AI 도구는 `AGENTS.md`로 지킨다). 비공개 저장소의 Actions는 월 2,000분 무료(CI 한 번 약 8분).
 - `docs/BUILD_REPORT.md` "남은 TODO"를 이슈로 옮겨 팀원에게 나눠 준다.
+
+## 8. 공용 서명 키와 릴리스 APK (6-B)
+- **왜**: PC마다 디버그 키가 달라서 내 PC에서 만든 앱과 GitHub가 만든 앱은 서로 덮어 설치되지 않았다("앱이 설치되지 않음"). 이제 디버그·릴리스 모두 **공용 서명 키 하나**로 서명한다.
+- **키 파일과 비밀번호는 저장소에 없다.** 리드 PC의 `C:\Users\<이름>\.sareureu\sareureu-shared.jks`와 `local.properties`, 그리고 GitHub 저장소 Secrets에만 있다. 팀원은 리드에게 키 파일과 아래 네 줄을 **직접**(메신저 파일 전송 등, 저장소·이슈·PR 금지) 받아 자기 `local.properties`에 넣는다.
+  ```
+  signingStoreFile=C\:/Users/<이름>/.sareureu/sareureu-shared.jks
+  signingStorePassword=…
+  signingKeyAlias=sareureu
+  signingKeyPassword=…
+  ```
+- 네 값이 없거나 파일이 없으면 지금처럼 **기본 디버그 키로 빌드된다**(빌드는 되지만 공용 키로 서명한 앱 위에 덮어 설치할 수 없다).
+- **키를 잃어버리면** 같은 서명으로 다시 만들 수 없다. 모든 사용자가 앱을 지우고 다시 깔아야 한다. 키 파일을 따로 한 곳 더 보관한다.
+- **공개 APK 만들기**: `git tag v0.14 && git push origin v0.14` → `release-apk` 워크플로가 릴리스 빌드(코드·리소스 최소화)를 만들어 GitHub Release에 `sareureu-week14.apk`로 올린다. 친구 서버 주소와 Firebase 설정은 Secrets에서 넣고, `appCheckDebugSecret`은 넣지 않는다(공개 APK의 AI는 기본 문장). 이미 있는 Release의 APK만 바꾸려면 Actions 탭에서 태그 이름을 넣어 실행한다.
+- 릴리스 빌드에서 뭔가 깨지면(이름이 바뀌어 못 찾는 클래스 등) `app/proguard-rules.pro`에 keep 규칙을 더한다. 로컬에서는 `./gradlew :app:assembleRelease` 뒤 `adb install app/build/outputs/apk/release/app-release.apk`.
