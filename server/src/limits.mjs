@@ -43,6 +43,15 @@ export const limits = Object.freeze({
     // 이 기간 업로드가 없는 계정은 동의 행과 딸린 기록을 지운다.
     abandonedAfterMs: 60 * dayMs,
 
+    // 또래 통계 보호: 최근 14일 중 유효한 날(기록된 비율 80% 이상이거나 모름)이 7일 이상인 계정만 센다.
+    peerWindowDays: 14,
+    peerMinDays: 7,
+    peerMinCoverage: 0.8,
+    // 그룹 중앙값이 하루 사이 30%(적어도 15분) 넘게 바뀌면 그날은 갱신하지 않는다. 예전 값이 3일 넘게 묵었으면 받아들인다.
+    peerJumpRatio: 0.3,
+    peerJumpMinutes: 15,
+    peerHoldMs: 3 * dayMs,
+
     // 앱이 X-App-Version으로 보내는 계약 번호. 헤더가 없으면 1(ADR-0014 이전 앱).
     minAppVersion: 1,
     // 이 번호부터 잔소리를 '확인(ack) 뒤 삭제'로 준다. 그 아래는 내려 주면 바로 지운다.

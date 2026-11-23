@@ -19,6 +19,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.random.Random
 
 /**
  * 하루 합계 올리기. 무료 한도 안에서 **하루 한 번**(예약) + 동의한 직후 한 번만 돈다.
@@ -67,6 +68,15 @@ internal class SocialDeleteWorker @AssistedInject constructor(
     override suspend fun doWork(): Result = if (sharing.deleteRemote()) Result.success() else Result.retry()
 }
 
+/** 하루 업로드 시각 흩기(순수). */
+object UploadJitter {
+    /** 주기 작업의 첫 실행을 미룰 분: 0분 이상 하루 미만에서 고르게. [random]은 0~1 난수. */
+    fun initialDelayMinutes(random: Double): Long =
+        (random.coerceIn(0.0, 1.0) * MINUTES_PER_DAY).toLong().coerceAtMost(MINUTES_PER_DAY - 1)
+
+    private const val MINUTES_PER_DAY = 24 * 60L
+}
+
 /** WorkManager 예약. 네트워크가 있을 때만. */
 @Singleton
 internal class WorkUploadScheduler @Inject constructor(@ApplicationContext private val context: Context) :
@@ -75,10 +85,15 @@ internal class WorkUploadScheduler @Inject constructor(@ApplicationContext priva
 
     override fun schedule() {
         val work = WorkManager.getInstance(context)
+        // 하루 한 번 올리는 시각을 사용자마다 무작위로 흩는다(모든 폰이 같은 때 몰려 서버 한도를 한꺼번에 쓰지 않게).
+        // 동의 직후의 첫 업로드는 아래 NOW가 바로 한다.
         work.enqueueUniquePeriodicWork(
             DAILY,
             ExistingPeriodicWorkPolicy.KEEP,
-            PeriodicWorkRequestBuilder<SocialUploadWorker>(1, TimeUnit.DAYS).setConstraints(constraints).build(),
+            PeriodicWorkRequestBuilder<SocialUploadWorker>(1, TimeUnit.DAYS)
+                .setInitialDelay(UploadJitter.initialDelayMinutes(Random.nextDouble()), TimeUnit.MINUTES)
+                .setConstraints(constraints)
+                .build(),
         )
         work.enqueueUniquePeriodicWork(
             POKES,

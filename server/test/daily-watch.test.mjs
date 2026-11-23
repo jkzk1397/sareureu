@@ -3,7 +3,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import { test } from 'node:test';
 import worker from '../src/index.mjs';
-import { markApplied } from './helpers.mjs';
+import { d1, markApplied } from './helpers.mjs';
 
 test('동의한 계정의 일일 합계만 저장하고 철회하면 삭제한다', async (t) => {
     const now = Date.parse('2026-11-09T18:59:00.000Z'); // 한국 시간 03:59
@@ -19,29 +19,8 @@ test('동의한 계정의 일일 합계만 저장하고 철회하면 삭제한�
         sql.exec(readFileSync(new URL(`../migrations/${file}`, import.meta.url), 'utf8'));
     }
     markApplied(sql, ['0001_daily_watch.sql', ...later]);
-    const db = {
-        prepare(query) {
-            const statement = sql.prepare(query);
-            return {
-                first: () => statement.get(),
-                bind: (...values) => ({
-                    run: () => statement.run(...values),
-                    all: () => ({ results: statement.all(...values) }),
-                }),
-            };
-        },
-        batch([read, write]) {
-            sql.exec('BEGIN');
-            try {
-                const result = [read.all(), write.run()];
-                sql.exec('COMMIT');
-                return result;
-            } catch (error) {
-                sql.exec('ROLLBACK');
-                throw error;
-            }
-        },
-    };
+    // 다른 시험과 같은 D1 흉내(helpers.mjs): 여러 문장 묶음과 meta.changes를 실제 D1처럼 돌려준다.
+    const db = d1(sql);
 
     const algorithm = { name: 'RSASSA-PKCS1-v1_5', modulusLength: 2048,
         publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' };
