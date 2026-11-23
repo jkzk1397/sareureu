@@ -20,6 +20,13 @@
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
+      <!-- 친구 초대 QR(ADR-0012): 친구 서버의 /invite 페이지가 sareureu://invite/{코드}로 앱을 연다. -->
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="sareureu" android:host="invite" />
+      </intent-filter>
     </activity>
 
     <!-- WorkManager는 PauseApp(Configuration.Provider + HiltWorkerFactory)이 직접 초기화한다. -->

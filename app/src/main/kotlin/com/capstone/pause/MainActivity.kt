@@ -17,7 +17,9 @@ import androidx.lifecycle.lifecycleScope
 import com.capstone.pause.core.data.settings.ThemeMode
 import com.capstone.pause.core.designsystem.theme.PauseTheme
 import com.capstone.pause.core.intervention.service.MonitoringController
+import com.capstone.pause.core.social.InviteLinkInbox
 import com.capstone.pause.core.social.PokeInbox
+import com.capstone.pause.core.social.remote.InviteLinks
 import com.capstone.pause.navigation.PauseAppShell
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -33,6 +35,8 @@ class MainActivity : ComponentActivity() {
 
     @Inject lateinit var pokeInbox: PokeInbox
 
+    @Inject lateinit var inviteLinkInbox: InviteLinkInbox
+
     /** 알림에서 열 때 고를 탭("coach" 등). 한 번 쓰면 비운다. */
     private val openTab = MutableStateFlow<String?>(null)
 
@@ -42,6 +46,7 @@ class MainActivity : ComponentActivity() {
         splash.setKeepOnScreenCondition { viewModel.uiState.value is MainUiState.Loading }
         enableEdgeToEdge()
         openTab.value = intent?.getStringExtra(EXTRA_OPEN_TAB)
+        handleInviteLink(intent)
         setContent {
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
             val ready = uiState as? MainUiState.Ready ?: return@setContent
@@ -81,10 +86,22 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         openTab.value = intent.getStringExtra(EXTRA_OPEN_TAB)
+        handleInviteLink(intent)
+    }
+
+    /** 초대 QR(`sareureu://invite/{코드}`)로 열렸으면 친구 탭을 열고, 친구 탭이 그 코드로 연결한다. */
+    private fun handleInviteLink(intent: Intent?) {
+        if (intent?.action != Intent.ACTION_VIEW) return
+        val code = InviteLinks.codeFrom(intent.dataString) ?: return
+        inviteLinkInbox.offer(code)
+        openTab.value = TAB_FRIENDS
     }
 
     private companion object {
         /** `core:intervention`의 PauseNotifier.EXTRA_OPEN_TAB과 같은 값. */
         const val EXTRA_OPEN_TAB = "open_tab"
+
+        /** 친구 탭(`PauseAppShell`의 탭 이름). */
+        const val TAB_FRIENDS = "friends"
     }
 }

@@ -6,4 +6,5 @@ plugins {
 dependencies {
     implementation(project(":core:social"))
     implementation(project(":core:ai"))
+    implementation(libs.zxing.core)
 }

@@ -10,7 +10,7 @@ test('임시: 동의할 때 닉네임·연령대·신분만 받고 실명·연�
     assert.equal((await call('PUT', '/api/v1/sharing', 'alice', { ...ok, phone: '010' })).status, 400);
     assert.equal((await call('PUT', '/api/v1/sharing', 'alice', { ...ok, nickname: '가'.repeat(13) })).status, 400);
     assert.equal((await call('PUT', '/api/v1/sharing', 'alice', { ...ok, ageBand: 'drop table' })).status, 400);
-    assert.equal((await call('PUT', '/api/v1/sharing', 'alice', { ...ok, consentVersion: 2 })).status, 400);
+    assert.equal((await call('PUT', '/api/v1/sharing', 'alice', { ...ok, consentVersion: 3 })).status, 400);
     assert.equal((await call('PUT', '/api/v1/sharing', 'alice', ok)).status, 204);
     const first = sql.prepare('SELECT * FROM sharing_consent').get();
     assert.equal(first.nickname, '민지');

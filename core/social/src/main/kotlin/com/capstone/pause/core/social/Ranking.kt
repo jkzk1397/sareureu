@@ -3,6 +3,7 @@ package com.capstone.pause.core.social
 import com.capstone.pause.core.common.DayBoundary
 import com.capstone.pause.core.insights.Baseline
 import com.capstone.pause.core.insights.DayStat
+import com.capstone.pause.core.insights.GoalStreak
 import com.capstone.pause.core.insights.ReductionRate
 import com.capstone.pause.core.insights.ShortformMinutes
 import com.capstone.pause.core.model.ContextSlot
@@ -13,7 +14,29 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.time.temporal.TemporalAdjusters
 
-/** 공정한 감소율 랭킹 규칙(ADR-0005). 순수 함수. */
+/**
+ * 친구 랭킹(ADR-0012): 목표 이하로 본 연속 일수가 긴 순서. 나를 포함해 **모두** 보인다(듀오링고처럼).
+ * 같은 일수면 같은 순위, 표시 순서는 나 → 닉네임. 순수 함수.
+ */
+object StreakRanking {
+    /** 순위표. 측정 중 개념이 없어서 [RankingView.measuring]은 비어 있다. */
+    fun build(people: List<Standing>): RankingView {
+        val sorted = people.sortedWith(
+            compareByDescending<Standing> { it.streakDays }.thenByDescending { it.isMe }.thenBy { it.nickname },
+        )
+        var lastDays = -1
+        var lastRank = 0
+        val rows = sorted.mapIndexed { i, s ->
+            val rank = if (s.streakDays == lastDays) lastRank else i + 1
+            lastDays = s.streakDays
+            lastRank = rank
+            RankedRow(rank, s)
+        }
+        return RankingView(rows, measuring = emptyList())
+    }
+}
+
+/** 공정한 감소율 랭킹 규칙(ADR-0005). 순수 함수. 친구 탭 순위는 ADR-0012부터 [StreakRanking]을 쓴다. */
 object Ranking {
     /** 랭킹에 넣는 최소 유효 날. */
     const val MIN_VALID_DAYS = 5
@@ -47,15 +70,19 @@ object Ranking {
     }
 }
 
-/** 내 감소율·유효 날 계산(순수). 기록률은 아직 기록하지 않아 기록이 있는 날을 100%로 본다(BUILD_REPORT TODO#3). */
+/** 내 감소율·유효 날·연속 일수 계산(순수). 기록률은 아직 기록하지 않아 기록이 있는 날을 100%로 본다(BUILD_REPORT TODO#3). */
 object MyStanding {
-    /** 이번 주 = 오늘-7 ~ 어제(새벽 4시 경계), 기준선 = 그 전 28일 중 처음 기록된 7일(리포트와 같은 규칙). */
+    /**
+     * 이번 주 = 오늘-7 ~ 어제(새벽 4시 경계), 기준선 = 그 전 28일 중 처음 기록된 7일(리포트와 같은 규칙).
+     * 연속 일수는 [goalMinutes](프로필의 하루 목표) 이하로 본 날([GoalStreak]). 목표가 0이면 0.
+     */
     fun compute(
         sessions: List<ShortformSession>,
         today: LocalDate,
         zone: ZoneId,
         now: Instant,
         nickname: String,
+        goalMinutes: Int = 0,
     ): Standing {
         val history = (HISTORY_DAYS downTo 1).map { back ->
             val date = today.minusDays(back.toLong())
@@ -74,6 +101,7 @@ object MyStanding {
             coverage = if (week.isEmpty()) null else 1.0,
             validDays = week.size,
             isMe = true,
+            streakDays = GoalStreak.compute(sessions, today, zone, now, goalMinutes),
         )
     }
 

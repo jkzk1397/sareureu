@@ -1,5 +1,5 @@
 {
-  "note": "시연용 가상 친구. 실제 사람이 아니다. 친구에게는 감소율·기록률만 보인다. challengeLateNightZero는 이번 주 월~일 '한밤중 0분' 달성 여부(시연용).",
+  "note": "시연용 가상 친구. 실제 사람이 아니다. 친구에게는 감소율·기록률·연속 일수(목표 이하로 본 날)·지금 시청 중만 보인다(ADR-0012). challengeLateNightZero는 이번 주 월~일 '한밤중 0분' 달성 여부(시연용).",
   "friends": [
     {
       "id": "demo_haeun",
@@ -7,6 +7,8 @@
       "reductionRate": 0.31,
       "coverage": 0.96,
       "validDays": 7,
+      "streakDays": 12,
+      "watching": false,
       "challengeLateNightZero": [
         true,
         true,
@@ -23,6 +25,8 @@
       "reductionRate": 0.18,
       "coverage": 0.88,
       "validDays": 6,
+      "streakDays": 5,
+      "watching": true,
       "challengeLateNightZero": [
         false,
         true,
@@ -39,6 +43,8 @@
       "reductionRate": 0.12,
       "coverage": 0.71,
       "validDays": 4,
+      "streakDays": 2,
+      "watching": false,
       "challengeLateNightZero": [
         true,
         false,

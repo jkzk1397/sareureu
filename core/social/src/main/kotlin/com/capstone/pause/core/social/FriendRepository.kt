@@ -24,7 +24,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
-/** 친구와 랭킹(03 문서 4절). 친구에게는 감소율·기록률만 공유한다. */
+/** 친구와 랭킹(03 문서 4절). 친구에게는 감소율·기록률·연속 일수·지금 시청 중만 공유한다(ADR-0012). */
 interface FriendRepository {
     /** 친구 탭 값. */
     fun observe(): Flow<FriendsOverview>
@@ -38,7 +38,7 @@ interface FriendRepository {
     /** 신고(로컬 기록. 친구 기능이 서버에 연결되면 함께 보낸다). */
     suspend fun report(friendId: String)
 
-    /** 서버에서 친구·순위를 새로 받아 온다. 친구 탭을 열 때만 부른다. 받았으면 true. */
+    /** 서버에서 친구·순위·시청 중을 새로 받아 온다. 친구 탭이 화면에 있는 동안만 몇 초마다 부른다. 받았으면 true. */
     suspend fun refresh(): Boolean = false
 
     /** 내 초대 코드 만들기(이전 코드는 없어진다). 서버가 없으면 null. */
@@ -63,6 +63,8 @@ internal data class DemoFriendEntry(
     val reductionRate: Double? = null,
     val coverage: Double? = null,
     val validDays: Int = 0,
+    val streakDays: Int = 0,
+    val watching: Boolean = false,
     val challengeLateNightZero: List<Boolean> = emptyList(),
 )
 
@@ -104,17 +106,33 @@ internal class DemoFriendRepository @Inject constructor(
             localStore.blocked,
             localStore.reported,
         ) { sessions, demo, profile, blocked, reported ->
-            val me = MyStanding.compute(sessions, today, clock.zone, now, profile?.nickname.orEmpty())
+            val me = MyStanding.compute(
+                sessions,
+                today,
+                clock.zone,
+                now,
+                profile?.nickname.orEmpty(),
+                profile?.dailyGoalMinutes ?: 0,
+            )
             val friends = if (settings.demoMode) demo else emptyList()
             val standings = friends.map {
-                Standing(it.id, it.nickname, it.reductionRate, it.coverage, it.validDays, isMe = false)
+                Standing(
+                    it.id,
+                    it.nickname,
+                    it.reductionRate,
+                    it.coverage,
+                    it.validDays,
+                    isMe = false,
+                    streakDays = it.streakDays,
+                    watching = it.watching,
+                )
             }
             val visible = standings.filter { it.id !in blocked }
             FriendsOverview(
                 isDemo = settings.demoMode,
                 available = settings.demoMode,
                 me = me,
-                ranking = Ranking.build(visible + me),
+                ranking = StreakRanking.build(visible + me),
                 friends = visible,
                 allFriends = standings,
                 blocked = blocked,
@@ -156,7 +174,9 @@ internal class DemoFriendRepository @Inject constructor(
 
     private companion object {
         const val ASSET = "demo/friends.json"
-        const val HISTORY_DAYS = 35L
+
+        // 세션 보관 기간(90일)만큼: 연속 일수를 그만큼 셀 수 있다.
+        const val HISTORY_DAYS = 90L
         const val DAYS = 7
     }
 }

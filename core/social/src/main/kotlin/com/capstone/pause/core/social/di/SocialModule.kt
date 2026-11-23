@@ -1,12 +1,14 @@
 package com.capstone.pause.core.social.di
 
 import com.capstone.pause.core.social.ComingSoonLeagueRepository
+import com.capstone.pause.core.social.FriendPresence
 import com.capstone.pause.core.social.FriendRepository
 import com.capstone.pause.core.social.LeagueRepository
 import com.capstone.pause.core.social.PokeInbox
 import com.capstone.pause.core.social.SharingRepository
 import com.capstone.pause.core.social.remote.FirebaseAnonymousAuth
 import com.capstone.pause.core.social.remote.HttpSocialTransport
+import com.capstone.pause.core.social.remote.LiveFriendPresence
 import com.capstone.pause.core.social.remote.RemoteFriendRepository
 import com.capstone.pause.core.social.remote.RemotePokeInbox
 import com.capstone.pause.core.social.remote.RemoteSharingRepository
@@ -45,6 +47,9 @@ internal abstract class SocialModule {
 
     @Binds
     abstract fun uploadScheduler(impl: WorkUploadScheduler): UploadScheduler
+
+    @Binds
+    abstract fun friendPresence(impl: LiveFriendPresence): FriendPresence
 
     /** 서버 주소(빌드 설정). */
     companion object {

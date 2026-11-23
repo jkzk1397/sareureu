@@ -24,17 +24,23 @@ sealed interface EntrustResult {
 
     /** 서버에 전하지 못함(네트워크·하루 한도·친구가 아님). */
     data object Failed : EntrustResult
+
+    /** 친구가 방금 숏폼을 멈춰서 보내지 않았다(ADR-0012: 시청 중인 친구에게만). */
+    data object NotWatching : EntrustResult
 }
 
 /**
  * 잔소리 받은편지함·보낸 기록(03 문서 4절). 받은 잔소리는 `core:data` PokeRepository가 들고 있고,
- * 여기서는 내가 친구에게 맡기는 쪽을 다룬다.
+ * 여기서는 내가 친구에게 보내는 쪽을 다룬다.
  */
 interface PokeInbox {
-    /** 내가 맡긴 잔소리(최신순). */
+    /** 내가 보낸 잔소리(최신순). */
     val entrusted: Flow<List<EntrustedPoke>>
 
-    /** 친구에게 잔소리 맡기기. 사람이 쓴 글이라 숫자는 허용하고 길이만 본다(금지 표현은 화면이 먼저 거른다). */
+    /**
+     * 친구에게 잔소리 보내기(ADR-0012). 지금 시청 중인 친구에게만 가고, 친구 폰에 몇 초 안에 '보낸 사람 + 글' 알림이 뜬다.
+     * 사람이 쓴 글이라 숫자는 허용하고 길이만 본다(금지 표현은 화면이 먼저 거른다).
+     */
     suspend fun entrust(friendId: String, text: String): EntrustResult
 
     /** 친구가 나에게 맡긴 잔소리를 서버에서 받아 `core:data` PokeRepository에 넣는다(앱이 화면에 있을 때·WorkManager). 받은 개수. */

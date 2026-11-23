@@ -102,6 +102,28 @@ class PauseNotifier @Inject constructor(
         return notifySafely(MESSAGE_ID, notification)
     }
 
+    /**
+     * 친구가 보낸 잔소리(ADR-0012). 보낸 사람 이름 + 글을 메시지 알림(헤드업)으로. 잔소리마다 다른 알림이라 쌓인다.
+     * 탭하면 친구 탭. 띄웠으면 true.
+     */
+    fun postFriendPoke(pokeId: String, fromNickname: String, text: String): Boolean {
+        if (!canNotify()) return false
+        ensureChannels()
+        val sender = Person.Builder().setName(fromNickname).build()
+        val me = Person.Builder().setName(context.getString(R.string.intervention_me)).build()
+        val style = NotificationCompat.MessagingStyle(me).addMessage(text, clock.now().toEpochMilli(), sender)
+        val notification = NotificationCompat.Builder(context, CHANNEL_BUDDY)
+            .setSmallIcon(DesignR.drawable.designsystem_ic_buddy_silhouette)
+            .setStyle(style)
+            .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setGroup(GROUP_FRIENDS)
+            .setAutoCancel(true)
+            .setContentIntent(openTab(TAB_FRIENDS, REQUEST_FRIEND_POKE))
+            .build()
+        return notifySafely(friendPokeId(pokeId), notification)
+    }
+
     /** 예약·미리·주간 알림(reminder 채널). */
     fun postReminder(id: Int, title: String, body: String, tab: String) {
         if (!canNotify()) return
@@ -186,6 +208,13 @@ class PauseNotifier @Inject constructor(
         /** 리포트 탭. */
         const val TAB_REPORT = "report"
 
+        /** 친구 탭. */
+        const val TAB_FRIENDS = "friends"
+
+        /** 친구 잔소리 알림 ID 범위(잔소리 ID로 정한다). */
+        fun friendPokeId(pokeId: String): Int =
+            FRIEND_POKE_ID_BASE + Math.floorMod(pokeId.hashCode(), FRIEND_POKE_ID_SPAN)
+
         /** 서비스 상태 알림 ID. */
         const val STATUS_ID = 1001
 
@@ -197,5 +226,8 @@ class PauseNotifier @Inject constructor(
         private const val LARGE_ICON_PX = 144
         private const val REQUEST_MESSAGE = 11
         private const val REQUEST_STATUS = 12
+        private const val REQUEST_FRIEND_POKE = 13
+        private const val FRIEND_POKE_ID_BASE = 3000
+        private const val FRIEND_POKE_ID_SPAN = 1000
     }
 }

@@ -7,9 +7,11 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStoreFile
 import com.capstone.pause.core.common.ApplicationScope
 import com.capstone.pause.core.data.demo.DemoController
+import com.capstone.pause.core.data.friend.FriendPokeAlert
 import com.capstone.pause.core.data.monitoring.MonitoringStatus
 import com.capstone.pause.core.data.monitoring.MonitoringSwitch
 import com.capstone.pause.core.intervention.demo.DemoControllerImpl
+import com.capstone.pause.core.intervention.notify.NotifierFriendPokeAlert
 import com.capstone.pause.core.intervention.service.MonitoringController
 import dagger.Binds
 import dagger.Module
@@ -52,4 +54,7 @@ internal abstract class InterventionBindsModule {
 
     @Binds
     abstract fun monitoringSwitch(impl: MonitoringController): MonitoringSwitch
+
+    @Binds
+    abstract fun friendPokeAlert(impl: NotifierFriendPokeAlert): FriendPokeAlert
 }

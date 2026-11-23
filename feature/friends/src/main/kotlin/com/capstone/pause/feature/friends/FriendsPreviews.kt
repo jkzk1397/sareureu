@@ -6,24 +6,25 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.capstone.pause.core.designsystem.theme.PauseTheme
 import com.capstone.pause.core.social.ChallengeRow
 import com.capstone.pause.core.social.FriendsOverview
-import com.capstone.pause.core.social.Ranking
 import com.capstone.pause.core.social.SharingState
 import com.capstone.pause.core.social.Standing
+import com.capstone.pause.core.social.StreakRanking
 
-/** 미리보기용 값(목업 08 수치, 시연용 가상 친구). */
+/** 미리보기용 값(시연용 가상 친구). 민지는 지금 시청 중. */
 private fun previewState(): FriendsUiState {
-    val me = Standing("me", "지수", 0.23, 0.91, 7, isMe = true)
+    val me = Standing("me", "지수", 0.23, 0.91, 7, isMe = true, streakDays = 4)
     val friends = listOf(
-        Standing("h", "하은", 0.31, 0.96, 7, false),
-        Standing("m", "민지", 0.18, 0.88, 6, false),
-        Standing("j", "준호", 0.12, 0.71, 4, false),
+        Standing("h", "하은", 0.31, 0.96, 7, false, streakDays = 12),
+        Standing("m", "민지", 0.18, 0.88, 6, false, streakDays = 5, watching = true),
+        Standing("j", "준호", 0.12, 0.71, 4, false, streakDays = 2),
+        Standing("s", "서연", 0.05, 0.8, 5, false, streakDays = 0, watching = true),
     )
     return FriendsUiState(
         overview = FriendsOverview(
             isDemo = true,
             available = true,
             me = me,
-            ranking = Ranking.build(friends + me),
+            ranking = StreakRanking.build(friends + me),
             friends = friends,
             allFriends = friends,
             blocked = emptySet(),
@@ -35,7 +36,7 @@ private fun previewState(): FriendsUiState {
                 ChallengeRow("준호", false, listOf(true, false, false, false, null, null, null)),
             ),
         ),
-        poke = PokeDraftState(friendId = "j", drafts = listOf("내일 아침 수업이잖아. 쇼츠 그만 보고 자라")),
+        pokeFeedback = PokeFeedback.Sent("민지", demo = true),
     )
 }
 
@@ -74,8 +75,8 @@ internal fun FriendsSharingConsentPreview() {
     }
 }
 
-@Preview(name = "light server friends", heightDp = 1600)
-@Preview(name = "dark server friends", heightDp = 1600, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(name = "light server friends", heightDp = 2200)
+@Preview(name = "dark server friends", heightDp = 2200, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 internal fun FriendsServerPreview() {
     val base = previewState()
@@ -87,7 +88,31 @@ internal fun FriendsServerPreview() {
                     sharing = SharingState.CONSENTED,
                     challenge = emptyList(),
                 ),
-                invite = InviteUiState(code = "K7P2QX", expires = java.time.LocalDateTime.of(2026, 11, 17, 21, 30)),
+                invite = InviteUiState(
+                    code = "K7P2QX",
+                    expires = java.time.LocalDateTime.of(2026, 11, 17, 21, 30),
+                    qr = InviteQr.encode("https://sareureu.example.workers.dev/invite/K7P2QX"),
+                ),
+            ),
+            onAction = {},
+        )
+    }
+}
+
+@Preview(name = "light poke dialog", heightDp = 900)
+@Preview(name = "dark poke dialog", heightDp = 900, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+internal fun FriendsPokeDialogPreview() {
+    val base = previewState()
+    PauseTheme {
+        FriendsScreen(
+            uiState = base.copy(
+                pokeFeedback = null,
+                poke = PokeDraftState(
+                    friendId = "m",
+                    text = "내일 1교시잖아, 쇼츠 그만",
+                    drafts = listOf("내일 아침 수업이잖아. 쇼츠 그만 보고 자라"),
+                ),
             ),
             onAction = {},
         )

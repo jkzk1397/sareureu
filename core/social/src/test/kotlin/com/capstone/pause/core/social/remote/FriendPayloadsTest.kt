@@ -40,6 +40,42 @@ class FriendPayloadsTest {
     }
 
     @Test
+    fun friendsReadStreakAndWatching() {
+        val body = json.parseToJsonElement(
+            """
+            {"friends":[
+              {"id":"a","nickname":"민지","reductionRate":0.3,"coverage":0.9,"validDays":7,"streakDays":5,"watching":true},
+              {"id":"b","nickname":"준호","reductionRate":null,"coverage":null,"validDays":0,"streakDays":-3}
+            ],"blocked":[]}
+            """,
+        )
+        val friends = FriendPayloads.friends(body)!!.friends
+        assertEquals(5, friends[0].streakDays)
+        assertTrue(friends[0].watching)
+        // 예전 서버(칸 없음)·이상한 값은 0일·시청 중 아님.
+        assertEquals(0, friends[1].streakDays)
+        assertEquals(false, friends[1].watching)
+    }
+
+    @Test
+    fun inviteLinkForQr() {
+        val server = SocialServer("https://sareureu.example.dev/")
+        val invite = FriendPayloads.invite(
+            json.parseToJsonElement("""{"code":"ABC234","expiresAtMs":1000}"""),
+            server,
+        )!!
+        assertEquals("https://sareureu.example.dev/invite/ABC234", invite.link)
+        assertEquals("ABC234", InviteLinks.codeFrom(invite.link))
+        assertEquals("ABC234", InviteLinks.codeFrom("sareureu://invite/abc234"))
+        assertEquals("ABC234", InviteLinks.codeFrom("sareureu://invite/ABC234/?utm=x"))
+        assertNull(InviteLinks.codeFrom("sareureu://invite/ABC"))
+        assertNull(InviteLinks.codeFrom("sareureu://other/ABC234"))
+        assertNull(InviteLinks.codeFrom("https://evil.example/x/invite/ABC234"))
+        assertNull(InviteLinks.codeFrom("http://sareureu.example.dev/invite/ABC234"))
+        assertNull(InviteLinks.codeFrom(null))
+    }
+
+    @Test
     fun inviteAndCodeInput() {
         val invite = FriendPayloads.invite(json.parseToJsonElement("""{"code":"ABC234","expiresAtMs":1000}"""))!!
         assertEquals("ABC234", invite.code)

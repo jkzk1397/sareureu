@@ -1,7 +1,6 @@
 package com.capstone.pause.feature.friends
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,41 +19,37 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.capstone.pause.core.designsystem.component.ChangeDirection
 import com.capstone.pause.core.designsystem.component.PauseCard
 import com.capstone.pause.core.designsystem.component.PauseScreenColumn
-import com.capstone.pause.core.designsystem.component.RankRow
-import com.capstone.pause.core.designsystem.component.Reveal
 import com.capstone.pause.core.designsystem.theme.PauseTheme
-import com.capstone.pause.core.social.FriendsOverview
-import com.capstone.pause.core.social.RankingView
 import com.capstone.pause.core.social.SharingState
-import kotlin.math.abs
-import kotlin.math.roundToInt
 
-/** 친구 탭 진입점. */
+/** 친구 탭 진입점. 화면에 보이는 동안만 친구·시청 중을 몇 초마다 새로 받는다. */
 @Composable
 fun FriendsRoute(viewModel: FriendsViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    LifecycleStartEffect(viewModel) {
+        viewModel.setVisible(true)
+        onStopOrDispose { viewModel.setVisible(false) }
+    }
     FriendsScreen(uiState = uiState, onAction = viewModel::onAction)
 }
 
 /**
- * 친구 탭(상태 없음): 안내 한 줄 → 이번 주 순위 → 잔소리 맡기기 → 함께 챌린지 → 친구 관리.
- * 서버가 없어 지금은 전부 가상 친구다. "곧 열려요"가 여러 곳에 흩어져 고장 난 것처럼 보여서
- * '+ 초대' 버튼([InviteButton])과 주간 리그 카드([LeagueCard])는 서버가 열릴 때까지 그리지 않는다.
+ * 친구 탭(상태 없음, ADR-0012): 친구 연결(QR) → 친구 목록(시청 중·잔소리·연속 일수) → 목표 지킴 랭킹 → 함께 챌린지 → 친구 관리.
+ * 시연 모드에서는 가상 친구로 보인다. 주간 리그 카드([LeagueCard])는 리그가 열릴 때까지 그리지 않는다.
  */
 @Composable
 fun FriendsScreen(uiState: FriendsUiState, onAction: (FriendsAction) -> Unit, modifier: Modifier = Modifier) {
     PauseScreenColumn(title = stringResource(R.string.friends_title), modifier = modifier) {
         val overview = uiState.overview ?: return@PauseScreenColumn
         if (overview.sharing == SharingState.NOT_CONSENTED) {
-            SharingConsentCard(sharing = uiState.sharing, onAction = onAction)
+            SharingConsentCard(sharing = uiState.sharing, pendingInvite = uiState.invite.pending, onAction = onAction)
             return@PauseScreenColumn
         }
         if (!overview.available) {
@@ -80,11 +75,16 @@ fun FriendsScreen(uiState: FriendsUiState, onAction: (FriendsAction) -> Unit, mo
         }
         val remote = overview.sharing == SharingState.CONSENTED
         if (remote) InviteCard(invite = uiState.invite, onAction = onAction)
-        RankingCard(overview)
-        if (overview.friends.isNotEmpty()) PokeCard(overview = overview, poke = uiState.poke, onAction = onAction)
+        FriendListCard(overview = overview, feedback = uiState.pokeFeedback, onAction = onAction)
+        StreakRankingCard(overview.ranking)
         ChallengeCard(overview.challenge)
         ManageCard(overview = overview, onAction = onAction)
         if (remote) StopSharingButton(sharing = uiState.sharing, onAction = onAction)
+        uiState.poke.friendId?.let { id ->
+            overview.friends.firstOrNull {
+                it.id == id
+            }?.let { PokeDialog(friend = it, poke = uiState.poke, onAction = onAction) }
+        }
     }
 }
 
@@ -110,83 +110,6 @@ internal fun InviteButton() {
                 TextButton(onClick = { showInvite = false }) { Text(stringResource(R.string.friends_ok)) }
             },
         )
-    }
-}
-
-@Composable
-private fun RankingCard(overview: FriendsOverview) {
-    PauseCard(title = stringResource(R.string.friends_ranking_title)) {
-        // 한 줄 설명. 계산 조건은 '자세히'를 눌러야 나온다.
-        var detail by rememberSaveable { mutableStateOf(false) }
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = PauseTheme.spacing.minTouch)
-                .clickable(role = Role.Button) { detail = !detail },
-        ) {
-            Text(
-                text = stringResource(R.string.friends_ranking_subtitle),
-                style = PauseTheme.type.bodySmall,
-                color = PauseTheme.colors.ink2,
-                modifier = Modifier.weight(1f),
-            )
-            Text(
-                text = stringResource(if (detail) R.string.friends_more_hide else R.string.friends_more_show),
-                style = PauseTheme.type.label,
-                color = PauseTheme.colors.ink,
-            )
-        }
-        Reveal(detail) {
-            Text(
-                text = stringResource(R.string.friends_ranking_detail),
-                style = PauseTheme.type.bodySmall,
-                color = PauseTheme.colors.ink,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(PauseTheme.colors.surfaceAlt, PauseTheme.shapes.nested)
-                    .padding(PauseTheme.spacing.md),
-            )
-        }
-        RankingRows(overview.ranking)
-        overview.ranking.measuring.forEach { s ->
-            Text(
-                text = if (s.isMe) {
-                    stringResource(R.string.friends_me_measuring, s.validDays)
-                } else {
-                    val res = if (hasFinalConsonant(s.nickname)) {
-                        R.string.friends_measuring_eun
-                    } else {
-                        R.string.friends_measuring_neun
-                    }
-                    stringResource(res, s.nickname, s.validDays)
-                },
-                style = PauseTheme.type.bodySmall,
-                color = PauseTheme.colors.ink2,
-            )
-        }
-    }
-}
-
-@Composable
-private fun RankingRows(ranking: RankingView) {
-    Column(verticalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xxs)) {
-        ranking.rows.forEach { row ->
-            val s = row.standing
-            val rate = s.reductionRate ?: 0.0
-            val percent = (abs(rate) * PERCENT).roundToInt()
-            RankRow(
-                rank = row.rank,
-                name = s.nickname,
-                reductionLabel = stringResource(
-                    if (rate >= 0) R.string.friends_reduction_down else R.string.friends_reduction_up,
-                    percent,
-                ),
-                coveragePercent = s.coverage?.let { (it * PERCENT).roundToInt() },
-                isMe = s.isMe,
-                reductionDirection = if (rate >= 0) ChangeDirection.DOWN else ChangeDirection.UP,
-            )
-        }
     }
 }
 

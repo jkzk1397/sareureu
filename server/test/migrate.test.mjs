@@ -25,8 +25,8 @@ test('지금 배포된 서버처럼 첫 표만 있고 기록 표가 없어도 �
     await ensureMigrated(db);
     const names = sql.prepare('SELECT name FROM d1_migrations ORDER BY name').all().map((r) => r.name);
     assert.deepEqual(names, ['0001_daily_watch.sql', '0002_sharing_profile.sql', '0003_friends.sql',
-        '0004_pokes.sql', '0005_peer_stats.sql']);
-    for (const table of ['standing', 'invite', 'friendship', 'block', 'poke', 'poke_sent', 'peer_stat']) {
+        '0004_pokes.sql', '0005_peer_stats.sql', '0006_streak_presence.sql']);
+    for (const table of ['standing', 'invite', 'friendship', 'block', 'poke', 'poke_sent', 'peer_stat', 'presence']) {
         assert.ok(sql.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?").get(table), table);
     }
     // 있던 행은 그대로.
@@ -35,7 +35,7 @@ test('지금 배포된 서버처럼 첫 표만 있고 기록 표가 없어도 �
     // 다시 해도(새 Worker 인스턴스) 겹치지 않는다.
     resetMigrationState();
     await ensureMigrated(db);
-    assert.equal(sql.prepare('SELECT COUNT(*) AS n FROM d1_migrations').get().n, 5);
+    assert.equal(sql.prepare('SELECT COUNT(*) AS n FROM d1_migrations').get().n, 6);
     sql.close();
 });
 
@@ -43,7 +43,7 @@ test('빈 데이터베이스면 첫 표부터 모두 만든다', async () => {
     const sql = new DatabaseSync(':memory:');
     resetMigrationState();
     await ensureMigrated(d1(sql));
-    assert.equal(sql.prepare('SELECT COUNT(*) AS n FROM d1_migrations').get().n, 5);
+    assert.equal(sql.prepare('SELECT COUNT(*) AS n FROM d1_migrations').get().n, 6);
     assert.ok(sql.prepare("SELECT 1 FROM sqlite_master WHERE name = 'daily_watch'").get());
     sql.close();
 });

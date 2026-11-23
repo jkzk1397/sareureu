@@ -97,4 +97,34 @@
   <string name="friends_disconnect">연결 끊기</string>
   <!-- 5-4 잔소리 전달 -->
   <string name="friends_poke_sent_remote_eul">%1$s에게 맡겨 뒀어. 친구가 숏폼을 오래 볼 때 도착해.</string>
+  <!-- 6단계 친구 목록·연속 일수 랭킹·시청 중·QR 초대(ADR-0012) -->
+  <string name="friends_list_title">친구</string>
+  <string name="friends_list_empty">아직 친구가 없어. 위 QR을 친구에게 보여 줘.</string>
+  <string name="friends_watching_dot_a11y">지금 숏폼 보는 중</string>
+  <string name="friends_row_a11y">%1$s, 연속 %2$d일</string>
+  <string name="friends_row_watching_a11y">%1$s, 지금 숏폼 보는 중, 연속 %2$d일</string>
+  <string name="friends_poke_button_a11y">%1$s에게 잔소리 보내기</string>
+  <string name="friends_poke_button_off_a11y">%1$s: 지금 숏폼을 안 보고 있어서 잔소리를 보낼 수 없어</string>
+  <string name="friends_streak_a11y">연속 %1$d일</string>
+  <string name="friends_list_hint">초록 점은 지금 숏폼을 보는 친구야. 보는 중일 때만 말풍선으로 잔소리를 보낼 수 있어.</string>
+  <string name="friends_streak_ranking_title">목표 지킴 랭킹</string>
+  <string name="friends_streak_ranking_subtitle">각자 정한 하루 목표 이하로 본 날이 며칠째 이어지는지</string>
+  <string name="friends_streak_ranking_detail">어제까지 끝난 날만 세. 오늘 이미 목표를 넘기면 0일부터 다시 시작해. 같은 일수면 같은 순위야. 본 시간은 친구에게 보이지 않아.</string>
+  <string name="friends_streak_days">%1$d일</string>
+  <string name="friends_rank_me">나</string>
+  <string name="friends_rank_a11y">%1$d위 %2$s, 연속 %3$d일</string>
+  <string name="friends_poke_dialog_title">%1$s에게 잔소리</string>
+  <string name="friends_poke_dialog_body">지금 숏폼을 보고 있어. 보내면 친구 폰에 네 이름과 이 말이 알림으로 떠.</string>
+  <string name="friends_poke_dialog_stopped">방금 숏폼을 멈췄어. 다음에 볼 때 보낼 수 있어.</string>
+  <string name="friends_poke_dialog_send">보내기</string>
+  <string name="friends_poke_sent_now_eul">%1$s에게 보냈어. 지금 알림으로 떠.</string>
+  <string name="friends_poke_sent_demo_eul">%1$s에게 보냈어. 시연용 가상 친구라 실제로 전해지지는 않아.</string>
+  <string name="friends_poke_not_watching">친구가 방금 숏폼을 멈췄어. 다음에 볼 때 보내 줘.</string>
+  <string name="friends_invite_qr_a11y">친구 초대 QR 코드. 찍으면 앱이 열리고 바로 친구로 연결돼.</string>
+  <string name="friends_invite_qr_hint">친구가 이 QR을 카메라로 찍으면 앱이 열리고 바로 연결돼. 앱이 없으면 설치 파일을 받는 화면으로 가. 코드를 직접 넣어도 돼.</string>
+  <string name="friends_invite_pending">QR로 받은 초대가 기다리고 있어. 동의하면 바로 연결돼.</string>
+  <string name="friends_invite_connecting">QR 초대로 연결하는 중…</string>
+  <string name="friends_sharing_send_body_v2">하루에 숏폼을 본 합계(분), 시작할 때보다 얼마나 줄었는지(감소율), 기록된 비율, 목표 이하로 본 연속 일수, 숏폼을 보는 동안 몇 초마다 \'지금 보는 중\' 신호(앱·영상은 없음), 닉네임, 연령대·신분(10명 넘는 묶음 통계에만 써).</string>
+  <string name="friends_sharing_visible_body_v2">닉네임, 감소율, 기록된 비율, 목표 이하로 본 연속 일수, 지금 숏폼을 보는 중인지(초록 점). 본 시간·언제 봤는지·어떤 앱인지는 보이지 않아.</string>
+  <string name="friends_sharing_when_v2">합계는 하루에 한 번, \'보는 중\' 신호는 숏폼을 보는 동안에만 보내. 시연 기록은 보내지 않아.</string>
 </resources>
