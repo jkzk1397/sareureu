@@ -34,13 +34,6 @@ class OnboardingFlowTest {
     }
 
     @Test
-    fun preciseModeIsAnOptionalPermissionRow() {
-        assertTrue(PermissionKind.PRECISE in PermissionKind.entries)
-        assertTrue(PermissionStates(precise = true).granted(PermissionKind.PRECISE))
-        assertEquals(false, PermissionStates(usage = true).granted(PermissionKind.PRECISE))
-    }
-
-    @Test
     fun underageIsOutsideTheFlow() {
         // 만 18세 미만 안내는 다음으로 갈 수 없고, 뒤로 가면 시작 화면.
         assertEquals(OnboardingStep.UNDERAGE, OnboardingFlow.next(OnboardingStep.UNDERAGE))

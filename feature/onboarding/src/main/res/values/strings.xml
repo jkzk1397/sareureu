@@ -96,17 +96,4 @@
   <string name="onboarding_ai_line">AI가 앱이 센 숫자를 보고 말을 걸어. 입력은 Google 서버(미국)로 가.</string>
   <string name="onboarding_ai_use">AI 친구 쓰기</string>
   <string name="onboarding_ai_later_note">나중에 골라도 기본 문장으로 다 돼. 설정 › AI에서 언제든 바꿀 수 있어.</string>
-  <!-- 정밀 모드(선택, ADR-0004 보완): 권한 줄과 고지(설정 화면의 고지와 같은 문구, 버전 1) -->
-  <string name="onboarding_perms_title_precise">필요한 권한을 허용해 줘</string>
-  <string name="onboarding_perms_body_precise">사용 기록은 꼭 필요해. 정밀 모드를 켜면 유튜브·인스타 안에서 쇼츠·릴스를 볼 때만 세. 나머지는 나중에 켜도 돼.</string>
-  <string name="onboarding_perm_precise_row">정밀 모드 (추천)</string>
-  <string name="onboarding_perm_precise_line">앱을 켜 둔 시간이 아니라 쇼츠·릴스를 본 시간만 세.</string>
-  <string name="onboarding_precise_disclosure_title">정밀 모드를 켤까?</string>
-  <string name="onboarding_precise_disclosure_what">접근성 권한으로 유튜브·인스타그램·틱톡 화면이 쇼츠·릴스·피드인지 알아봐. 그래야 유튜브 전체가 아니라 쇼츠를 본 시간만 셀 수 있어.</string>
-  <string name="onboarding_precise_disclosure_keep">남기는 것: 쇼츠 화면이었는지(예/아니오), 넘긴 횟수, 누른 횟수. 이 폰 안에만 남아.</string>
-  <string name="onboarding_precise_disclosure_not_keep">남기지 않는 것: 화면 글자, 영상 제목, 채널 이름, 댓글, 메시지. 판별할 때 잠깐 봐도 저장하지 않아.</string>
-  <string name="onboarding_precise_disclosure_no_action">다른 앱을 대신 누르거나 닫지 않아. 말만 걸어.</string>
-  <string name="onboarding_precise_disclosure_decline">안 켜도 괜찮아. 지금처럼 앱 단위로 계속 셀게.</string>
-  <string name="onboarding_precise_agree">동의하고 켜기</string>
-  <string name="onboarding_precise_decline">괜찮아, 지금처럼 쓸게</string>
 </resources>

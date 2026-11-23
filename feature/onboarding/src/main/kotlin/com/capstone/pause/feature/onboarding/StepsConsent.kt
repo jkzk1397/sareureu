@@ -5,22 +5,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import com.capstone.pause.core.designsystem.component.PauseCard
-import com.capstone.pause.core.designsystem.component.PrimaryButton
-import com.capstone.pause.core.designsystem.component.pauseSurface
 import com.capstone.pause.core.designsystem.theme.PauseTheme
 
 /** 권한 고지 문구 묶음. [line]은 처음 보이는 한 문장, 나머지는 '자세히'. */
@@ -61,15 +52,6 @@ internal fun permissionCopy(kind: PermissionKind): PermissionCopy = when (kind) 
         R.string.onboarding_perm_overlay_not,
         R.string.onboarding_perm_overlay_denied,
     )
-
-    PermissionKind.PRECISE -> PermissionCopy(
-        R.string.onboarding_perm_precise_row,
-        R.string.onboarding_perm_precise_line,
-        R.string.onboarding_precise_disclosure_what,
-        R.string.onboarding_precise_disclosure_keep,
-        R.string.onboarding_precise_disclosure_not_keep,
-        R.string.onboarding_precise_disclosure_decline,
-    )
 }
 
 /**
@@ -85,10 +67,7 @@ internal fun PermissionsStep(state: OnboardingUiState, onAction: (OnboardingActi
         primaryText = stringResource(R.string.onboarding_next),
         onPrimary = { onAction(OnboardingAction.Next) },
     ) {
-        StepHeader(
-            stringResource(R.string.onboarding_perms_title_precise),
-            stringResource(R.string.onboarding_perms_body_precise),
-        )
+        StepHeader(stringResource(R.string.onboarding_perms_title), stringResource(R.string.onboarding_perms_body))
         PermissionKind.entries.forEach { kind ->
             PermissionRow(kind, state.permissions.granted(kind)) { onAction(OnboardingAction.AllowPermission(kind)) }
         }
@@ -98,52 +77,6 @@ internal fun PermissionsStep(state: OnboardingUiState, onAction: (OnboardingActi
                 style = PauseTheme.type.bodySmall,
                 color = PauseTheme.colors.ink2,
             )
-        }
-    }
-    if (state.showPreciseDisclosure) PreciseDisclosure { onAction(OnboardingAction.AnswerPrecise(it)) }
-}
-
-/**
- * 정밀 모드 고지(ADR-0004 보완 문구 그대로, 설정 화면의 고지와 같은 버전). 다른 고지와 묶지 않는 별도 화면이고,
- * 버튼을 눌러야만 동의가 남는다. 바깥을 눌러 닫거나 뒤로 가면 거절로 본다.
- */
-@Composable
-private fun PreciseDisclosure(onAnswer: (Boolean) -> Unit) {
-    Dialog(
-        onDismissRequest = { onAnswer(false) },
-        properties = DialogProperties(usePlatformDefaultWidth = false),
-    ) {
-        val spacing = PauseTheme.spacing
-        Column(
-            verticalArrangement = Arrangement.spacedBy(spacing.sm),
-            modifier = Modifier
-                .padding(spacing.md)
-                .pauseSurface(PauseTheme.shapes.card)
-                .verticalScroll(rememberScrollState())
-                .padding(spacing.lg),
-        ) {
-            Text(
-                text = stringResource(R.string.onboarding_precise_disclosure_title),
-                style = PauseTheme.type.headline,
-                color = PauseTheme.colors.ink,
-                modifier = Modifier.semantics { heading() },
-            )
-            listOf(
-                R.string.onboarding_precise_disclosure_what,
-                R.string.onboarding_precise_disclosure_keep,
-                R.string.onboarding_precise_disclosure_not_keep,
-                R.string.onboarding_precise_disclosure_no_action,
-                R.string.onboarding_precise_disclosure_decline,
-            ).forEach { Text(stringResource(it), style = PauseTheme.type.body, color = PauseTheme.colors.ink) }
-            PrimaryButton(text = stringResource(R.string.onboarding_precise_agree), onClick = { onAnswer(true) })
-            TextButton(
-                onClick = { onAnswer(false) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = spacing.minTouch),
-            ) {
-                Text(stringResource(R.string.onboarding_precise_decline), color = PauseTheme.colors.ink2)
-            }
         }
     }
 }

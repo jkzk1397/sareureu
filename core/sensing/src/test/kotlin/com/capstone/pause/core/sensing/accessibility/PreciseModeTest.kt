@@ -92,16 +92,4 @@ class PreciseModeTest {
         assertEquals(t0.plusSeconds(300), session.end)
         assertEquals(Surface.SHORTS, session.segments.single().surface)
     }
-
-    @Test
-    fun unreadableWindowKeepsLastJudgmentAndNeverAssumesShortform() {
-        // 창을 읽었으면 그 판단 그대로.
-        assertTrue(PreciseMerge.resolve(true, previous = null))
-        assertFalse(PreciseMerge.resolve(false, previous = true))
-        // 못 읽은 순간: 같은 앱의 마지막 판단을 이어 쓴다.
-        assertTrue(PreciseMerge.resolve(null, previous = true))
-        assertFalse(PreciseMerge.resolve(null, previous = false))
-        // 한 번도 못 읽었으면 앱을 켠 것만으로 숏폼으로 치지 않는다.
-        assertFalse(PreciseMerge.resolve(null, previous = null))
-    }
 }

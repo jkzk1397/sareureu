@@ -65,19 +65,7 @@ class OnboardingViewModel @Inject constructor(
 
             is OnboardingAction.SetDailyGoal -> state.update { it.copy(dailyGoalMinutes = action.minutes) }
 
-            // 정밀 모드는 고지 화면을 먼저 보이고, 답을 눌렀을 때만 기록한다.
-            is OnboardingAction.AllowPermission -> if (action.kind == PermissionKind.PRECISE) {
-                state.update { it.copy(showPreciseDisclosure = true) }
-            } else {
-                record(consentOf(action.kind), granted = true)
-            }
-
-            is OnboardingAction.AnswerPrecise -> {
-                state.update { it.copy(showPreciseDisclosure = false) }
-                viewModelScope.launch {
-                    consentRepository.record(ConsentItem.ACCESSIBILITY, PRECISE_NOTICE_VERSION, action.agree)
-                }
-            }
+            is OnboardingAction.AllowPermission -> record(consentOf(action.kind), granted = true)
 
             is OnboardingAction.RefreshPermissions -> state.update { it.copy(permissions = action.states) }
         }
@@ -107,7 +95,6 @@ class OnboardingViewModel @Inject constructor(
         PermissionKind.USAGE -> ConsentItem.USAGE_ACCESS
         PermissionKind.NOTIFICATIONS -> ConsentItem.NOTIFICATIONS
         PermissionKind.OVERLAY -> ConsentItem.OVERLAY
-        PermissionKind.PRECISE -> ConsentItem.ACCESSIBILITY
     }
 
     private fun <T> Set<T>.toggle(value: T): Set<T> = if (value in this) this - value else this + value
@@ -115,9 +102,6 @@ class OnboardingViewModel @Inject constructor(
     private companion object {
         /** 고지 문구 버전. 고지 내용(04 문서)이 바뀌면 올려서 다시 묻는다. 이번에는 접기만 해서 그대로. */
         const val NOTICE_VERSION = 1
-
-        /** 정밀 모드 고지 버전(설정 화면의 고지와 같은 문구·같은 버전). */
-        const val PRECISE_NOTICE_VERSION = 1
     }
 }
 
