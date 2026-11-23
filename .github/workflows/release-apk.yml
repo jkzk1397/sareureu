@@ -1,22 +1,29 @@
 name: release-apk
 
-# Actions 탭 › release-apk › Run workflow로 실행한다. 친구 기능이 들어간 디버그 APK를 만들어 공개 Release로 올린다.
-# 저장소 Secrets가 필요하다(값은 로그에 나오지 않는다):
-#   GOOGLE_SERVICES_JSON : app/google-services.json 파일 내용 그대로
-#   SOCIAL_BASE_URL      : 친구 서버 주소(https://…, local.properties의 socialBaseUrl과 같은 값)
+# 태그(v*)를 올리면 릴리스 APK를 만들어 공개 GitHub Release에 올린다. 예: git tag v0.13 && git push origin v0.13
+# 이미 있는 Release의 APK만 새로 바꾸려면 Actions 탭 › release-apk › Run workflow에 태그 이름을 넣는다.
+# 이때는 태그를 옮기지 않고 `ref`(기본 main)의 코드로 빌드해 그 Release에 올린다.
+# - 공용 서명 키로 서명한다: 이 PC에서 만든 앱과 서명이 같아 덮어 설치된다(6-B).
+# - 친구 서버 주소와 Firebase 설정을 넣는다: 친구 기능이 켜진다.
+# - appCheckDebugSecret은 넣지 않는다: 공개 APK의 AI는 기본 문장으로 동작한다.
+# 저장소 Secrets(값은 로그에 나오지 않는다):
+#   GOOGLE_SERVICES_JSON     app/google-services.json 파일 내용 그대로
+#   SOCIAL_BASE_URL          친구 서버 주소(https://…, local.properties의 socialBaseUrl과 같은 값)
+#   SIGNING_KEYSTORE_BASE64  공용 서명 키 파일(.jks)을 base64로 바꾼 값
+#   SIGNING_STORE_PASSWORD · SIGNING_KEY_ALIAS · SIGNING_KEY_PASSWORD
+# 파일 이름: v0.13 → sareureu-week13.apk(서버 초대 QR 페이지의 APK_URL과 같은 이름), 그 밖의 태그는 sareureu-<태그>.apk.
 # 같은 태그의 Release가 이미 있으면 APK를 새 것으로 바꾼다.
 on:
+  push:
+    tags: ["v*"]
   workflow_dispatch:
     inputs:
       tag:
-        description: "Release 태그"
-        default: "v0.13"
-      apk:
-        description: "APK 파일 이름"
-        default: "sareureu-week13.apk"
-      title:
-        description: "Release 제목"
-        default: "사르르 13주차"
+        description: "Release 태그(이미 있는 태그)"
+        required: true
+      ref:
+        description: "빌드할 브랜치나 커밋"
+        default: "main"
 
 permissions:
   contents: write
@@ -25,8 +32,12 @@ jobs:
   release:
     runs-on: ubuntu-latest
     timeout-minutes: 40
+    env:
+      TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.ref || github.ref_name }}
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
@@ -36,28 +47,43 @@ jobs:
         env:
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
           SOCIAL_BASE_URL: ${{ secrets.SOCIAL_BASE_URL }}
+          SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
+          SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
         run: |
-          if [ -z "$GOOGLE_SERVICES_JSON" ] || [ -z "$SOCIAL_BASE_URL" ]; then
-            echo "::error::저장소 Secrets에 GOOGLE_SERVICES_JSON과 SOCIAL_BASE_URL을 먼저 넣어 주세요."
-            exit 1
-          fi
+          for name in GOOGLE_SERVICES_JSON SOCIAL_BASE_URL SIGNING_KEYSTORE_BASE64 SIGNING_STORE_PASSWORD SIGNING_KEY_ALIAS SIGNING_KEY_PASSWORD; do
+            if [ -z "${!name}" ]; then echo "::error::저장소 Secrets에 $name 을 먼저 넣어 주세요."; exit 1; fi
+          done
           case "$SOCIAL_BASE_URL" in https://*) ;; *) echo "::error::SOCIAL_BASE_URL은 https://로 시작해야 합니다."; exit 1;; esac
           printf '%s' "$GOOGLE_SERVICES_JSON" > app/google-services.json
-          printf 'socialBaseUrl=%s\n' "$SOCIAL_BASE_URL" > local.properties
-      - name: 디버그 빌드
-        run: ./gradlew assembleDebug
+          printf '%s' "$SIGNING_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/shared.jks"
+          {
+            printf 'socialBaseUrl=%s\n' "$SOCIAL_BASE_URL"
+            printf 'signingStoreFile=%s\n' "$RUNNER_TEMP/shared.jks"
+            printf 'signingStorePassword=%s\n' "$SIGNING_STORE_PASSWORD"
+            printf 'signingKeyAlias=%s\n' "$SIGNING_KEY_ALIAS"
+            printf 'signingKeyPassword=%s\n' "$SIGNING_KEY_PASSWORD"
+          } > local.properties
+      - name: 릴리스 빌드(최소화, 공용 키 서명)
+        run: ./gradlew :app:assembleRelease
+      - name: 서명 확인
+        run: |
+          APKSIGNER=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
+          "$APKSIGNER" verify --print-certs app/build/outputs/apk/release/app-release.apk | grep "SHA-256"
       - name: Release 올리기
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ inputs.tag }}
-          APK: ${{ inputs.apk }}
-          TITLE: ${{ inputs.title }}
         run: |
-          cp app/build/outputs/apk/debug/*.apk "$APK"
-          NOTES="친구 기능(QR 초대, 지금 시청 중, 연속 일수 랭킹, 실시간 잔소리)이 들어간 빌드입니다. 친구 탭에서 공유에 동의하면 쓸 수 있습니다. 예전 버전과 서명이 달라 '앱이 설치되지 않음'이 뜨면 기존 앱을 지우고 설치해 주세요. 시연 모드는 설정 › 더 보기 › 시연 모드. ${GITHUB_REF_NAME} ${GITHUB_SHA::7} 기준."
+          case "$TAG" in
+            v0.*) APK="sareureu-week${TAG#v0.}.apk"; TITLE="사르르 ${TAG#v0.}주차";;
+            *) APK="sareureu-${TAG}.apk"; TITLE="사르르 ${TAG}";;
+          esac
+          cp app/build/outputs/apk/release/app-release.apk "$APK"
+          NOTES="친구 기능(초대 코드·QR, 연결 요청과 수락, 지금 시청 중, 연속 일수 랭킹, 잔소리)이 들어간 빌드입니다. 친구 탭에서 공유에 동의하면 쓸 수 있습니다. 이 버전부터 서명 키가 바뀌었습니다: 예전 버전이 깔려 있어 '앱이 설치되지 않음'이 뜨면 기존 앱을 지우고 설치해 주세요(한 번만). 시연 모드는 설정 › 더 보기 › 시연 모드. AI는 기본 문장으로 동작합니다. ${TAG} · $(git rev-parse --short HEAD) 기준."
           if gh release view "$TAG" > /dev/null 2>&1; then
             gh release upload "$TAG" "$APK" --clobber
             gh release edit "$TAG" --title "$TITLE" --notes "$NOTES"
           else
-            gh release create "$TAG" "$APK" --target "${GITHUB_SHA}" --title "$TITLE" --notes "$NOTES"
+            gh release create "$TAG" "$APK" --verify-tag --title "$TITLE" --notes "$NOTES"
           fi
