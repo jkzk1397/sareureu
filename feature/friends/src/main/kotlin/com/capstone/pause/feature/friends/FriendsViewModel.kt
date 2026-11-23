@@ -260,8 +260,13 @@ class FriendsViewModel @Inject constructor(
         polling = viewModelScope.launch {
             // 화면에 올 때 한 번: 받은·보낸 연결 요청.
             runCatching { friendRepository.refreshRequests() }
+            var friendIds: Set<String>? = null
             while (isActive) {
                 runCatching { friendRepository.refresh() }
+                // 친구 목록이 바뀌었으면(내 요청이 수락됨 등) 요청 목록도 새로 받아 끝난 요청을 치운다.
+                val now = uiState.value.overview?.friends?.map { it.id }?.toSet()
+                if (friendIds != null && now != friendIds) runCatching { friendRepository.refreshRequests() }
+                friendIds = now
                 delay(POLL_MS)
             }
         }

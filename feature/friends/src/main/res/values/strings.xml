@@ -122,7 +122,7 @@
   <string name="friends_poke_not_watching">친구가 방금 숏폼을 멈췄어. 다음에 볼 때 보내 줘.</string>
   <string name="friends_invite_qr_a11y">친구 초대 QR 코드. 찍으면 앱이 열리고 바로 친구로 연결돼.</string>
   <string name="friends_invite_qr_hint">친구가 이 QR을 카메라로 찍으면 앱이 열리고 바로 연결돼. 앱이 없으면 설치 파일을 받는 화면으로 가. 코드를 직접 넣어도 돼.</string>
-  <string name="friends_invite_pending">QR로 받은 초대가 기다리고 있어. 동의하면 바로 연결돼.</string>
+  <string name="friends_invite_pending">받은 초대가 기다리고 있어. 동의하면 연결을 요청할지 물어볼게.</string>
   <string name="friends_invite_connecting">QR 초대로 연결하는 중…</string>
   <string name="friends_sharing_send_body_v2">하루에 숏폼을 본 합계(분), 시작할 때보다 얼마나 줄었는지(감소율), 기록된 비율, 목표 이하로 본 연속 일수, 숏폼을 보는 동안 몇 초마다 \'지금 보는 중\' 신호(앱·영상은 없음), 닉네임, 연령대·신분(10명 넘는 묶음 통계에만 써).</string>
   <string name="friends_sharing_visible_body_v2">닉네임, 감소율, 기록된 비율, 목표 이하로 본 연속 일수, 지금 숏폼을 보는 중인지(초록 점). 본 시간·언제 봤는지·어떤 앱인지는 보이지 않아.</string>
