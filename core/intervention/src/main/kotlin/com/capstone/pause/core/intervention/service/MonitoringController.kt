@@ -10,14 +10,18 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import com.capstone.pause.core.common.AppClock
+import com.capstone.pause.core.data.monitoring.MonitoringGapRepository
 import com.capstone.pause.core.data.monitoring.MonitoringState
 import com.capstone.pause.core.data.monitoring.MonitoringStatus
 import com.capstone.pause.core.data.monitoring.MonitoringSwitch
 import com.capstone.pause.core.intervention.di.MonitoringStore
+import com.capstone.pause.core.intervention.nudge.NudgeStateStore
 import com.capstone.pause.core.sensing.usage.UsageAccess
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -34,6 +38,9 @@ import kotlinx.coroutines.flow.map
 class MonitoringController @Inject constructor(
     @ApplicationContext private val context: Context,
     @MonitoringStore private val store: DataStore<Preferences>,
+    private val gaps: MonitoringGapRepository,
+    private val nudgeState: NudgeStateStore,
+    private val clock: AppClock,
 ) : MonitoringStatus,
     MonitoringSwitch {
 
@@ -75,14 +82,30 @@ class MonitoringController @Inject constructor(
     suspend fun start(): Boolean {
         if (!hasUsageAccess()) return false
         store.edit { it[ENABLED] = true }
+        // 꺼 둔 구간을 닫는다(리포트의 기록된 비율·연속 일수가 끈 시간을 빼고 센다).
+        runCatching { gaps.recordOn(clock.now()) }
         ContextCompat.startForegroundService(context, Intent(context, MonitorService::class.java))
         return true
     }
 
-    /** 감지 끄기. */
+    /**
+     * 감지 끄기. 끄는 것은 막지 않는다(ADR-0001). 대신 끈 시각을 적어 두고, 오늘의 알림 단계·연장 횟수·오늘은 그만은
+     * 그대로 남겨 다시 켰을 때 이어 간다. 켜 둔 적이 없으면 구간으로 적지 않는다.
+     */
     suspend fun stop() {
+        val wasEnabled = userEnabled.first()
+        store.edit { it[ENABLED] = false }
+        if (wasEnabled) runCatching { gaps.recordOff(clock.now()) }
+        context.stopService(Intent(context, MonitorService::class.java))
+    }
+
+    /** 모든 기록 삭제용: 감지를 끄고, 남겨 둔 알림 단계 상태도 지운다(끈 구간은 `core:data`가 지운다). */
+    suspend fun stopAndForget() {
         store.edit { it[ENABLED] = false }
         context.stopService(Intent(context, MonitorService::class.java))
+        // 서비스가 내려가며 남기는 마지막 상태 저장이 끝난 뒤에 지워야 남지 않는다.
+        delay(FORGET_DELAY_MS)
+        nudgeState.clear()
     }
 
     /** 부팅 뒤: 사용자가 켜 두었고 권한이 있으면 다시 켠다(specialUse는 부팅 시작 금지 목록에 없음). */
@@ -115,6 +138,7 @@ class MonitoringController @Inject constructor(
     }
 
     private companion object {
+        const val FORGET_DELAY_MS = 500L
         val ENABLED = booleanPreferencesKey("monitoring_enabled")
     }
 }

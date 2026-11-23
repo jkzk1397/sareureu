@@ -3,6 +3,8 @@ package com.capstone.pause.core.social.remote
 import com.capstone.pause.core.common.AppClock
 import com.capstone.pause.core.common.DayBoundary
 import com.capstone.pause.core.data.friend.FriendLocalStore
+import com.capstone.pause.core.data.monitoring.MonitoringGapRepository
+import com.capstone.pause.core.data.monitoring.toSpans
 import com.capstone.pause.core.data.profile.ProfileRepository
 import com.capstone.pause.core.data.session.SessionRepository
 import com.capstone.pause.core.social.ConnectResult
@@ -114,6 +116,7 @@ internal class RemoteFriendRepository @Inject constructor(
     private val localStore: FriendLocalStore,
     private val server: SocialServer,
     private val sharing: RemoteSharingRepository,
+    private val gapRepository: MonitoringGapRepository,
     private val clock: AppClock,
 ) : FriendRepository {
     private val cache = MutableStateFlow<RemoteFriends?>(null)
@@ -138,7 +141,8 @@ internal class RemoteFriendRepository @Inject constructor(
             profileRepository.profile,
             cache,
             localStore.reported,
-        ) { sessions, profile, remote, reported ->
+            gapRepository.gaps,
+        ) { sessions, profile, remote, reported, gaps ->
             val me = MyStanding.compute(
                 sessions,
                 today,
@@ -146,6 +150,7 @@ internal class RemoteFriendRepository @Inject constructor(
                 now,
                 profile?.nickname.orEmpty(),
                 profile?.dailyGoalMinutes ?: 0,
+                gaps.toSpans(clock.now()),
             )
             val friends = remote?.friends.orEmpty()
             val blocked = remote?.blocked.orEmpty()

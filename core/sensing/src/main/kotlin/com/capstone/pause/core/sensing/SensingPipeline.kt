@@ -134,6 +134,16 @@ class SensingPipeline @Inject constructor(
         pending.value = null
     }
 
+    /**
+     * 감지를 멈추되 진행 중 세션은 [at]에서 끝내 돌려준다(저장은 부르는 쪽이 한다). 사용자가 보는 중에 감지를 꺼도
+     * 그때까지 본 시간이 기록에서 빠지지 않게 하려는 것이다. 감지와 같은 스레드(메인)에서 부른다.
+     */
+    fun stopKeepingLive(at: Instant = clock.now()): List<ShortformSession> {
+        val closed = tracker?.close(at).orEmpty().map(::withInteraction)
+        stop()
+        return closed
+    }
+
     /** '그만'을 눌렀다고 알린다(이탈 경로 계산용). */
     fun onNudgeStop(at: Instant = clock.now()) {
         tracker?.onNudgeStop(at)

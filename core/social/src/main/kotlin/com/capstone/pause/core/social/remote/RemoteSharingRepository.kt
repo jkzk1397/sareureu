@@ -6,6 +6,8 @@ import com.capstone.pause.core.common.DayBoundary
 import com.capstone.pause.core.data.insight.PeerGroupStat
 import com.capstone.pause.core.data.insight.PeerStats
 import com.capstone.pause.core.data.insight.PeerStatsRepository
+import com.capstone.pause.core.data.monitoring.MonitoringGapRepository
+import com.capstone.pause.core.data.monitoring.toSpans
 import com.capstone.pause.core.data.profile.ConsentItem
 import com.capstone.pause.core.data.profile.ConsentRepository
 import com.capstone.pause.core.data.profile.ProfileRepository
@@ -161,6 +163,7 @@ internal class RemoteSharingRepository @Inject constructor(
     private val profileRepository: ProfileRepository,
     private val sessionRepository: SessionRepository,
     private val peerStats: PeerStatsRepository,
+    private val gapRepository: MonitoringGapRepository,
     private val clock: AppClock,
     private val log: AppLog,
 ) : SharingRepository {
@@ -259,6 +262,7 @@ internal class RemoteSharingRepository @Inject constructor(
             now,
             profile?.nickname.orEmpty(),
             profile?.dailyGoalMinutes ?: 0,
+            gapRepository.gaps.first().toSpans(now),
         )
         return transport.call("PUT", "/api/v1/standing", SharingPayloads.standing(me, now)).ok
     }

@@ -104,6 +104,15 @@ class SessionTracker(
         return listOf(finish(a, screenOffAt = null)).also { publishLive(now) }
     }
 
+    /** 감지를 멈춘다: 진행 중 세션을 [at]에서 끝내 돌려준다(없으면 빈 목록). 본 시간이 사라지지 않게 저장하려고 쓴다. */
+    fun close(at: Instant): List<ShortformSession> {
+        val a = active ?: return emptyList()
+        closeOpenSegment(a, at)
+        if (a.leftAt == null) a.leftAt = at
+        foreground = null
+        return listOf(finish(a, screenOffAt = null)).also { publishLive(at) }
+    }
+
     private fun onForeground(pkg: String, at: Instant): List<ShortformSession> {
         val previous = foreground
         if (pkg == previous) return emptyList()

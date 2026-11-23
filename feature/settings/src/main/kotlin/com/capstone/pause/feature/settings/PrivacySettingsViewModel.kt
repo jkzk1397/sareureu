@@ -105,7 +105,7 @@ class PrivacySettingsViewModel @Inject constructor(
         viewModelScope.launch {
             local.value = local.value.copy(confirmErase = false, erasing = true)
             val failed = mutableListOf<String>()
-            runCatching { monitoringController.stop() }.onFailure { failed += "monitoring" }
+            runCatching { monitoringController.stopAndForget() }.onFailure { failed += "monitoring" }
             runCatching { reminderScheduler.setReminderTimes(emptyList()) }.onFailure { failed += "reminders" }
             runCatching { WorkManager.getInstance(context).cancelAllWork() }.onFailure { failed += "work" }
             // 작업을 모두 취소한 뒤에 지워야 '다시 지우기' 예약이 살아남는다.

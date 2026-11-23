@@ -5,6 +5,8 @@ import com.capstone.pause.core.common.AppLog
 import com.capstone.pause.core.data.demo.DemoPattern
 import com.capstone.pause.core.data.insight.PeerStats
 import com.capstone.pause.core.data.insight.PeerStatsRepository
+import com.capstone.pause.core.data.monitoring.MonitoringGap
+import com.capstone.pause.core.data.monitoring.MonitoringGapRepository
 import com.capstone.pause.core.data.profile.ConsentItem
 import com.capstone.pause.core.data.profile.ConsentRecord
 import com.capstone.pause.core.data.profile.ConsentRepository
@@ -164,6 +166,20 @@ class SharingTest {
     }
 
     @Test
+    fun dayWithMonitoringSwitchedOffDoesNotAddToTheStreak() = runTest {
+        val f = Fixture(responseCode = 204)
+        f.repo.grant()
+        f.transport.calls.clear()
+        f.sessions.value = listOf(session(today.minusDays(2), 20), session(today.minusDays(1), 30))
+        // 어제 낮 10시간 동안 감지를 꺼 뒀다 → 어제는 목표를 지킨 날로 세지 않는다.
+        val off = today.minusDays(1).atTime(10, 0).atZone(ZoneId.of("Asia/Seoul")).toInstant()
+        f.gaps.value = listOf(MonitoringGap(off, off.plusSeconds(10 * 3600L)))
+        assertTrue(f.repo.uploadStanding())
+        val body = f.transport.calls.single().second
+        assertEquals("0", body?.getValue("streakDays")?.jsonPrimitive?.content)
+    }
+
+    @Test
     fun olderConsentVersionMustConsentAgain() = runTest {
         val f = Fixture(responseCode = 204)
         f.consents.value = mapOf(
@@ -224,6 +240,7 @@ class SharingTest {
         val consents = MutableStateFlow<Map<ConsentItem, ConsentRecord>>(emptyMap())
         val sessions = MutableStateFlow<List<ShortformSession>>(emptyList())
         val peer = FakePeer()
+        val gaps = MutableStateFlow<List<MonitoringGap>>(emptyList())
         val repo = RemoteSharingRepository(
             server = server,
             transport = transport,
@@ -250,6 +267,12 @@ class SharingTest {
                 override suspend fun deleteAll(source: DataSource) = Unit
             },
             peerStats = peer,
+            gapRepository = object : MonitoringGapRepository {
+                override val gaps: Flow<List<MonitoringGap>> = this@Fixture.gaps
+                override suspend fun recordOff(at: Instant) = Unit
+                override suspend fun recordOn(at: Instant) = Unit
+                override suspend fun clear() = Unit
+            },
             clock = AppClock(Clock.fixed(Instant.parse("2026-11-16T03:00:00Z"), ZoneId.of("Asia/Seoul"))),
             log = AppLog.None,
         )

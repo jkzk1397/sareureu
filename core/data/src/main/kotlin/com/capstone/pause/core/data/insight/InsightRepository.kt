@@ -3,17 +3,21 @@ package com.capstone.pause.core.data.insight
 import com.capstone.pause.core.common.AppClock
 import com.capstone.pause.core.common.DayBoundary
 import com.capstone.pause.core.data.monitoring.LiveSessionSource
+import com.capstone.pause.core.data.monitoring.MonitoringGapRepository
 import com.capstone.pause.core.data.monitoring.mergeLiveSession
+import com.capstone.pause.core.data.monitoring.toSpans
 import com.capstone.pause.core.data.profile.ProfileRepository
 import com.capstone.pause.core.data.session.SessionRepository
 import com.capstone.pause.core.data.settings.AppSettings
 import com.capstone.pause.core.data.settings.SettingsRepository
 import com.capstone.pause.core.insights.Baseline
 import com.capstone.pause.core.insights.ClockBins
+import com.capstone.pause.core.insights.Coverage
 import com.capstone.pause.core.insights.DayStat
 import com.capstone.pause.core.insights.MeltStageCalculator
 import com.capstone.pause.core.insights.RiskWindows
 import com.capstone.pause.core.insights.ShortformMinutes
+import com.capstone.pause.core.insights.TimeSpan
 import com.capstone.pause.core.model.DataSource
 import com.capstone.pause.core.model.NudgeEvent
 import com.capstone.pause.core.model.ShortformSession
@@ -42,6 +46,7 @@ internal class DefaultInsightRepository @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val profileRepository: ProfileRepository,
     private val liveSessionSource: LiveSessionSource,
+    private val gapRepository: MonitoringGapRepository,
     private val clock: AppClock,
 ) : InsightRepository {
 
@@ -59,16 +64,19 @@ internal class DefaultInsightRepository @Inject constructor(
         combine(
             sessionRepository.observeSessions(from, to),
             sessionRepository.observeNudges(DayBoundary.startOf(today, clock.zone), to),
-            settingsRepository.settings,
+            combine(settingsRepository.settings, gapRepository.gaps, ::Pair),
             profileRepository.profile,
             liveSessionSource.current,
-        ) { sessions, nudges, settings, profile, live ->
+        ) { sessions, nudges, (settings, gaps), profile, live ->
             val source = if (settings.demoMode) DataSource.DEMO else DataSource.REAL
             // 진행 중 세션은 아직 저장 전이라 따로 더한다(그래야 보는 중인 시간이 오늘 합계에 바로 들어간다).
             val all = mergeLiveSession(sessions, live, source)
             val goal = profile?.dailyGoalMinutes?.toDouble() ?: DEFAULT_DAILY_GOAL_MIN
             // 틱 시각이 아니라 지금 시각으로 센다(보는 중 세션이 틱 사이에도 늘어나게).
-            summarize(maxOf(now, clock.now()), all, nudges, settings, goal)
+            val at = maxOf(now, clock.now())
+            // 감지를 꺼 둔 구간은 실제 기록에만 해당한다(시연 기록은 그대로 100%).
+            val off = if (settings.demoMode) emptyList() else gaps.toSpans(at)
+            summarize(at, all, nudges, settings, goal, off)
         }
     }
 
@@ -78,6 +86,7 @@ internal class DefaultInsightRepository @Inject constructor(
         todayNudges: List<NudgeEvent>,
         settings: AppSettings,
         dailyGoalMinutes: Double,
+        off: List<TimeSpan>,
     ): TodaySummary {
         val zone = clock.zone
         val today = DayBoundary.logicalDate(now, zone)
@@ -88,11 +97,11 @@ internal class DefaultInsightRepository @Inject constructor(
             now,
             zone,
         )
-        // TODO(BUILD_REPORT#3): 감지가 살아 있던 구간 기록이 쌓이면 Coverage.compute로 바꾼다.
-        // 지금은 화면 켜짐·감지 생존 구간을 저장하지 않아 기록이 있는 날을 100%로 본다.
+        // 기록된 비율: 사용자가 감지를 꺼 둔 시간만큼 깎는다(화면 켜짐 구간은 저장하지 않아 그 이상은 재지 않는다).
         val pastDays = (HISTORY_DAYS downTo 1).map { back ->
             val date = today.minusDays(back)
-            DayStat(date, ShortformMinutes.onDay(sessions, date, zone, now), coverage = 1.0)
+            val span = TimeSpan(DayBoundary.startOf(date, zone), DayBoundary.endOf(date, zone))
+            DayStat(date, ShortformMinutes.onDay(sessions, date, zone, now), Coverage.ofDay(span, off, now))
         }
         val firstRecorded = pastDays.indexOfFirst { it.minutes > 0 }
         val baseline = if (firstRecorded < 0) null else Baseline.compute(pastDays.drop(firstRecorded))

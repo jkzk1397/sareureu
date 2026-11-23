@@ -180,4 +180,8 @@
   <string name="settings_precise_disclosure_decline">안 켜도 괜찮아. 지금처럼 앱 단위로 계속 셀게.</string>
   <string name="settings_precise_agree">동의하고 켜기</string>
   <string name="settings_precise_decline">괜찮아, 지금처럼 쓸게</string>
+  <string name="settings_monitoring_off_confirm_title">지금 끌까?</string>
+  <string name="settings_monitoring_off_confirm_body">지금 끄면 오늘 기록이 여기서 멈춰. 그래도 끌래?\n꺼 둔 시간은 리포트의 기록된 비율에서 빠지고, 오늘 알림 단계는 다시 켜도 그대로 이어져.</string>
+  <string name="settings_monitoring_off_confirm_yes">그래도 끌래</string>
+  <string name="settings_monitoring_off_confirm_no">계속 켜 둘게</string>
 </resources>
