@@ -2,17 +2,19 @@ package com.capstone.pause.core.designsystem.buddy
 
 import android.content.res.Configuration
 import androidx.annotation.StringRes
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -25,7 +27,6 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.stringResource
@@ -40,13 +41,19 @@ import com.capstone.pause.core.designsystem.R
 import com.capstone.pause.core.designsystem.theme.PauseColors
 import com.capstone.pause.core.designsystem.theme.PauseMotion
 import com.capstone.pause.core.designsystem.theme.PauseTheme
-import com.capstone.pause.core.designsystem.theme.motionSpec
+import com.capstone.pause.core.designsystem.theme.rememberReducedMotion
 import com.capstone.pause.core.model.BuddyExpression
 import com.capstone.pause.core.model.MeltStage
 
 /**
- * 르르. 몸은 그림 한 장, 얼굴은 [BuddyFaceGeometry]로 그린다(06 문서 8절).
+ * 르르. 몸은 녹는 프레임 6장 중 하나([BuddyMelt]), 얼굴은 [BuddyFaceGeometry]로 그린다(06 문서 8절, ADR-0016).
  * 녹아도 표정은 바뀌지 않는다. 밝은 바탕에서는 그림자를 깐다.
+ *
+ * 녹은 정도는 두 가지로 줄 수 있다.
+ * - [melt]: 하루 기준 단계(오늘 탭). 같은 프레임 중 하나를 고른다.
+ * - [meltFraction]: 0~1(플로팅 버블의 '이번 구간 남은 시간'). 주면 [melt]보다 먼저 쓰고, 가장 가까운 프레임을 고른다.
+ * 프레임이 바뀔 때는 두 장이 짧게 겹쳐 보이고, '애니메이션 제거' 설정이면 바로 바뀐다.
+ * 설정의 '녹는 각설탕 보기'가 꺼져 있으면 부르는 쪽이 0(또는 [MeltStage.NONE])을 넘긴다.
  */
 @Composable
 fun BuddyAvatar(
@@ -55,29 +62,34 @@ fun BuddyAvatar(
     modifier: Modifier = Modifier,
     melt: MeltStage = MeltStage.NONE,
     shadow: Boolean = !PauseTheme.colors.isDark,
+    meltFraction: Float? = null,
 ) {
-    val body = ImageBitmap.imageResource(R.drawable.designsystem_buddy_body)
-    val puddle by animateFloatAsState(
-        BuddyMelt.puddleWidth(melt),
-        motionSpec(tween(PauseMotion.MELT_MS)),
-        label = "puddle",
-    )
-    val scaleY by animateFloatAsState(
-        BuddyMelt.bodyScaleY(melt),
-        motionSpec(tween(PauseMotion.MELT_MS)),
-        label = "bodyScale",
-    )
+    val frame = BuddyMelt.frameIndex(meltFraction ?: BuddyMelt.fraction(melt))
     val description = stringResource(
         R.string.designsystem_buddy_description,
         stringResource(R.string.buddy_name),
         stringResource(expression.labelRes()),
     )
-    Canvas(
+    Box(
         modifier = modifier
             .size(size)
             .semantics { contentDescription = description },
     ) {
-        drawBuddy(body, expression, puddle, scaleY, shadow)
+        // 몸: 프레임이 바뀌면 앞 장과 뒤 장이 겹쳐 보이다가 넘어간다.
+        Crossfade(
+            targetState = frame,
+            // '애니메이션 제거' 설정이면 겹침 없이 바로 바뀐다.
+            animationSpec = if (rememberReducedMotion()) snap() else tween(PauseMotion.MELT_MS),
+            label = "buddyMeltFrame",
+        ) { index ->
+            val body = ImageBitmap.imageResource(BuddyMelt.drawableRes(index))
+            Canvas(Modifier.fillMaxSize()) { drawBody(body, shadow) }
+        }
+        // 얼굴: 겹쳐 넘어가는 동안 흐려지지 않게 몸 위에 따로 그린다.
+        Canvas(Modifier.fillMaxSize()) {
+            val side = this.size.minDimension
+            drawFace(BuddyFaceGeometry.shapes(expression, side, density, BuddyMelt.anchor(frame)), PauseColors.BuddyInk)
+        }
     }
 }
 
@@ -92,41 +104,22 @@ fun BuddyExpression.labelRes(): Int = when (this) {
     BuddyExpression.SLEEPY -> R.string.designsystem_buddy_expr_sleepy
 }
 
-private fun DrawScope.drawBuddy(
-    body: ImageBitmap,
-    expression: BuddyExpression,
-    puddleWidth: Float,
-    bodyScaleY: Float,
-    shadow: Boolean,
-) {
+/** 몸 그림 한 장(그림 안에 웅덩이까지 들어 있다). 밝은 바탕에서는 1dp 아래로 옅은 그림자를 먼저 깐다. */
+private fun DrawScope.drawBody(body: ImageBitmap, shadow: Boolean) {
     val side = size.minDimension
     val dst = IntSize(side.toInt(), side.toInt())
-    if (puddleWidth > 0f) {
-        val w = side * puddleWidth
-        val h = side * BuddyMelt.PUDDLE_HEIGHT
-        drawOval(
-            color = PauseColors.BuddyPuddle,
-            topLeft = Offset((side - w) / 2f, side * BuddyMelt.PUDDLE_CENTER_Y - h / 2f),
-            size = Size(w, h),
-        )
-    }
-    scale(scaleX = 1f, scaleY = bodyScaleY, pivot = Offset(side / 2f, side)) {
-        if (shadow) {
-            translate(top = 1.dp.toPx()) {
-                drawImage(
-                    image = body,
-                    srcOffset = IntOffset.Zero,
-                    srcSize = IntSize(body.width, body.height),
-                    dstSize = dst,
-                    colorFilter = ColorFilter.tint(Color.Black.copy(alpha = SHADOW_ALPHA), BlendMode.SrcIn),
-                )
-            }
+    if (shadow) {
+        translate(top = 1.dp.toPx()) {
+            drawImage(
+                image = body,
+                srcOffset = IntOffset.Zero,
+                srcSize = IntSize(body.width, body.height),
+                dstSize = dst,
+                colorFilter = ColorFilter.tint(Color.Black.copy(alpha = SHADOW_ALPHA), BlendMode.SrcIn),
+            )
         }
-        drawImage(image = body, srcOffset = IntOffset.Zero, srcSize = IntSize(body.width, body.height), dstSize = dst)
     }
-    // 얼굴은 눌린 몸을 따라 내려가되 납작해지지 않게 scale 밖에서 그린다.
-    val face = BuddyFaceGeometry.shapes(expression, side, density)
-    drawFace(BuddyFaceGeometry.squashed(face, side, bodyScaleY), PauseColors.BuddyInk)
+    drawImage(image = body, srcOffset = IntOffset.Zero, srcSize = IntSize(body.width, body.height), dstSize = dst)
 }
 
 private const val SHADOW_ALPHA = 0.2f
@@ -179,17 +172,24 @@ private fun sparklePath(s: FaceShape.Sparkle): Path {
 }
 
 @Composable
-private fun BuddySheet() {
+internal fun BuddySheet() {
     Column(
         modifier = Modifier
             .background(PauseTheme.colors.bg)
             .padding(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
+        // 프레임 6장 × 표정 6개를 세 크기로: 눈·입이 각설탕 앞면 안에 있는지 눈으로 확인하는 판.
         listOf(28.dp, 56.dp, 72.dp).forEach { s ->
-            MeltStage.entries.forEach { melt ->
+            (0 until BuddyMelt.FRAME_COUNT).forEach { frame ->
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    BuddyExpression.entries.forEach { BuddyAvatar(expression = it, size = s, melt = melt) }
+                    BuddyExpression.entries.forEach {
+                        BuddyAvatar(
+                            expression = it,
+                            size = s,
+                            meltFraction = frame / (BuddyMelt.FRAME_COUNT - 1f),
+                        )
+                    }
                 }
             }
         }
@@ -199,6 +199,6 @@ private fun BuddySheet() {
 @Preview(name = "light", widthDp = 520)
 @Preview(name = "dark", widthDp = 520, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun BuddyAvatarSheetPreview() {
+internal fun BuddyAvatarSheetPreview() {
     PauseTheme { BuddySheet() }
 }

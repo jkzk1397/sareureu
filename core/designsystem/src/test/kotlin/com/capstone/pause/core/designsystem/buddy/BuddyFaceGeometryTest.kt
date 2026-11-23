@@ -76,6 +76,49 @@ class BuddyFaceGeometryTest {
     }
 
     @Test
+    fun meltFractionPicksTheNearestOfSixFrames() {
+        assertEquals(6, BuddyMelt.FRAME_COUNT)
+        assertEquals(0, BuddyMelt.frameIndex(0f))
+        assertEquals(0, BuddyMelt.frameIndex(0.09f))
+        assertEquals(1, BuddyMelt.frameIndex(0.11f))
+        assertEquals(2, BuddyMelt.frameIndex(0.4f))
+        assertEquals(4, BuddyMelt.frameIndex(0.75f))
+        assertEquals(5, BuddyMelt.frameIndex(1f))
+        // 범위 밖·이상한 값은 끝으로.
+        assertEquals(0, BuddyMelt.frameIndex(-1f))
+        assertEquals(5, BuddyMelt.frameIndex(3f))
+        assertEquals(0, BuddyMelt.frameIndex(Float.NaN))
+        // 하루 기준 단계는 같은 프레임 중 하나를 고른다.
+        val stages = com.capstone.pause.core.model.MeltStage.entries.map {
+            BuddyMelt.frameIndex(BuddyMelt.fraction(it))
+        }
+        assertEquals(listOf(0, 1, 3, 5), stages)
+    }
+
+    @Test
+    fun everyFrameKeepsTheFaceOnTheFrontOfTheCube() {
+        // 프레임이 녹을수록 앞면 위 모서리가 내려온다. 가장 작은 크기에서도 얼굴이 그 위로 넘어가지 않아야 한다.
+        listOf(28, 44, 56, 72, 96).forEach { dp ->
+            val size = sizePx(dp)
+            val u = size / 100f
+            (0 until BuddyMelt.FRAME_COUNT).forEach { frame ->
+                val anchor = BuddyMelt.anchor(frame)
+                BuddyExpression.entries.forEach { expr ->
+                    BuddyFaceGeometry.shapes(expr, size, density, anchor).forEach { shape ->
+                        points(shape).forEach { (_, y) ->
+                            assertTrue(y >= anchor.frontTop * u && y <= 92 * u, "$expr@$dp frame $frame: y=${y / u}")
+                        }
+                    }
+                }
+            }
+        }
+        // 앞면 위 모서리는 녹을수록 내려오고, 눈 자리는 그대로다(프레임이 바뀌어도 얼굴이 튀지 않는다).
+        val tops = (0 until BuddyMelt.FRAME_COUNT).map { BuddyMelt.anchor(it).frontTop }
+        assertEquals(tops.sorted(), tops)
+        assertEquals(1, (0 until BuddyMelt.FRAME_COUNT).map { BuddyMelt.anchor(it).y }.toSet().size)
+    }
+
+    @Test
     fun smallFaceIsReadable() {
         // 28dp에서도 눈 높이 4dp(반높이 2dp) 이상.
         val size = sizePx(28)

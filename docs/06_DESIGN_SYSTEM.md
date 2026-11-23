@@ -124,16 +124,19 @@
 - 팀 시안과의 차이(시안 `docs/design/reference/team_mockup.png`는 느낌의 기준이고, 아래는 일부러 다르게 정한 것): ① 시안의 꼭대기 라벨 '24시'는 '0시'로 쓴다. ② 탭은 시안의 4개(오늘·리포트·대화·친구)가 아니라 **5개(오늘·리포트·코치·친구·설정)**. ③ 채팅 입력의 마이크(음성 입력)는 P1. ④ 시안은 고리(구간 호)지만 우리는 **꽃잎(시간당 본 분)** 을 쓴다. 길이로 '얼마나'까지 보이기 때문이다. 시계 색은 **언제(맥락)** 만 뜻한다. 시안의 '메신저에서 넘어옴'은 경로라서 시계가 아니라 `FlowDiagram`에 둔다.
 
 ## 8. 르르 그리기 명세 (`BuddyAvatar`)
-**구성**: 몸 = 그림 한 장 `core/designsystem/src/main/res/drawable-nodpi/designsystem_buddy_body.webp`(512×512, 투명 배경, 각설탕 + 오른쪽 아래 작은 웅덩이, **얼굴 없음**). 얼굴 = 코드로 그린 눈·눈썹·입(+반짝이·z). 표정마다 그림을 새로 만들지 않는다(이미지 생성으로 다시 그리면 설탕 결이 매번 달라진다).
+**구성**: 몸 = 녹는 프레임 6장 `core/designsystem/src/main/res/drawable-nodpi/designsystem_buddy_melt_00 ~ _100.webp`(512×512, 투명 배경, 각설탕 + 웅덩이, **얼굴 없음**, ADR-0016). 앱 아이콘은 `designsystem_buddy_body.webp`(녹지 않은 몸, `_00`과 같은 자세)를 쓴다. 얼굴 = 코드로 그린 눈·눈썹·입(+반짝이·z). 표정마다 그림을 새로 만들지 않는다(이미지 생성으로 다시 그리면 설탕 결이 매번 달라진다).
 
 **API**
 ```kotlin
 enum class BuddyExpression { NEUTRAL, WATCHING, CALLING, WORRIED, CHEER, SLEEPY }
 enum class MeltStage { NONE, SOFT, PUDDLE, MELTED }   // 0~3
 @Composable fun BuddyAvatar(expression: BuddyExpression, size: Dp, modifier: Modifier = Modifier,
-                            melt: MeltStage = MeltStage.NONE, shadow: Boolean = !isSystemInDarkTheme())
-object BuddyFaceGeometry { fun shapes(expression: BuddyExpression, sizePx: Float, density: Float): List<FaceShape> }  // 순수 Kotlin
-object BuddyBitmap { fun render(context: Context, expression: BuddyExpression, sizePx: Int): Bitmap }           // 알림 아이콘용
+                            melt: MeltStage = MeltStage.NONE, shadow: Boolean = !isSystemInDarkTheme(),
+                            meltFraction: Float? = null)   // 0~1. 주면 melt보다 먼저 쓴다(플로팅 버블)
+object BuddyMelt { fun frameIndex(fraction: Float): Int; fun fraction(stage: MeltStage): Float; fun anchor(index: Int): FaceAnchor }
+object BuddyFaceGeometry { fun shapes(expression: BuddyExpression, sizePx: Float, density: Float,
+                                      anchor: FaceAnchor = DEFAULT_ANCHOR): List<FaceShape> }  // 순수 Kotlin
+object BuddyBitmap { fun render(context: Context, expression: BuddyExpression, sizePx: Int, meltFraction: Float = 0f): Bitmap }  // 알림 아이콘용
 ```
 `BuddyExpression`·`MeltStage`는 `core:model`(계약), 나머지는 `core:designsystem`. `BuddyAvatar`(Compose `DrawScope`)와 `BuddyBitmap`(`android.graphics.Canvas`)은 같은 `BuddyFaceGeometry`를 그린다. 기하 계산은 한 곳에만. `contentDescription` = "르르, {표정 이름}".
 
@@ -150,17 +153,32 @@ object BuddyBitmap { fun render(context: Context, expression: BuddyExpression, s
 | `CHEER` 칭찬 | 웃는 호: 눈 x = ±0.5일 때 (x−0.1, 0.03) → (x, −0.11) → (x+0.1, 0.03) | — | (−0.18, 0.15) → (0, 0.36) → (0.18, 0.15) | 네 갈래 반짝이 (1.0, −0.55) 반지름 0.17, (1.28, −0.2) 반지름 0.1 | '그만' 직후, AI 주간 분석 |
 | `SLEEPY` 졸림 | 감은 호: (x−0.1, 0) → (x, 0.08) → (x+0.1, 0) | — | 원 (0, 0.24) 반지름 0.05, 선만 | 'z' 꺾은선 (0.9, −0.72)부터 한 변 0.22 | 자기 전·한밤중, 리포트 유형 카드 |
 
-참고 구현(웹 목업에 쓴 것과 같은 값): `docs/brand/ruru_face_reference.py`. 작은 크기의 최솟값(말 걸기 입 타원 1.5·1.7dp, 졸림 입 원 1.3dp, 보는 중 눈 폭 ×1.05 등)은 표가 아니라 이 참고 구현을 따른다. 녹을 때 몸은 바닥 기준으로 세로로 눌리지만 얼굴은 모양을 그대로 두고 위치만 몸을 따라 내려간다(`BuddyFaceGeometry.squashed`).
+참고 구현(웹 목업에 쓴 것과 같은 값): `docs/brand/ruru_face_reference.py`. 작은 크기의 최솟값(말 걸기 입 타원 1.5·1.7dp, 졸림 입 원 1.3dp, 보는 중 눈 폭 ×1.05 등)은 표가 아니라 이 참고 구현을 따른다. 녹을 때는 몸 그림을 프레임으로 바꾸고 얼굴은 그 프레임의 얼굴 자리에 같은 모양으로 그린다(아래 표).
 
 **녹는 단계 `MeltStage`** — 오늘 숏폼 ÷ 내 기준(`Baseline`의 하루 평균, 기준선이 생기기 전 첫 7일은 `Profile.dailyGoalMinutes`, 기본 60분):
-| 단계 | 조건 | 그림 |
+| 단계 | 조건 | 그림(녹는 프레임) |
 |---|---|---|
-| `NONE` 0 | 50% 미만 | 몸 그대로 |
-| `SOFT` 1 | 50~100% | 웅덩이 폭 62% |
-| `PUDDLE` 2 | 100~150% | 웅덩이 82%, 몸 높이 ×0.88 |
-| `MELTED` 3 | 150% 이상(최대) | 웅덩이 100%, 몸 높이 ×0.78 |
+| `NONE` 0 | 50% 미만 | 0% |
+| `SOFT` 1 | 50~100% | 20% |
+| `PUDDLE` 2 | 100~150% | 60% |
+| `MELTED` 3 | 150% 이상(최대) | 100% |
 - 계산은 `core:insights`의 순수 함수 `MeltStageCalculator(todayMinutes, baselineMinutes)`. 새벽 4시(`DayBoundary`)에 0으로.
-- 그리기: `designsystem_buddy_melt_1~3.webp`가 있으면 그 그림을 쓰고(만드는 법은 `docs/brand/BRAND_PROMPTS.md`), 없으면 코드로 그린다 — 몸 아래 타원 웅덩이(높이 13%, `#ECF0E8` 95%, 아래쪽 안쪽 그림자) + 몸을 바닥 기준으로 세로 축소. 단계가 바뀔 때 600ms, '애니메이션 제거'면 즉시.
+
+**녹는 프레임 6장(ADR-0016)** — 원본 `docs/design/reference/ruru_melt_00 ~ 100.png`(투명 PNG)를 `docs/brand/tools/cutout.py … --side 757 --cx 487`로 여섯 장 모두 같은 크기·같은 좌우 자리에 놓고, 바닥은 장마다 96에 닿게 했다. 0~1의 녹은 정도는 가장 가까운 장으로 바꾼다(`BuddyMelt.frameIndex`: 0~0.1 → 0%, 0.1~0.3 → 20% …). 장이 바뀔 때 두 장이 600ms 겹쳐 보이고, '애니메이션 제거'면 즉시.
+
+| 프레임 | 파일 | 각설탕 꼭대기 | 앞면 위 모서리 | 바닥 | 얼굴 자리 A |
+|---|---|---|---|---|---|
+| 0% | `designsystem_buddy_melt_00` | 6.2 | 23 | 96 | (39.7, 78.0) |
+| 20% | `designsystem_buddy_melt_20` | 6.5 | 24 | 96 | (39.7, 78.0) |
+| 40% | `designsystem_buddy_melt_40` | 10.4 | 28 | 96 | (39.7, 78.0) |
+| 60% | `designsystem_buddy_melt_60` | 17.6 | 35 | 96 | (39.7, 78.0) |
+| 80% | `designsystem_buddy_melt_80` | 25.4 | 41 | 96 | (39.7, 78.0) |
+| 100% | `designsystem_buddy_melt_100` | 32.5 | 47 | 96 | (39.7, 78.0) |
+
+- 단위는 몸 그림 정사각형 0~100. 꼭대기·바닥은 `cutout.py`가 잰 값, 앞면 위 모서리는 눈금자를 얹어 눈으로 잰 값이다.
+- 각설탕은 위에서부터 내려앉고 바닥은 그대로다. 눈 자리(78)는 여섯 장 모두 앞면 안에 있어서 **그대로 둔다**(프레임이 바뀌어도 얼굴이 튀지 않는다). 가장 작은 크기(28dp, 눈 간격 32)에서 가장 높이 올라가는 것은 졸림의 'z'(55)와 말 걸기 눈썹(64)이고, 100% 프레임의 앞면 위 모서리(47)보다 아래다. 시험 `everyFrameKeepsTheFaceOnTheFrontOfTheCube`가 확인한다.
+- 새 그림을 넣으면 르르 그림 판(`BuddyScreenshotTest`, 프레임 6장 × 표정 6개 × 28·56·72dp)을 뽑아 눈으로 확인한다.
+- **플로팅 버블에서는 녹은 정도가 '이번 구간이 얼마나 지났나'**다(처음 기준 시간, 또는 5분만 더). 오늘 탭은 위 표의 하루 기준 단계다.
 - **녹아도 아파하지 않는다.** 표정은 상황(맥락·단계)으로만 정하고 녹은 정도로 바꾸지 않는다. 우는 얼굴·땀·빨간색·경고 아이콘 금지. 녹는 건 시간 표시일 뿐 벌이 아니다. 오늘 화면과 플로팅 버블에서만 보이고, 설정에서 끌 수 있다(`showMelt`).
 
 **크기와 자리**
