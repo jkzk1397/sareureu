@@ -15,7 +15,17 @@ internal object PermissionStatus {
         usage = hasUsageAccess(context),
         notifications = NotificationManagerCompat.from(context).areNotificationsEnabled(),
         overlay = Settings.canDrawOverlays(context),
+        precise = accessibilityOn(context),
     )
+
+    /** 시스템 접근성 설정에서 이 앱 서비스가 켜져 있는지(읽기만). */
+    fun accessibilityOn(context: Context): Boolean = runCatching {
+        Settings.Secure.getString(context.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES)
+            .orEmpty().split(':').any { it.startsWith(context.packageName + "/") }
+    }.getOrDefault(false)
+
+    /** 접근성 설정(사용자가 직접 켠다. 앱이 대신 켜지 않는다). */
+    fun accessibilityIntent(): Intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
 
     /** 사용 기록 접근(AppOps)으로 확인한다. */
     fun hasUsageAccess(context: Context): Boolean {

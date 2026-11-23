@@ -53,7 +53,15 @@ fun OnboardingRoute(onFinished: () -> Unit, viewModel: OnboardingViewModel = hil
                         }
 
                     PermissionKind.OVERLAY -> context.open(PermissionStatus.overlayIntent(context))
+
+                    // 고지 화면부터(ViewModel). 설정은 동의한 뒤에 연다.
+                    PermissionKind.PRECISE -> Unit
                 }
+            }
+            if (action is OnboardingAction.AnswerPrecise && action.agree &&
+                !PermissionStatus.accessibilityOn(context)
+            ) {
+                context.open(PermissionStatus.accessibilityIntent())
             }
         },
         onCloseApp = { (context as? Activity)?.finish() },

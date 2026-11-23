@@ -34,20 +34,23 @@ enum class OnboardingStep(val section: Int) {
     }
 }
 
-/** 온보딩에서 묻는 권한. */
-enum class PermissionKind { USAGE, NOTIFICATIONS, OVERLAY }
+/** 온보딩에서 묻는 권한. [PRECISE]는 선택(정밀 모드: 접근성으로 쇼츠·릴스 화면만 셈, ADR-0004 보완). */
+enum class PermissionKind { USAGE, NOTIFICATIONS, OVERLAY, PRECISE }
 
 /** 권한 상태(설정에서 돌아올 때마다 다시 읽는다). */
 data class PermissionStates(
     val usage: Boolean = false,
     val notifications: Boolean = false,
     val overlay: Boolean = false,
+    /** 시스템 접근성 설정에서 이 앱 서비스가 켜져 있는지(동의가 없으면 서비스가 스스로 꺼진다). */
+    val precise: Boolean = false,
 ) {
     /** 그 권한이 허용됐는지. */
     fun granted(kind: PermissionKind): Boolean = when (kind) {
         PermissionKind.USAGE -> usage
         PermissionKind.NOTIFICATIONS -> notifications
         PermissionKind.OVERLAY -> overlay
+        PermissionKind.PRECISE -> precise
     }
 }
 
@@ -63,6 +66,8 @@ data class OnboardingUiState(
     val dailyGoalMinutes: Int = DEFAULT_DAILY_GOAL,
     val permissions: PermissionStates = PermissionStates(),
     val saving: Boolean = false,
+    /** 정밀 모드 고지 화면을 보이는 중(다른 고지와 묶지 않는 별도 화면, ADR-0004 보완). */
+    val showPreciseDisclosure: Boolean = false,
 ) {
     /** 화면에 보이는 평일 취침 시각. */
     val shownSleep: LocalTime get() = sleep ?: DefaultRhythms.sleepOf(occupation)
@@ -128,4 +133,7 @@ sealed interface OnboardingAction {
 
     /** 권한 상태 다시 읽기. */
     data class RefreshPermissions(val states: PermissionStates) : OnboardingAction
+
+    /** 정밀 모드 고지의 답. 동의하면 기록하고 Route가 시스템 접근성 설정을 연다. 닫기·뒤로 가기는 거절. */
+    data class AnswerPrecise(val agree: Boolean) : OnboardingAction
 }
