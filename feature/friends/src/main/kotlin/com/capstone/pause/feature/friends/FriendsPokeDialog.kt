@@ -137,10 +137,19 @@ internal fun PokeFeedbackText(result: PokeFeedback) {
         is PokeFeedback.Rejected -> stringResource(
             when (result.reason) {
                 EntrustResult.Empty -> R.string.friends_poke_empty
+
                 EntrustResult.TooLong -> R.string.friends_poke_too_long
+
                 EntrustResult.Banned -> R.string.friends_poke_banned
+
                 EntrustResult.Failed -> R.string.friends_poke_failed
+
+                // TODO(#59, 5-B): 한도·정지·오류 종류별 문구는 5-B에서.
+                is EntrustResult.Limited, EntrustResult.Suspended, is EntrustResult.Error ->
+                    R.string.friends_poke_failed
+
                 EntrustResult.NotWatching -> R.string.friends_poke_not_watching
+
                 EntrustResult.Entrusted -> R.string.friends_poke_empty
             },
         ) to false

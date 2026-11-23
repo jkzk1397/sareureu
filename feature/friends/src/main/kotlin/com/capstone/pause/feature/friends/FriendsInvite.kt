@@ -167,6 +167,13 @@ internal fun InviteCard(invite: InviteUiState, onAction: (FriendsAction) -> Unit
                     ConnectResult.Unavailable -> stringResource(R.string.friends_connect_unavailable)
 
                     ConnectResult.Failed -> stringResource(R.string.friends_connect_failed)
+
+                    // TODO(#59, 5-B): 요청 뒤 수락 화면과 오류 종류별 문구는 5-B에서.
+                    is ConnectResult.Requested,
+                    ConnectResult.TooManyRequests,
+                    is ConnectResult.InvalidCode,
+                    is ConnectResult.Error,
+                    -> stringResource(R.string.friends_connect_failed)
                 },
                 style = PauseTheme.type.bodySmall,
                 color = PauseTheme.colors.ink,

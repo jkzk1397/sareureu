@@ -94,7 +94,7 @@ internal class RemotePokeInbox @Inject constructor(
         return EntrustResult.Entrusted
     }
 
-    override suspend fun fetch(): Int = mutex.withLock {
+    override suspend fun fetch(manual: Boolean): Int = mutex.withLock {
         if (!remote()) return 0
         val now = clock.now()
         if (lastFetch?.let { Duration.between(it, now) < MIN_INTERVAL } == true) return 0
