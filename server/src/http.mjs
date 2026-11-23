@@ -5,6 +5,14 @@ export function error(code, status) {
     return Response.json({ error: code }, { status, headers: { 'Cache-Control': 'no-store' } });
 }
 
+/** 한도 초과 `429 { "error": code }`. [retryAfterSec]초 뒤에 다시 해 보라고 `Retry-After`로 알린다. */
+export function tooMany(code, retryAfterSec) {
+    return Response.json({ error: code }, {
+        status: 429,
+        headers: { 'Cache-Control': 'no-store', 'Retry-After': String(Math.max(1, Math.ceil(retryAfterSec))) },
+    });
+}
+
 /** 본문 없는 성공. */
 export function noContent() {
     return new Response(null, { status: 204, headers: { 'Cache-Control': 'no-store' } });

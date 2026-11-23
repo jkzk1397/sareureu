@@ -11,7 +11,9 @@ async function join(call, user, nickname, version = 2) {
 
 async function befriend(call, a, b) {
     const invite = await call('POST', '/api/v1/invites', a);
-    assert.equal((await call('POST', `/api/v1/invites/${invite.body.code}/accept`, b)).status, 201);
+    const requested = await call('POST', `/api/v1/invites/${invite.body.code}/requests`, b);
+    assert.equal(requested.status, 201);
+    assert.equal((await call('POST', `/api/v1/friend-requests/${requested.body.request.id}/accept`, a)).status, 201);
 }
 
 test('6단계: 시청 중 신호는 동의 버전 2부터, 최근 5초 안 신호만 친구 목록에 시청 중으로 보인다', async (t) => {
@@ -101,25 +103,29 @@ test('6단계: 연속 일수를 저장하고 친구에게 보인다(없으면 0,
 
 test('6단계: 초대 QR 페이지는 로그인 없이 열리고, 앱을 열거나 설치 파일로 보낸다', async (t) => {
     const { worker, env } = await testServer(t, now);
-    const response = await worker.fetch(new Request('https://worker.example/invite/k7p2qx'), env);
+    const response = await worker.fetch(new Request('https://worker.example/invite/k7p2qxm4'), env);
     assert.equal(response.status, 200);
     assert.match(response.headers.get('Content-Type'), /^text\/html/);
     const html = await response.text();
     const apk = 'https://github.com/jkzk1397/sareureu/releases/download/v0.13/sareureu-week13.apk';
-    assert.ok(html.includes('K7P2QX'));
-    assert.ok(html.includes('intent://invite/K7P2QX#Intent;scheme=sareureu;package=com.capstone.pause;'));
+    assert.ok(html.includes('K7P2QXM4'));
+    assert.ok(html.includes('intent://invite/K7P2QXM4#Intent;scheme=sareureu;package=com.capstone.pause;'));
+    // 바로 연결된다고 말하지 않는다(요청 뒤 수락, ADR-0014).
+    assert.ok(html.includes('친구가 수락하면 연결돼'));
     assert.ok(html.includes(`S.browser_fallback_url=${encodeURIComponent(apk)}`));
     assert.ok(html.includes(`href="${apk}"`));
 
     // 헷갈리는 글자(0·O·1·I·L)가 섞인 코드는 없는 코드.
-    const bad = await worker.fetch(new Request('https://worker.example/invite/K0P2QX'), env);
+    const bad = await worker.fetch(new Request('https://worker.example/invite/K0P2QXM4'), env);
     assert.equal(bad.status, 404);
+    // 예전 6자리 코드도 없는 코드.
+    assert.equal((await worker.fetch(new Request('https://worker.example/invite/K7P2QX'), env)).status, 404);
     assert.ok(!(await bad.text()).includes('intent://'));
-    assert.equal((await worker.fetch(new Request('https://worker.example/invite/K7P2QX', { method: 'POST' }), env))
+    assert.equal((await worker.fetch(new Request('https://worker.example/invite/K7P2QXM4', { method: 'POST' }), env))
         .status, 404);
 
     // 설치 파일 주소는 설정으로 바꿀 수 있지만 https만.
-    assert.ok((await invitePage('K7P2QX', { APK_URL: 'https://example.com/a.apk' }).text())
+    assert.ok((await invitePage('K7P2QXM4', { APK_URL: 'https://example.com/a.apk' }).text())
         .includes('https://example.com/a.apk'));
-    assert.ok((await invitePage('K7P2QX', { APK_URL: 'javascript:alert(1)' }).text()).includes(apk));
+    assert.ok((await invitePage('K7P2QXM4', { APK_URL: 'javascript:alert(1)' }).text()).includes(apk));
 });
