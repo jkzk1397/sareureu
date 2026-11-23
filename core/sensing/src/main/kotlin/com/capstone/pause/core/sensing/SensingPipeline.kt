@@ -116,6 +116,8 @@ class SensingPipeline @Inject constructor(
             launch { t.currentSession.collect { pending.value = it } }
             launch {
                 while (true) {
+                    // 틱은 '잠깐 떠난 세션을 60초 뒤에 끝내기'에만 쓴다. 이어지는 세션이 없으면 생길 때까지 잔다(6-C).
+                    t.currentSession.first { it != null }
                     delay(TICK_MS)
                     save(lock.withLock { t.onTick(clock.now()) })
                 }

@@ -145,6 +145,9 @@ class NudgeEngine(private val zone: ZoneId, private val writer: NudgeWriter, pri
         current = null
     }
 
+    /** 지켜볼 세션이 없는지(숏폼을 보는 중도, 잠깐 떠난 60초 안도 아님). 이때는 매초 틱을 돌 필요가 없다. */
+    val idle: Boolean get() = current == null
+
     /** 오늘 연장 횟수. */
     val todayExtensions: Int get() = extensionsToday
 
