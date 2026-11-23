@@ -26,6 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import com.capstone.pause.core.data.insight.LiveSummary
 import com.capstone.pause.core.data.insight.RiskSummary
@@ -156,6 +157,7 @@ internal fun PokeCard(poke: ReceivedPoke, onClick: () -> Unit, modifier: Modifie
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xs),
+            modifier = Modifier.heightIn(min = PauseSizes.rankAvatar),
         ) {
             Box(
                 contentAlignment = Alignment.Center,
@@ -169,6 +171,8 @@ internal fun PokeCard(poke: ReceivedPoke, onClick: () -> Unit, modifier: Modifie
                 text = stringResource(R.string.today_poke_title),
                 style = PauseTheme.type.label,
                 color = colors.social,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
             )
             GoMark(colors.social)
@@ -186,6 +190,8 @@ internal fun PlanCard(plan: IfThenPlan, onClick: () -> Unit, modifier: Modifier 
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(PauseTheme.spacing.xs),
+            // 옆의 잔소리 카드(이름 동그라미)와 제목 줄 높이를 맞춰 두 카드의 본문이 같은 높이에서 시작하게 한다.
+            modifier = Modifier.heightIn(min = PauseSizes.rankAvatar),
         ) {
             Icon(
                 painter = painterResource((plan.context ?: ContextSlot.OTHER).iconRes()),
@@ -197,6 +203,8 @@ internal fun PlanCard(plan: IfThenPlan, onClick: () -> Unit, modifier: Modifier 
                 text = stringResource(R.string.today_plan_title),
                 style = PauseTheme.type.label,
                 color = colors.onAccentContainer,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
             )
             GoMark(colors.onAccentContainer)

@@ -22,6 +22,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import com.capstone.pause.core.designsystem.R
 import com.capstone.pause.core.designsystem.theme.PauseSizes
@@ -96,9 +97,19 @@ fun ContextLegendRow(slot: ContextSlot, value: String, modifier: Modifier = Modi
             tint = colors.ink,
             modifier = Modifier.size(PauseSizes.iconSmall),
         )
-        Spacer(Modifier.width(PauseTheme.spacing.xs))
-        Text(text = name, style = PauseTheme.type.body, color = colors.ink, modifier = Modifier.weight(1f))
-        Text(text = value, style = PauseTheme.type.body, color = colors.ink2)
+        Spacer(Modifier.width(PauseTheme.spacing.xxs))
+        // 두 칸으로 나눠 쓰는 좁은 자리에서도 이름이 한 줄에 들어가게 작은 본문 글자를 쓰고, 넘치면 줄이지 않고 말줄임한다.
+        Text(
+            text = name,
+            style = PauseTheme.type.bodySmall,
+            color = colors.ink,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f),
+        )
+        Spacer(Modifier.width(PauseTheme.spacing.xxs))
+        Text(text = value, style = PauseTheme.type.bodySmall, color = colors.ink2, maxLines = 1, softWrap = false)
     }
 }
 

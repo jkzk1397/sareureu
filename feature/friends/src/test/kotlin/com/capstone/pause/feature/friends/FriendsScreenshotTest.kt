@@ -39,12 +39,19 @@ class FriendsScreenshotTest {
     @Test
     fun friendsPokeDialog() = shoot("friends_poke_dialog", heightDp = 900) { FriendsPokeDialogPreview() }
 
+    /** 큰 글자(시스템 글자 크기 1.3배): 친구 연결·요청·목록·순위가 잘리거나 한 글자씩 꺾이지 않는지 본다. */
+    @Test
+    fun friendsServerLargeFont() =
+        shoot("friends_server_font13", heightDp = 3600, fontScale = 1.3f) { FriendsServerPreview() }
+
     /** 가로 360dp(갤럭시 S22), xxhdpi. 화면이 길어 [heightDp]만큼 세로를 늘려 한 장에 담는다. */
-    private fun shoot(name: String, heightDp: Int, content: @Composable () -> Unit) {
+    private fun shoot(name: String, heightDp: Int, fontScale: Float = 1f, content: @Composable () -> Unit) {
         for (dark in listOf(false, true)) {
             val mode = if (dark) "night" else "notnight"
             RuntimeEnvironment.setQualifiers("w360dp-h${heightDp}dp-$mode-xxhdpi")
+            RuntimeEnvironment.setFontScale(fontScale)
             captureRoboImage("${name}_${if (dark) "dark" else "light"}.png") { content() }
         }
+        RuntimeEnvironment.setFontScale(1f)
     }
 }
