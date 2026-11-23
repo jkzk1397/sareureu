@@ -45,7 +45,7 @@ class StreakRankingTest {
         assertFalse(PresenceRules.isWatching(live.copy(end = start.plusSeconds(30))))
         assertFalse(PresenceRules.isWatching(live.copy(source = DataSource.DEMO)))
         assertFalse(PresenceRules.isWatching(null))
-        // 서버의 5초 판정 안에 신호가 두 번은 가게.
-        assertTrue(PresenceRules.BEAT_MS * 2 < 5_000)
+        // 서버의 40초 판정 안에 신호가 두 번은 가게(한 번 놓쳐도 시청 중이 이어진다).
+        assertTrue(PresenceRules.BEAT_MS * 2 < 40_000)
     }
 }

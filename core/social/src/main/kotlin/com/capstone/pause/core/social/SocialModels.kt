@@ -3,7 +3,7 @@ package com.capstone.pause.core.social
 /**
  * 랭킹에 쓰는 한 사람(나 또는 친구). 친구에게 공유되는 것은 감소율·기록률·연속 일수·지금 시청 중뿐이다(ADR-0012).
  * [reductionRate]는 0.23 = 23% 줄었음, 늘었으면 음수. [streakDays]는 목표 이하로 본 연속 일수(`GoalStreak`),
- * [watching]은 최근 5초 안에 숏폼을 보고 있었는지(서버 판정, 나는 항상 false).
+ * [watching]은 최근 40초 안에 숏폼을 보고 있었는지(서버 판정, 나는 항상 false).
  */
 data class Standing(
     val id: String,

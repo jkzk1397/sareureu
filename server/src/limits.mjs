@@ -30,6 +30,10 @@ export const limits = Object.freeze({
     pokesPerFriendPerDay: 3,
     maxInbox: 20,
 
+    // 지금 시청 중: 앱이 15초마다 신호를 보내고, 서버는 최근 40초 안에 신호가 있으면 시청 중으로 본다
+    // (신호를 두 번 놓쳐도 이어지게). ADR-0012는 2초·5초였고 "사용자가 늘면 간격을 늘린다"고 했다(6-A).
+    watchingWindowMs: 40 * secondMs,
+
     // 신고: 하루 10번. 최근 180일에 서로 다른 3명에게 신고되면 잔소리 보내기가 멈춘다.
     reportsPerDay: 10,
     reportersToSuspend: 3,

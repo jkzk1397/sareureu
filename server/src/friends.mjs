@@ -221,8 +221,9 @@ async function closeRequest({ request, db, userId, now, params }) {
 }
 
 async function listFriends({ db, userId, now }) {
-    if (!await consented(db, userId)) return error('sharing_consent_required', 403);
-    const [list, blockedList] = await db.batch([
+    // 동의 확인까지 한 묶음으로(D1 요청 한 번, 6-A): 친구 탭이 열려 있는 동안 15초마다 불린다.
+    const [me, list, blockedList] = await db.batch([
+        db.prepare('SELECT 1 FROM sharing_consent WHERE user_id = ?').bind(userId),
         db.prepare(`
             SELECT c.public_id AS id, c.nickname AS nickname, s.reduction_rate AS reductionRate,
                    s.coverage AS coverage, COALESCE(s.valid_days, 0) AS validDays,
@@ -240,6 +241,7 @@ async function listFriends({ db, userId, now }) {
             JOIN sharing_consent c ON c.user_id = b.blocked WHERE b.blocker = ? ORDER BY c.nickname
         `).bind(userId),
     ]);
+    if (!me.results.length) return error('sharing_consent_required', 403);
     const friends = list.results.map((f) => ({ ...f, watching: f.watching === 1 }));
     return json({ friends, blocked: blockedList.results });
 }

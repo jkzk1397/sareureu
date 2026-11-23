@@ -123,7 +123,7 @@ private fun InitialAvatar(name: String) {
     }
 }
 
-/** 이름 바로 오른쪽 초록 점: 최근 5초 안에 숏폼을 보고 있었다(서버 판정). */
+/** 이름 바로 오른쪽 초록 점: 최근 40초 안에 숏폼을 보고 있었다(서버 판정). */
 @Composable
 private fun WatchingDot() {
     val label = stringResource(R.string.friends_watching_dot_a11y)

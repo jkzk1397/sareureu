@@ -8,8 +8,10 @@ import com.capstone.pause.core.data.monitoring.LiveSessionSource
 import com.capstone.pause.core.model.DataSource
 import com.capstone.pause.core.model.ShortformSession
 import com.capstone.pause.core.social.FriendPresence
+import com.capstone.pause.core.social.PollBackoff
 import com.capstone.pause.core.social.SharingRepository
 import com.capstone.pause.core.social.SharingState
+import com.capstone.pause.core.social.SocialLimits
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -24,8 +26,8 @@ import kotlinx.coroutines.launch
 
 /** 시청 중 신호 규칙(순수). */
 object PresenceRules {
-    /** 신호 간격. 서버는 최근 5초 안 신호를 '시청 중'으로 보므로 한 번 놓쳐도 이어지게 그 절반보다 짧게. */
-    const val BEAT_MS = 2_000L
+    /** 신호 간격([SocialLimits.PRESENCE_BEAT]). */
+    val BEAT_MS: Long = SocialLimits.PRESENCE_BEAT.toMillis()
 
     /** 지금 숏폼 화면에 있는 실제 기록이면 시청 중(잠깐 다른 앱에 간 동안은 아님, 시연 기록은 아님). */
     fun isWatching(live: ShortformSession?): Boolean =
@@ -66,9 +68,11 @@ internal class LiveFriendPresence @Inject constructor(
                 .collectLatest { watching ->
                     if (watching) {
                         wasWatching = true
+                        var failures = 0
                         while (true) {
-                            beat(true)
-                            delay(PresenceRules.BEAT_MS)
+                            // 서버가 거부하면(무료 한도 초과 등) 간격을 늘려 조용히 기다린다. 몰아서 다시 보내지 않는다.
+                            failures = if (beat(true)) 0 else failures + 1
+                            delay(PollBackoff.next(SocialLimits.PRESENCE_BEAT, failures).toMillis())
                         }
                     } else if (wasWatching) {
                         wasWatching = false
@@ -79,13 +83,14 @@ internal class LiveFriendPresence @Inject constructor(
         }
     }
 
-    private suspend fun beat(watching: Boolean) {
+    /** 신호 한 번. 서버가 받았으면 true. */
+    private suspend fun beat(watching: Boolean): Boolean {
         // 지난 응답으로 받은 잔소리 id를 실어 보낸다: 서버는 이 확인을 받아야 지운다(응답이 끊겨도 사라지지 않게).
         val ack = ledger.pendingAck()
         val response = runCatching {
             transport.call("PUT", "/api/v1/presence", PokePayloads.presence(watching, ack))
-        }.getOrNull() ?: return
-        if (!response.ok) return
+        }.getOrNull() ?: return false
+        if (!response.ok) return false
         ledger.acked(ack)
         val now = clock.now()
         // 확인 전까지 서버가 같은 것을 다시 내려 주므로 처음 본 것만 띄운다. 금지 표현이 있으면 띄우지 않는다.
@@ -96,5 +101,6 @@ internal class LiveFriendPresence @Inject constructor(
                 recent.remember(it.fromId, it.text)
                 alert.show(it.id, it.fromNickname, it.text)
             }
+        return true
     }
 }

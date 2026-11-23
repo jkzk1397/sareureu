@@ -28,6 +28,19 @@ class InviteCodesTest {
     }
 
     @Test
+    fun pollingSlowsDownWhileTheServerRefusesAndNeverBursts() {
+        val base = SocialLimits.FRIENDS_POLL
+        assertEquals(java.time.Duration.ofSeconds(15), PollBackoff.next(base, 0))
+        assertEquals(java.time.Duration.ofSeconds(30), PollBackoff.next(base, 1))
+        assertEquals(java.time.Duration.ofSeconds(60), PollBackoff.next(base, 2))
+        // 5분에서 멈춘다(계속 실패해도 그 이상 늘리지 않고, 그보다 자주 부르지도 않는다).
+        assertEquals(SocialLimits.POLL_BACKOFF_MAX, PollBackoff.next(base, 6))
+        assertEquals(SocialLimits.POLL_BACKOFF_MAX, PollBackoff.next(base, 99))
+        // 신호 간격은 서버 판정 창(40초)의 절반보다 짧다: 한 번 놓쳐도 시청 중이 이어진다.
+        assertEquals(15L, SocialLimits.PRESENCE_BEAT.seconds)
+    }
+
+    @Test
     fun alphabetMatchesTheServer() {
         assertEquals(31, SocialLimits.CODE_ALPHABET.length)
         for (confusing in "0O1IL") assertFalse(confusing in SocialLimits.CODE_ALPHABET)

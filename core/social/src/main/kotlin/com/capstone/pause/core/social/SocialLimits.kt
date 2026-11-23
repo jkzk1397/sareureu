@@ -28,6 +28,21 @@ object SocialLimits {
     /** 자동 재시도 첫 간격. 시도마다 두 배가 되고 0.5~1.5배로 무작위로 흩어진다. */
     val RETRY_BASE: Duration = Duration.ofMillis(500)
 
+    /**
+     * 시청 중 신호 간격. 서버는 최근 40초 안 신호를 '시청 중'으로 보므로 두 번 놓쳐도 이어진다.
+     * 2초에서 늘렸다(6-A): 1시간 시청에 요청·D1 쓰기가 1,800번에서 240번으로 준다.
+     */
+    val PRESENCE_BEAT: Duration = Duration.ofSeconds(15)
+
+    /** 친구 탭이 보이는 동안 친구·시청 중을 새로 받는 간격. 버튼이나 당겨서 새로고침하면 바로 받는다. */
+    val FRIENDS_POLL: Duration = Duration.ofSeconds(15)
+
+    /**
+     * 서버가 요청을 거부하면(무료 한도 초과·점검·오프라인) 주기 요청 간격을 실패할 때마다 두 배로 늘리는 한도.
+     * 몰아서 다시 하지 않고, 성공하면 원래 간격으로 돌아간다.
+     */
+    val POLL_BACKOFF_MAX: Duration = Duration.ofMinutes(5)
+
     /** 내 QR 화면을 띄워 둔 동안 받은 연결 요청을 확인하는 간격. */
     val QR_POLL: Duration = Duration.ofSeconds(5)
 
@@ -42,6 +57,18 @@ object SocialLimits {
 
     /** 저장해 둔 친구 목록을 이 시간 넘게 못 새로 받았으면 시청 중 표시와 잔소리 버튼을 끈다. */
     val STALE_AFTER: Duration = Duration.ofMinutes(1)
+}
+
+/** 주기 요청 간격(순수): 연달아 실패한 횟수만큼 두 배씩 늘리고 [SocialLimits.POLL_BACKOFF_MAX]에서 멈춘다. */
+object PollBackoff {
+    /** [base] 간격으로 돌다가 [failures]번 연달아 실패했을 때 다음까지 쉴 시간. */
+    fun next(base: Duration, failures: Int): Duration {
+        if (failures <= 0) return base
+        val grown = base.multipliedBy(1L shl failures.coerceAtMost(MAX_SHIFT))
+        return minOf(grown, SocialLimits.POLL_BACKOFF_MAX)
+    }
+
+    private const val MAX_SHIFT = 10
 }
 
 /** 사용자가 친 초대 코드를 다듬고 검사한다(순수). 서버에 보내기 전에 걸러 틀린 코드 한도를 아낀다. */
