@@ -1,6 +1,7 @@
 package com.capstone.pause.core.social
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 
 /**
  * 친구 서버로 내 숫자를 보내는 공유 동의(server/README.md "앱 연결 계약").
@@ -19,6 +20,12 @@ interface SharingRepository {
 
     /** 하루 합계와 내 감소율 올리기(WorkManager가 하루 한 번 부른다). 실제 기록만. 올렸으면 true. */
     suspend fun upload(): Boolean
+
+    /**
+     * 철회했는데 서버의 내 기록을 아직 지우지 못한 상태(오프라인 등). 성공할 때까지 WorkManager가 계속 시도하고,
+     * 그동안 친구 탭과 설정이 "서버 기록 지우는 중"이라고 보인다(ADR-0014).
+     */
+    val deletingRemote: Flow<Boolean> get() = flowOf(false)
 }
 
 /** 공유 상태. */

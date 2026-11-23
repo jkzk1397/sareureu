@@ -9,6 +9,7 @@ import javax.inject.Inject
 import javax.inject.Qualifier
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -41,7 +42,25 @@ interface FriendLocalStore {
 
     /** 모두 지우기(개인정보 › 모든 기록 삭제). */
     suspend fun clear()
+
+    /** 서버에서 마지막으로 받은 친구 목록(서버가 안 될 때 보여 주려고). 없으면 null. */
+    val friendsCache: Flow<FriendsCache?> get() = flowOf(null)
+
+    /** 받은 친구 목록 저장([json]은 서버 응답 그대로, 닉네임·연속 일수 등 친구에게 보이는 값뿐). */
+    suspend fun saveFriendsCache(cache: FriendsCache) {}
+
+    /** 저장해 둔 친구 목록 지우기(공유 철회). */
+    suspend fun clearFriendsCache() {}
+
+    /** 철회 뒤 서버의 내 기록을 아직 지우지 못했는지. */
+    val remoteDeletePending: Flow<Boolean> get() = flowOf(false)
+
+    /** [remoteDeletePending] 바꾸기. */
+    suspend fun setRemoteDeletePending(pending: Boolean) {}
 }
+
+/** 저장해 둔 친구 목록 한 장. */
+data class FriendsCache(val json: String, val savedAt: Instant)
 
 /** 친구 기록 DataStore 한정자. 파일당 인스턴스 하나. */
 @Qualifier

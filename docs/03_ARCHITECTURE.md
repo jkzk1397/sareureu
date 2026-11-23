@@ -156,6 +156,8 @@ sequenceDiagram
 | `AiRouter`, `CloudLlmClient`, `OnDeviceLlmClient`, `AiCallLogger`, `WeeklyReportGenerator`, `CopyPackGenerator`, `PokeDrafter` | ai | 안드로이드, 05 문서 |
 | `FriendRepository`, `PokeInbox`, `LeagueRepository`, `SharingRepository` | social | 친구 서버(Cloudflare Worker, `server/`), 주소가 없거나 시연 모드면 가상 친구 |
 | `PeerStatsRepository` | data | 서버가 계산한 또래 그룹 집계(10명 이상) 캐시. 없으면 실제 모드 또래 비교는 숨김 |
+| `PokeTextFilter` | data | 친구가 보낸 글을 보여 주기 전에 한 번 더 거르는 창구. 구현은 `core:ai`(`BannedWords`) |
+| `SocialLimits`, `InviteCodes`, `SocialError` | social | 친구 기능 한도·초대 코드 입력 검사·서버 오류 종류(ADR-0014) |
 | `MonitoringGapRepository` | data | 사용자가 감지를 꺼 둔 구간(`MonitoringGap`). 기록된 비율(`Coverage.ofDay`)과 연속 일수(`GoalStreak`)가 이 구간을 뺀다 |
 
 ## 5. 권한·매니페스트 (각 모듈 Manifest에 선언, 앱 Manifest는 병합만)

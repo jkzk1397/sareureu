@@ -27,6 +27,15 @@ sealed interface EntrustResult {
 
     /** 친구가 방금 숏폼을 멈춰서 보내지 않았다(ADR-0012: 시청 중인 친구에게만). */
     data object NotWatching : EntrustResult
+
+    /** 하루 한도(전체 10번, 같은 친구 3번). [retryAfterSeconds] 뒤에 다시 보낼 수 있다(모르면 null). */
+    data class Limited(val retryAfterSeconds: Long?) : EntrustResult
+
+    /** 여러 사람에게 신고돼 잔소리 보내기가 멈춘 계정(ADR-0014). */
+    data object Suspended : EntrustResult
+
+    /** 서버에 닿지 못함·시계 등 종류가 있는 실패. */
+    data class Error(val error: SocialError) : EntrustResult
 }
 
 /**
@@ -43,8 +52,11 @@ interface PokeInbox {
      */
     suspend fun entrust(friendId: String, text: String): EntrustResult
 
-    /** 친구가 나에게 맡긴 잔소리를 서버에서 받아 `core:data` PokeRepository에 넣는다(앱이 화면에 있을 때·WorkManager). 받은 개수. */
-    suspend fun fetch(): Int = 0
+    /**
+     * 친구가 나에게 보낸 잔소리 중 놓친 것을 서버에서 받아 `core:data` PokeRepository에 넣는다(앱이 화면에 올 때·WorkManager).
+     * 15분에 한 번까지만 부른다. [manual]은 사용자가 직접 새로고침했을 때로, 30초 간격까지 허용한다. 받은 개수.
+     */
+    suspend fun fetch(manual: Boolean = false): Int = 0
 }
 
 /** 잔소리 글 기본 검사(순수). 금지 표현 검사는 화면(feature:friends)이 `BannedWords`로 먼저 한다. */

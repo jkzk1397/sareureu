@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -49,6 +50,30 @@ interface FriendRepository {
 
     /** 연결 끊기. 상대 목록에서도 빠진다. */
     suspend fun disconnect(friendId: String) {}
+
+    /** 연결 요청 목록(받은 것·보낸 것). 서버가 없으면 빈 목록. */
+    val requests: Flow<FriendRequests> get() = flowOf(FriendRequests())
+
+    /** 연결 요청 목록을 새로 받는다. 받았으면 true. */
+    suspend fun refreshRequests(): Boolean = false
+
+    /** 받은 요청 수락(코드 주인만). */
+    suspend fun acceptRequest(requestId: String): AcceptResult = AcceptResult.Error(SocialError.Unknown)
+
+    /** 받은 요청 거절. 상대에게 알리지 않는다. [block]이면 거절하면서 그 사람을 차단한다. */
+    suspend fun declineRequest(requestId: String, block: Boolean = false) {}
+
+    /** 내가 보낸 요청 취소. */
+    suspend fun cancelRequest(requestId: String) {}
+
+    /** 내 초대 코드 취소. */
+    suspend fun cancelInvite() {}
+
+    /** 친구를 사유와 함께 신고(서버에 남는다). [text]는 신고할 잔소리 문장. 서버에 전했으면 true. */
+    suspend fun report(friendId: String, reason: ReportReason, text: String? = null): Boolean = false
+
+    /** 받은 연결 요청을 신고(닉네임만 보이는 단계). 서버에 전했으면 true. */
+    suspend fun reportRequest(requestId: String, reason: ReportReason): Boolean = false
 }
 
 /** 가상 친구 파일 `assets/demo/friends.json`(core:sensing 자산, 앱에 합쳐진다). */
