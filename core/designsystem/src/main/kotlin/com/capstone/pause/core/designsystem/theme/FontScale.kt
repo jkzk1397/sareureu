@@ -5,9 +5,12 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 
-/** 큰 글자로 보는 사용자(시스템 글자 크기 1.3배 넘음). 두 칸 배치를 한 칸으로 바꿀 때 쓴다. */
+/**
+ * 큰 글자로 보는 사용자(시스템 글자 크기 1.3배 이상). 두 칸 배치를 한 칸으로 바꿀 때 쓴다.
+ * 1.3배 딱 그 값(삼성 폰의 흔한 '크게' 단계)에서 두 칸 범례의 이름이 말줄임돼서 '이상'으로 본다.
+ */
 @Composable
-fun isLargeFont(): Boolean = LocalDensity.current.fontScale > LARGE_FONT_SCALE
+fun isLargeFont(): Boolean = LocalDensity.current.fontScale >= LARGE_FONT_SCALE
 
 /**
  * 크기가 정해진 그림(차트) 안 글자를 시스템 글자 크기만큼 끝없이 키우지 않는다(최대 [max]배).

@@ -210,7 +210,13 @@ private fun InputRow(value: String, onValueChange: (String) -> Unit, enabled: Bo
         IconButton(
             onClick = onSend,
             enabled = enabled && value.isNotBlank(),
-            colors = IconButtonDefaults.iconButtonColors(containerColor = colors.accent, contentColor = PauseColorsInk),
+            colors = IconButtonDefaults.iconButtonColors(
+                containerColor = colors.accent,
+                contentColor = PauseColorsInk,
+                // 입력이 비어 있을 때도 버튼 자리가 보이게(기본값은 투명 바탕이라 다크에서 사라졌다).
+                disabledContainerColor = colors.surfaceAlt,
+                disabledContentColor = colors.ink2,
+            ),
             modifier = Modifier.size(PauseTheme.spacing.minTouch + PauseTheme.spacing.xs),
         ) {
             Icon(

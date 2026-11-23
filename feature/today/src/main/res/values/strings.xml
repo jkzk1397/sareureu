@@ -27,7 +27,7 @@
   <string name="today_app_other">숏폼</string>
   <string name="today_risk_title">%1$s쯤에 자주 길어져</string>
   <string name="today_risk_body">지난 2주 %1$s %2$s에 평균 %3$s</string>
-  <string name="today_poke_title">맡겨 둔 잔소리</string>
+  <string name="today_poke_title">잔소리</string>
   <string name="today_poke_body_ga">%1$s가 잔소리를 맡겨 뒀어. 숏폼 오래 보면 도착해</string>
   <string name="today_poke_body_i">%1$s이 잔소리를 맡겨 뒀어. 숏폼 오래 보면 도착해</string>
   <string name="today_plan_title">내 계획</string>
