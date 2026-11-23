@@ -84,7 +84,8 @@ test('동의한 계정의 일일 합계만 저장하고 철회하면 삭제한�
     assert.equal(await call('PUT', sharing, alice, { consentVersion: 1 }), 204);
     assert.equal(await call('PUT', daily, alice, { ...body, startedAt: now }), 400);
     assert.equal(await call('PUT', daily, alice, { ...body, coverage: 1.2 }), 400);
-    assert.equal(await call('PUT', daily, alice, { ...body, measuredAtMs: now - 1 }), 403);
+    // 동의 전에 잰 값은 받지 않는다. 폰 시계 오차 5분까지는 봐준다(ADR-0014).
+    assert.equal(await call('PUT', daily, alice, { ...body, measuredAtMs: now - 5 * 60_000 - 1 }), 403);
     assert.equal(await call('PUT', '/api/v1/daily/2026-11-10', alice, body), 400);
     assert.equal(await call('PUT', '/api/v1/daily/2026-02-30', alice, body), 400);
     assert.equal(await call('PUT', daily, alice, body), 204);

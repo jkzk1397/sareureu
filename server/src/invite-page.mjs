@@ -1,6 +1,7 @@
 // 6단계: 초대 QR이 여는 안내 페이지(로그인 없이 GET /invite/{코드}).
 // 안드로이드 브라우저는 intent:// 주소로 앱을 연다. 앱이 없으면 브라우저가 S.browser_fallback_url(설치 파일)로 간다.
-// 앱은 sareureu://invite/{코드}를 받아 친구 탭에서 바로 연결한다. 코드 외에는 아무것도 담지 않는다.
+// 앱은 sareureu://invite/{코드}를 받아 친구 탭에서 확인 창을 띄우고, 사용자가 누르면 연결을 요청한다(ADR-0014).
+// 코드 외에는 아무것도 담지 않는다. 코드가 살아 있는지는 여기서 확인하지 않는다(모양만 본다).
 import { codePattern } from './friends.mjs';
 
 /** 초대 페이지 경로. */
@@ -36,7 +37,7 @@ export function invitePage(rawCode, env) {
     const open = valid ? intentUrl(code, apk) : null;
     const body = valid ? `
     <h1>사르르 친구 초대</h1>
-    <p>앱이 열리면 바로 친구로 연결돼.</p>
+    <p>앱이 열리면 연결을 요청할지 물어봐. 친구가 수락하면 연결돼.</p>
     <p class="code" aria-label="초대 코드">${escapeHtml(code)}</p>
     <a class="button primary" href="${escapeHtml(open)}">앱에서 열기</a>
     <a class="button" href="${escapeHtml(apk)}">앱 설치하기 (APK)</a>

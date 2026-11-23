@@ -39,7 +39,8 @@ test('임시: 랭킹 숫자는 동의한 뒤에만 저장하고, 철회하면 �
         { ...standing, reductionRate: 1.5 },
         { ...standing, validDays: 8 },
         { ...standing, minutes: 30 },
-        { ...standing, measuredAtMs: now + 1 },
+        // 폰 시계가 5분 넘게 앞서면 clock_skew(400). 5분까지는 받는다(safety.test.mjs).
+        { ...standing, measuredAtMs: now + 5 * 60_000 + 1 },
         { ...standing, measuredAtMs: now - 2 * 86_400_000 },
     ]) {
         assert.equal((await call('PUT', '/api/v1/standing', 'alice', bad)).status, 400);

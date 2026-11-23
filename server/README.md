@@ -43,26 +43,60 @@
 |---|---|---|
 | `PUT /api/v1/sharing` | 동의 몸통에 `nickname`(12자까지, 친구에게 보임), `ageBand`·`occupation`(enum 이름, 또래 그룹용)을 더 받는다(모두 선택). 다른 칸은 400 | 5-2 |
 | `PUT /api/v1/standing` | `{"reductionRate":0.23,"coverage":0.9,"validDays":6,"measuredAtMs":…}` 랭킹 숫자. 계산은 앱(`core:insights`)이 하고 서버는 저장만. 동의 전이면 403 | 5-2 |
-| `POST /api/v1/invites` | 내 초대 코드(6자, 헷갈리는 글자 뺌) `{"code","expiresAtMs"}`. 24시간, 한 번만, 새로 만들면 이전 코드는 없어진다 | 5-3 |
-| `POST /api/v1/invites/{code}/accept` | 코드로 연결(코드를 만든 사람 + 입력한 사람 = 양쪽 동의). 404 없음·만료, 409 `own_invite`·`already_friends`·`unavailable`(차단, 누가 했는지 알리지 않음)·`too_many_friends`(50명) | 5-3 |
+| `POST /api/v1/invites` | 내 초대 코드(8자, 헷갈리는 글자 0·O·1·I·L을 뺀 31글자에서 고르게) `{"code","expiresAtMs"}`. 24시간, 한 번만, 새로 만들면 이전 코드는 없어진다. 서버에는 해시만 둔다. 하루 10번 | ADR-0014 |
+| `DELETE /api/v1/invites` | 내 코드 취소 | ADR-0014 |
+| `POST /api/v1/invites/{code}/requests` | 코드로 **연결 요청**. `201 {"request":{"id","expiresAtMs"}}`(주인의 닉네임·숫자는 주지 않는다). 없는 코드·만료·차단·주인의 대기 요청 20개는 모두 `404 invite_not_found`. `409 own_invite`·`already_friends`·`too_many_requests`(내가 보낸 대기 요청 20개). 틀린 코드는 계정마다 10분에 5번·하루 20번 → `429 too_many_attempts` + `Retry-After` | ADR-0014 |
+| `GET /api/v1/friend-requests` | `{"received":[{"id","fromNickname","createdAtMs","expiresAtMs"}],"sent":[{"id","createdAtMs","expiresAtMs"}]}`. 받은 쪽에는 요청한 사람의 닉네임만, 보낸 쪽에는 상대가 누구인지 없다. 거절된 요청도 보낸 쪽에는 만료(7일) 전까지 그대로 보인다 | ADR-0014 |
+| `POST /api/v1/friend-requests/{id}/accept` | 코드 주인이 수락 → `201 {"friend":{"id","nickname"}}`. `404 request_not_found`(없음·만료·거절함·차단), `409 too_many_friends`(어느 쪽이든 50명) | ADR-0014 |
+| `DELETE /api/v1/friend-requests/{id}` | 받은 사람이면 거절(상대에게 알리지 않음), 보낸 사람이면 취소. `?block=1`이면 거절하면서 차단. 언제나 204 | ADR-0014 |
+| `POST /api/v1/invites/{code}/accept` | **없어짐.** 옛 앱이 부르면 `426 upgrade_required` | ADR-0014 |
 | `GET /api/v1/friends` | `{"friends":[{"id","nickname","reductionRate","coverage","validDays"}],"blocked":[{"id","nickname"}]}`. `id`는 공개 ID(Firebase uid 아님). 순위·꼴찌 숨기기는 앱이 `Ranking.build`로 | 5-3 |
 | `DELETE /api/v1/friends/{id}` | 연결 끊기(양쪽 목록에서 빠짐) | 5-3 |
 | `PUT/DELETE /api/v1/blocks/{id}` | 차단(연결도 끊음)·차단 풀기(연결은 되살리지 않음) | 5-3 |
-| `POST /api/v1/pokes` | `{"to":"<친구 공개 ID>","text":"40자까지"}` 잔소리 맡기기. 친구에게만(차단하면 연결이 끊겨 403), 하루 10개(429). 금지 표현 검사는 앱이 보내기 전에 | 5-4 |
-| `GET /api/v1/pokes` | 나에게 온 잔소리 `{"pokes":[{"id","fromId","fromNickname","text","createdAtMs","expiresAtMs"}]}`(20개까지). **내려 주면 서버에서 지운다.** 차단한 사람 것·만료(7일)된 것도 지운다. 앱이 화면에 있을 때(15분에 한 번까지)와 WorkManager(12시간마다)만 부른다. 푸시(FCM) 없음 | 5-4 |
+| `POST /api/v1/pokes` | `{"to":"<친구 공개 ID>","text":"40자까지"}` 잔소리 보내기. 친구에게만(`403 not_friends`), 시청 중일 때만(`409 not_watching`), 하루 10개·같은 친구에게 3개(`429 daily_limit` + `Retry-After`). 서버가 글을 다듬고(NFC, 줄바꿈·제어 문자·폭 없는 문자 제거) 금지 표현을 막는다(`400 banned_text`). 3명에게 신고된 계정은 `403 suspended`. `Idempotency-Key` 헤더를 붙이면 같은 요청이 두 번 와도 한 번만 처리하고 같은 `id`를 돌려준다 | 5-4, ADR-0014 |
+| `GET /api/v1/pokes` | 나에게 온 잔소리 `{"pokes":[{"id","fromId","fromNickname","text","createdAtMs","expiresAtMs"}]}`(20개까지). 계약 번호 2 이상이면 **받았다고 확인할 때까지 지우지 않는다**: 받은 id를 `?ack=id1,id2`(또는 시청 신호의 `ack`)로 보내면 지운다. 확인 전에는 다시 내려 주므로 앱이 id로 중복을 거른다. 계약 번호 1(옛 앱)은 내려 주면 바로 지운다. 차단한 사람 것·만료(7일)된 것은 언제나 지운다. 푸시(FCM) 없음 | 5-4, ADR-0014 |
+| `POST /api/v1/reports` | `{"target":"<친구 공개 ID>" 또는 "requestId":"<받은 요청 ID>","reason":"POKE\|NICKNAME\|HARASSMENT\|OTHER","text":"신고할 잔소리(선택, 40자)"}` → 204. 친구·내가 차단한 사람·나에게 요청을 보낸 사람만 신고할 수 있다(아니면 404). 하루 10번 | ADR-0014 |
 | `GET /api/v1/peers` | 또래 비교 `{"groups":[{"ageBand","occupation","n","p50","p75"}],"computedAtMs"}`. **그룹 집계만**, 10명 미만 그룹은 없음. 공유 동의한 사람만 받는다. 앱은 하루 1번 올리기 때 같이 받는다 | 5-5 |
 | `PUT /api/v1/sharing` (6단계) | `consentVersion` 1 또는 2. **2 = 연속 일수·지금 시청 중 공유에 동의**(ADR-0012). 낮은 버전으로 되돌리지 않는다 | 6 |
 | `PUT /api/v1/standing` (6단계) | `streakDays`(목표 이하 연속 일수, 0~3650 정수, 없으면 0)를 더 받는다. 계산은 앱(`core:insights.GoalStreak`) | 6 |
 | `GET /api/v1/friends` (6단계) | 친구마다 `streakDays`와 `watching`(최근 5초 안 시청 신호가 있으면 true)을 더 준다 | 6 |
-| `PUT /api/v1/presence` | `{"watching":true}` 또는 `{"watching":false}`만. 숏폼을 보는 동안 앱이 2초마다 `true`, 멈추면 `false` 한 번. 서버는 마지막 신호 시각만 남긴다(`false`면 지움). 동의 버전 2 미만이면 403. 응답 `{"pokes":[…]}`은 `GET /pokes`와 같은 모양이고 **내려 주면 지운다**(받는 앱이 바로 알림을 띄운다) | 6 |
+| `PUT /api/v1/presence` | `{"watching":true}` 또는 `{"watching":false}`, 선택으로 `"ack":["받은 잔소리 id"]`. 숏폼을 보는 동안 앱이 2초마다 `true`, 멈추면 `false` 한 번. 서버는 마지막 신호 시각만 남긴다(`false`면 지움). 동의 버전 2 미만이면 403. 응답 `{"pokes":[…]}`은 `GET /pokes`와 같은 모양이고 **내려 주면 지운다**(받는 앱이 바로 알림을 띄운다) | 6 |
 | `POST /api/v1/pokes` (6단계) | 받는 친구가 지금 시청 중(최근 5초 안 신호)이 아니면 `409 not_watching` | 6 |
-| `GET /invite/{코드}` | **로그인 없음.** 초대 QR이 여는 안내 페이지. 안드로이드는 `intent://invite/{코드}#Intent;scheme=sareureu;package=com.capstone.pause;S.browser_fallback_url=<APK>;end`로 앱을 열고, 앱이 없으면 설치 파일(`wrangler.toml`의 `APK_URL`, https만)로 간다. 틀린 코드는 404 | 6 |
+| `GET /invite/{코드}` | **로그인 없음.** 초대 QR이 여는 안내 페이지(코드 모양만 본다. 앱이 열리면 확인 창 → 연결 요청). 안드로이드는 `intent://invite/{코드}#Intent;scheme=sareureu;package=com.capstone.pause;S.browser_fallback_url=<APK>;end`로 앱을 열고, 앱이 없으면 설치 파일(`wrangler.toml`의 `APK_URL`, https만)로 간다. 틀린 코드는 404 | 6 |
 
 또래 집계(5-5): 이미 있는 하루 한 번 cron이 동의한 사용자 중 연령대·신분이 있고 최근 7일에 3일 이상 기록이 있는 사람마다 하루 평균을 내고, 그룹마다 사람 수·중앙값·상위 25%만 `peer_stat`에 통째로 바꿔 넣는다. 개인별 평균은 계산 중에만 쓰고 저장하지 않는다.
 
 6단계(ADR-0012): `0006_streak_presence.sql`(`standing.streak_days`, `presence` 표). 매일 cron이 5초 넘은 `presence` 행도 지운다. 시청 신호는 시청 1시간당 사용자 1명 약 1,800번 D1 쓰기라, 사용자가 늘면 앱의 신호 간격과 서버 판정 창(`watchingWindowMs`)을 같이 늘린다.
 
+ADR-0014: `0007_friend_requests.sql`(`invite`를 해시 칸으로 다시 만들고, `friend_request`·`rate_event`·`idempotency`·`report` 추가, `poke_sent` 삭제).
+
 마이그레이션: `0002_sharing_profile.sql`(닉네임·연령대·신분·공개 ID 칸, `standing` 표), `0003_friends.sql`(`invite`·`friendship`·`block`), `0004_pokes.sql`(`poke`, 하루 한도용 `poke_sent`), `0005_peer_stats.sql`(`peer_stat`, 그룹 집계). 동의 행을 지우면 모두 함께 지워진다. 매일 cron이 시간이 지난 초대 코드·잔소리를 지운다.
+
+## 친구 연결 보안과 한도 (ADR-0014)
+
+- **숫자는 `src/limits.mjs` 한 파일**에 있다(앱 쪽 짝은 `core:social`의 `SocialLimits`). 이유는 ADR-0014의 표.
+- **한도는 원자적으로 센다.** `rate_event` 표에 "누가 무엇을 언제"만 남기고, `INSERT … SELECT … WHERE (개수 < 한도)` 한 문장으로 세고 넣는다(`src/ratelimit.mjs`). 코드 쓰기, 요청 수락(친구 50명), 잔소리 하루 한도도 한 문장 또는 한 `batch()`(트랜잭션)라서 두 요청이 동시에 와도 넘지 않는다. 한도를 넘으면 `429`와 `Retry-After`(초).
+- **계약 번호**: 앱은 `X-App-Version: 2`를 보낸다. 헤더가 없으면 1(ADR-0014 이전 앱)로 본다. 서버의 최소 번호(`limits.minAppVersion`, 또는 `wrangler.toml`의 `MIN_APP_VERSION`)보다 낮으면 `426 upgrade_required`. 지금 최소는 1이라 옛 앱도 친구 목록·시청 신호·잔소리 받기는 그대로 된다(코드로 연결만 426).
+- **폰 시계**: `measuredAtMs`가 서버 시각보다 5분까지 앞서도 받는다. 더 앞서면 `400 clock_skew`. 동의 직후 폰 시계가 조금 늦어 거절되던 것도 같은 5분만큼 봐준다.
+- **버려진 계정**: 매일 cron이 60일 동안 랭킹 숫자·하루 합계 업로드가 없는 계정의 동의 행을 지운다(딸린 기록도 함께).
+- **IP 기준 제한**: `wrangler.toml`에 Rate Limiting 바인딩 `IP_LIMITER`가 있으면 동의·연결 요청·잔소리 보내기·신고 경로에 IP마다 60초에 20번(대략적, 지역마다 따로 셈). 넘으면 `429 too_many_requests`. 바인딩이 없으면 건너뛴다. IP는 저장하지 않는다. WAF 규칙은 `workers.dev` 주소에 걸 수 없어 쓰지 않는다.
+- **글 검사**: 금지 표현 목록 원본은 `docs/05_AI_SPEC.md` 7절. 고치면 `node scripts/bundle-banned-words.mjs`로 `src/banned-words.mjs`를 다시 만든다(시험이 어긋나면 알려 준다).
+- **로그**: 서버 코드는 `console`에 아무것도 찍지 않는다(시험으로 확인). 닉네임·잔소리·토큰·코드가 Cloudflare 로그에 남지 않는다.
+
+### 신고 보기 (운영자)
+
+Cloudflare 대시보드 › D1 › `sareureu-db` › Console에서:
+
+```sql
+-- 최근 신고(신고당한 사람의 닉네임, 사유, 문장)
+SELECT r.created_at_ms, c.nickname AS target, r.reason, r.text
+FROM report r JOIN sharing_consent c ON c.user_id = r.target ORDER BY r.created_at_ms DESC LIMIT 50;
+-- 잔소리가 멈춘 계정(서로 다른 3명 이상에게 신고됨)
+SELECT c.nickname, COUNT(DISTINCT r.reporter) AS reporters
+FROM report r JOIN sharing_consent c ON c.user_id = r.target GROUP BY r.target HAVING reporters >= 3;
+-- 잘못된 신고라 풀 때: 그 계정에 대한 신고를 지운다
+-- DELETE FROM report WHERE target = (SELECT user_id FROM sharing_consent WHERE nickname = '…');
+```
 
 ## 테스트
 

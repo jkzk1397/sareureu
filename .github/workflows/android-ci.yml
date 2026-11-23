@@ -21,6 +21,19 @@ jobs:
         run: |
           if [ -f settings.gradle.kts ]; then echo "has_build=true" >> "$GITHUB_OUTPUT"; else echo "has_build=false" >> "$GITHUB_OUTPUT"; echo "아직 Gradle 프로젝트가 없어 빌드를 건너뜁니다."; fi
 
+  # 친구 서버(Cloudflare Worker) 시험. main에 머지되면 자동 배포되므로 PR에서 먼저 돌린다.
+  server:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+      - name: 서버 시험
+        working-directory: server
+        run: node --test
+
   build:
     needs: check
     if: needs.check.outputs.has_build == 'true'
