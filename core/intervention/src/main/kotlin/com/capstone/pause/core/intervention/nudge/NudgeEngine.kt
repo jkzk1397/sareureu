@@ -19,6 +19,8 @@ data class LiveInput(
     /** 이 맥락의 임계값 T(분). */
     val thresholdMin: Int,
     val melt: MeltStage = MeltStage.NONE,
+    /** 설정의 '녹는 각설탕 보기'. 꺼져 있으면 버블의 르르가 녹지 않는다. */
+    val showMelt: Boolean = true,
 )
 
 /** 끝난 세션의 개입 기록(세션 ID는 저장소가 시작 시각으로 찾아 붙인다). */
@@ -275,6 +277,7 @@ class NudgeEngine(private val zone: ZoneId, private val writer: NudgeWriter, pri
             windowElapsedSec = if (snoozed) 0 else windowElapsed,
             windowSec = windowSec,
             melt = live?.melt ?: MeltStage.NONE,
+            showMelt = live?.showMelt ?: true,
             expression = expression,
             appLabel = live?.appLabel.orEmpty(),
             snoozed = snoozed,

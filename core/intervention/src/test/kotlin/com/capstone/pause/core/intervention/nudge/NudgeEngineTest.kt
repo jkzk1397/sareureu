@@ -274,4 +274,40 @@ class NudgeEngineTest {
         assertTrue(e.tick(start.plusSeconds(14), live()).card() == null)
         assertEquals(1, e.tick(start.plusSeconds(15), live()).card()?.level)
     }
+
+    @Test
+    fun bubbleMeltsWithTheCurrentWindowAndStartsFreshAfterAnExtension() {
+        val e = engine()
+        fun bubble(out: List<NudgeCommand>) = out.filterIsInstance<NudgeCommand.ShowBubble>().single()
+
+        // 처음 15분 구간: 0분이면 새 각설탕, 7.5분이면 절반, 끝나 갈수록 다 녹는다.
+        assertEquals(0f, bubble(e.tick(at(0.0), live())).meltFraction, 0.001f)
+        assertEquals(0.5f, bubble(e.tick(at(7.5), live())).meltFraction, 0.001f)
+        assertEquals(0.99f, bubble(e.tick(at(14.85), live())).meltFraction, 0.01f)
+
+        // 카드에서 5분만 더: 새 각설탕에서 다시 시작하고 5분 구간으로 녹는다.
+        e.tick(at(15.0), live())
+        val extended = bubble(e.onAction(at(15.0), NudgeUserAction.Extend(1), live()))
+        assertEquals(0f, extended.meltFraction, 0.001f)
+        assertEquals(0.5f, bubble(e.tick(at(17.5), live())).meltFraction, 0.001f)
+        assertEquals(3, bubble(e.tick(at(17.5), live())).minutesToNext)
+    }
+
+    @Test
+    fun bubbleDoesNotMeltWhenTheSettingIsOffOrSnoozedToday() {
+        // 설정의 '녹는 각설탕 보기'를 끄면 녹지 않는다.
+        val off = engine()
+        val out = off.tick(at(10.0), live().copy(showMelt = false))
+        assertEquals(0f, out.filterIsInstance<NudgeCommand.ShowBubble>().single().meltFraction, 0.001f)
+
+        // '오늘은 그만 알려 줘'면 카드가 오지 않으니 남은 시간도 없다: 녹지 않고 조는 얼굴.
+        val e = engine()
+        e.tick(at(15.0), live())
+        e.onAction(at(15.1), NudgeUserAction.Extend(1), live())
+        e.tick(at(20.1), live())
+        e.onAction(at(20.2), NudgeUserAction.SnoozeToday(2), live())
+        val snoozed = e.tick(at(23.0), live()).filterIsInstance<NudgeCommand.ShowBubble>().single()
+        assertEquals(0f, snoozed.meltFraction, 0.001f)
+        assertEquals(BuddyExpression.SLEEPY, snoozed.expression)
+    }
 }

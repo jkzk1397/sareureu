@@ -198,6 +198,7 @@ class NudgeCoordinator @Inject constructor(
                 appLabel = context.getString(appLabelRes(s.segments.lastOrNull()?.packageName)),
                 thresholdMin = settings.thresholdFor(s.context),
                 melt = melt,
+                showMelt = settings.showMelt,
             )
         }
 

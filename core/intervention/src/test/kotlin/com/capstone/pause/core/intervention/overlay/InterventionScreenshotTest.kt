@@ -36,6 +36,13 @@ class InterventionScreenshotTest {
     @Test
     fun nudgeL4() = shoot("nudge_l4", heightDp = 900) { LevelFourPreview() }
 
+    /** 플로팅 버블이 0 → 100%로 녹는 모습, 흰 화면과 검은 화면 위. */
+    @Test
+    fun bubbleMelt() = shoot("bubble_melt", heightDp = 420) { BubbleMeltStripPreview() }
+
+    @Test
+    fun bubblePanel() = shoot("bubble_panel", heightDp = 500) { BubblePanelPreview() }
+
     /** 가로 360dp(갤럭시 S22), xxhdpi. 화면이 길어 [heightDp]만큼 세로를 늘려 한 장에 담는다. */
     private fun shoot(name: String, heightDp: Int, content: @Composable () -> Unit) {
         for (dark in listOf(false, true)) {

@@ -7,11 +7,14 @@ internal object OverlayDimens {
     /** 플로팅 버블 르르. */
     val bubbleBuddy = 56.dp
 
-    /** 진행 링 포함 버블. */
+    /** 버블 전체(르르 + 뒤 원판). 누르는 자리이기도 해서 48dp보다 크다. */
     val bubbleWithRing = 64.dp
 
-    /** 진행 링 두께. */
-    val ringStroke = 3.dp
+    /** 버블 뒤 원판의 테두리 두께. */
+    val bubbleRim = 1.dp
+
+    /** 버블이 화면 왼쪽·오른쪽 끝에서 띄우는 거리(끝에 붙어 반쯤 숨으면 각설탕 테두리가 안 보인다). */
+    val bubbleSideMargin = 8.dp
 
     /** 카드 1단계 위 르르. */
     val cardBuddyLarge = 72.dp
