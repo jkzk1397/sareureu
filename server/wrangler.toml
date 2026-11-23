@@ -18,7 +18,9 @@ crons = ["0 20 * * *"]
 # IP 기준 요청 제한(ADR-0014). Workers Rate Limiting 바인딩: IP마다 60초에 20번(대략적, 지역마다 따로 센다).
 # 동의·연결 요청·잔소리 보내기·신고 경로에만 건다(src/index.mjs의 ipLimit). IP는 저장하지 않는다.
 # 이 설정 때문에 배포가 실패하면 이 묶음만 지우면 된다(코드는 바인딩이 없어도 동작한다).
-[[ratelimits]]
+# 배포에 쓰이는 wrangler가 새 설정 이름([[ratelimits]])을 모르는 버전이어도 되게, 예전부터 있던 이름으로 적는다.
+[[unsafe.bindings]]
 name = "IP_LIMITER"
+type = "ratelimit"
 namespace_id = "1001"
 simple = { limit = 20, period = 60 }
