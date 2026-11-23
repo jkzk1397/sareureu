@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -258,6 +259,23 @@ private fun SensingGroup(
             description = null,
             checked = true,
             onCheckedChange = { onAction(SettingsAction.SetMonitoring(it)) },
+        )
+    }
+    if (uiState.confirmMonitoringOff) {
+        AlertDialog(
+            onDismissRequest = { onAction(SettingsAction.CancelMonitoringOff) },
+            title = { Text(stringResource(R.string.settings_monitoring_off_confirm_title)) },
+            text = { Text(stringResource(R.string.settings_monitoring_off_confirm_body)) },
+            confirmButton = {
+                TextButton(onClick = { onAction(SettingsAction.ConfirmMonitoringOff) }) {
+                    Text(stringResource(R.string.settings_monitoring_off_confirm_yes))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { onAction(SettingsAction.CancelMonitoringOff) }) {
+                    Text(stringResource(R.string.settings_monitoring_off_confirm_no))
+                }
+            },
         )
     }
     MoreNote(

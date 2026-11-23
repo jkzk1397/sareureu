@@ -24,6 +24,33 @@ data class LiveInput(
 /** 끝난 세션의 개입 기록(세션 ID는 저장소가 시작 시각으로 찾아 붙인다). */
 data class FinishedNudges(val sessionStart: Instant, val events: List<NudgeEvent>)
 
+/**
+ * 서비스가 다시 떠도(감지 껐다 켜기·강제 종료·재시작) 이어 가려고 저장하는 엔진 상태. 하루(새벽 4시 경계) 단위다.
+ * 날이 바뀌면 버린다.
+ */
+data class NudgeSnapshot(
+    val day: LocalDate,
+    val extensionsToday: Int,
+    /** '오늘은 그만 알려 줘'가 끝나는 시각. 없으면 null. */
+    val snoozeUntil: Instant?,
+    /** 저장할 때 진행 중이던 세션. 없으면 null. */
+    val session: SessionSnapshot?,
+)
+
+/** 진행 중이던 세션의 사다리 위치. 초 단위 값은 세션 경과 기준(배속 적용 뒤)이다. */
+data class SessionSnapshot(
+    val start: Instant,
+    val elapsedSec: Long,
+    val level: Int,
+    val dueSec: Long,
+    val windowStartSec: Long,
+    /** 카드가 떠 있었으면 그 단계(다시 뜨면 같은 단계 카드를 바로 보인다). */
+    val cardLevel: Int?,
+    val messaged: Boolean,
+    /** 이 값을 잰 시각. 새 세션이 이 시각에서 [NudgeEngine.RESUME_GAP] 안에 시작하면 같은 세션으로 잇는다. */
+    val savedAt: Instant,
+)
+
 /** 카드·메시지·칭찬 문장을 만드는 쪽. 엔진은 문장을 모른다(테스트에서는 가짜를 넣는다). */
 interface NudgeWriter {
     /** [level] 단계 카드. */
@@ -42,10 +69,14 @@ interface NudgeWriter {
  * - 하루(새벽 4시 경계) 연장이 3번을 넘으면 다음 세션은 2단계부터.
  * - '오늘은 그만 알려 줘'는 그날 새벽 4시까지 카드를 띄우지 않는다(버블은 남긴다).
  * - 숏폼을 떠나도 60초 안에 돌아오면 같은 세션으로 이어 간다(떠나는 순간 화면만 내림).
+ * - 엔진이 새로 만들어져도([restore]) 오늘의 연장 횟수·오늘은 그만은 그대로이고, 끊긴 지 5분 안에 다시 시작한
+ *   세션은 단계와 남은 시간을 이어 간다(감지를 껐다 켜서 1단계로 되돌리지 못하게).
  * - [speed]는 시연용 배속(타이머에만 적용): 60이면 실제 1초가 1분.
  */
 class NudgeEngine(private val zone: ZoneId, private val writer: NudgeWriter, private val speed: Double = 1.0) {
     private class SessionState(val start: Instant, val thresholdSec: Long) {
+        /** 이어 받은 세션이 끊기기 전까지 이미 지난 시간(초). 새 세션이면 0. */
+        var carriedSec = 0L
         var level = 0
         var dueSec = thresholdSec
 
@@ -64,10 +95,54 @@ class NudgeEngine(private val zone: ZoneId, private val writer: NudgeWriter, pri
     private var snoozeUntil: Instant? = null
     private val finished = mutableListOf<FinishedNudges>()
 
+    /** [restore]로 받은, 아직 이어 붙이지 않은 세션. */
+    private var carry: SessionSnapshot? = null
+
     /** 오늘 이미 있었던 연장 수(서비스가 다시 시작될 때 DB에서 읽어 넣는다). */
     fun seedToday(now: Instant, extensions: Int) {
         rollDay(now)
         extensionsToday = extensions
+    }
+
+    /** 지금 상태를 저장용으로 꺼낸다. '그만'으로 끝낸 세션은 이어 갈 것이 없어 담지 않는다. */
+    fun snapshot(now: Instant): NudgeSnapshot {
+        rollDay(now)
+        val s = current?.takeIf { !it.stopped }
+        val session = if (s != null) {
+            SessionSnapshot(
+                start = s.start,
+                elapsedSec = elapsedSec(s, s.absentSince ?: now),
+                level = s.level,
+                dueSec = s.dueSec,
+                windowStartSec = s.windowStartSec,
+                cardLevel = s.card?.level,
+                messaged = s.messaged,
+                savedAt = s.absentSince ?: now,
+            )
+        } else {
+            carry.takeIf { current == null }
+        }
+        return NudgeSnapshot(
+            DayBoundary.logicalDate(now, zone),
+            extensionsToday,
+            snoozeUntil?.takeIf { now.isBefore(it) },
+            session,
+        )
+    }
+
+    /** 저장해 둔 상태를 이어 받는다. 다른 날(새벽 4시 경계) 것이면 버린다. */
+    fun restore(snapshot: NudgeSnapshot, now: Instant) {
+        rollDay(now)
+        if (snapshot.day != day) return
+        extensionsToday = maxOf(extensionsToday, snapshot.extensionsToday)
+        snapshot.snoozeUntil?.takeIf { now.isBefore(it) }?.let { snoozeUntil = it }
+        carry = snapshot.session
+    }
+
+    /** 멈출 때 부른다: 진행 중 세션의 개입 기록을 마무리한다([drainFinished]로 꺼낸다). 상태는 [snapshot]으로 먼저 꺼내 둘 것. */
+    fun close(now: Instant) {
+        current?.let { finish(it, now) }
+        current = null
     }
 
     /** 오늘 연장 횟수. */
@@ -101,13 +176,13 @@ class NudgeEngine(private val zone: ZoneId, private val writer: NudgeWriter, pri
             }
             return out
         }
-        val s = current ?: SessionState(live.sessionStart, live.thresholdMin * SEC_PER_MIN).also { current = it }
+        val s = current ?: newSession(live).also { current = it }
         if (s.absentSince != null) {
             s.absentSince = null
             s.card?.let { out += NudgeCommand.ShowCard(it) }
         }
         if (s.stopped || s.card != null) return out
-        val elapsed = elapsedSec(s.start, now)
+        val elapsed = elapsedSec(s, now)
         if (elapsed >= s.dueSec && !isSnoozed(now)) {
             s.level = when {
                 s.level == 0 && extensionsToday > MAX_EXTENSIONS_BEFORE_L2 -> 2
@@ -134,7 +209,7 @@ class NudgeEngine(private val zone: ZoneId, private val writer: NudgeWriter, pri
         if (action is NudgeUserAction.BubbleTapped || action is NudgeUserAction.BubbleDismissed) return emptyList()
         if (action is NudgeUserAction.StopNow && s.card == null) return stopFromBubble(s, now, live)
         val card = s.card ?: return emptyList()
-        val elapsed = elapsedSec(s.start, now)
+        val elapsed = elapsedSec(s, now)
         fun record(response: NudgeResponse, chip: String? = null) {
             s.events += NudgeEvent(0, now, card.level, card.copyId, response, chip)
         }
@@ -225,8 +300,30 @@ class NudgeEngine(private val zone: ZoneId, private val writer: NudgeWriter, pri
         }
     }
 
-    private fun elapsedSec(start: Instant, now: Instant): Long =
-        (Duration.between(start, now).toMillis().coerceAtLeast(0) * speed / MILLIS_PER_SEC).toLong()
+    /** 새 세션. 끊긴 지 [RESUME_GAP] 안이면 저장해 둔 단계·남은 시간을 이어 받는다(끊긴 동안은 본 시간으로 세지 않는다). */
+    private fun newSession(live: LiveInput): SessionState {
+        val state = SessionState(live.sessionStart, live.thresholdMin * SEC_PER_MIN)
+        val c = carry ?: return state
+        carry = null
+        val gap = Duration.between(c.savedAt, live.sessionStart)
+        if (gap > RESUME_GAP || live.sessionStart == c.start) return state
+        state.carriedSec = c.elapsedSec
+        state.windowStartSec = c.windowStartSec
+        state.messaged = c.messaged
+        val cardLevel = c.cardLevel
+        if (cardLevel != null) {
+            // 카드가 떠 있을 때 끊겼다: 같은 단계 카드를 바로 다시 보인다.
+            state.level = cardLevel - 1
+            state.dueSec = c.elapsedSec
+        } else {
+            state.level = c.level
+            state.dueSec = c.dueSec
+        }
+        return state
+    }
+
+    private fun elapsedSec(s: SessionState, now: Instant): Long =
+        s.carriedSec + (Duration.between(s.start, now).toMillis().coerceAtLeast(0) * speed / MILLIS_PER_SEC).toLong()
 
     /** 엔진 규칙 상수. */
     companion object {
@@ -254,6 +351,9 @@ class NudgeEngine(private val zone: ZoneId, private val writer: NudgeWriter, pri
 
         private const val SEC_PER_MIN = 60L
         private val MERGE_GAP: Duration = Duration.ofSeconds(60)
+
+        /** 엔진이 끊긴 뒤(감지 끄기·강제 종료) 이 시간 안에 다시 시작한 세션은 같은 세션으로 잇는다. */
+        val RESUME_GAP: Duration = Duration.ofMinutes(5)
         private const val MILLIS_PER_SEC = 1000.0
     }
 }

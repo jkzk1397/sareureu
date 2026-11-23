@@ -13,6 +13,9 @@ import com.capstone.pause.core.ai.engine.schema.WeeklyReportInput
 import com.capstone.pause.core.common.AppClock
 import com.capstone.pause.core.common.AppLog
 import com.capstone.pause.core.common.DayBoundary
+import com.capstone.pause.core.data.monitoring.MonitoringGap
+import com.capstone.pause.core.data.monitoring.MonitoringGapRepository
+import com.capstone.pause.core.data.monitoring.toSpans
 import com.capstone.pause.core.data.profile.ProfileRepository
 import com.capstone.pause.core.data.report.CopyPackWriter
 import com.capstone.pause.core.data.report.StoredHypothesis
@@ -23,6 +26,7 @@ import com.capstone.pause.core.data.settings.SettingsRepository
 import com.capstone.pause.core.data.strategy.StrategyRepository
 import com.capstone.pause.core.model.CopyPack
 import com.capstone.pause.core.model.Verdict
+import java.time.Instant
 import java.time.LocalDate
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
@@ -62,11 +66,16 @@ internal class DefaultWeeklyReportGenerator @Inject constructor(
     private val router: AiRouter,
     private val logger: AiCallLogger,
     private val runner: AiRunner,
+    private val gapRepository: MonitoringGapRepository,
     private val clock: AppClock,
     private val log: AppLog,
 ) : WeeklyReportGenerator {
 
     private val quota = AiQuota()
+
+    /** 감지를 꺼 둔 구간. 시연 기록에는 쓰지 않는다. */
+    private fun offSpans(gaps: List<MonitoringGap>, demo: Boolean, now: Instant) =
+        if (demo) emptyList() else gaps.toSpans(now)
     private val status = MutableStateFlow(GenerationStatus.IDLE)
 
     /** 날짜별 다시 만들기 횟수(앱을 다시 켜면 0부터, BUILD_REPORT 가정). */
@@ -87,16 +96,18 @@ internal class DefaultWeeklyReportGenerator @Inject constructor(
             reportRepository.observeReport(window.start),
             reportRepository.observeHypotheses(window.start),
         ) { report, hypotheses -> report to hypotheses }
-        val flags = combine(status, regenerationTick, router.usingRealAi) { s, _, real -> s to real }
+        val flags = combine(status, regenerationTick, router.usingRealAi, gapRepository.gaps) { s, _, real, gaps ->
+            Triple(s, real, gaps)
+        }
         emitAll(
             combine(sessions, nudges, stored, settingsRepository.settings, flags) {
                     ss,
                     ns,
                     (report, hyps),
                     settings,
-                    (st, real),
+                    (st, real, gaps),
                 ->
-                val week = WeekMath.compute(window, ss, ns, zone, now)
+                val week = WeekMath.compute(window, ss, ns, zone, now, offSpans(gaps, settings.demoMode, now))
                 val saved = report?.let { decode(it.json) }
                 WeeklyReportState(
                     weekStart = window.start,
@@ -135,7 +146,8 @@ internal class DefaultWeeklyReportGenerator @Inject constructor(
             DayBoundary.startOf(window.endExclusive, zone),
         ).first()
         val nudges = sessionRepository.observeNudges(window.startInstant(zone), window.endInstant(zone)).first()
-        val week = WeekMath.compute(window, sessions, nudges, zone, now)
+        val off = offSpans(gapRepository.gaps.first(), settingsRepository.settings.first().demoMode, now)
+        val week = WeekMath.compute(window, sessions, nudges, zone, now, off)
         if (!week.enoughForAi) return GenerateResult.NOT_ENOUGH_DATA
         status.value = GenerationStatus.RUNNING
         return runCatching {

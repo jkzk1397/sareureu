@@ -6,16 +6,20 @@ import com.capstone.pause.core.common.AppLog
 import com.capstone.pause.core.common.DayBoundary
 import com.capstone.pause.core.common.Dispatcher
 import com.capstone.pause.core.common.PauseDispatchers
+import com.capstone.pause.core.data.monitoring.MonitoringGapRepository
+import com.capstone.pause.core.data.monitoring.toSpans
 import com.capstone.pause.core.data.profile.ProfileRepository
 import com.capstone.pause.core.data.session.SessionRepository
 import com.capstone.pause.core.data.settings.SettingsRepository
 import com.capstone.pause.core.insights.Baseline
+import com.capstone.pause.core.insights.Coverage
 import com.capstone.pause.core.insights.DayStat
 import com.capstone.pause.core.insights.LengthBucket
 import com.capstone.pause.core.insights.ObservedDays
 import com.capstone.pause.core.insights.RiskWindows
 import com.capstone.pause.core.insights.SessionStats
 import com.capstone.pause.core.insights.ShortformMinutes
+import com.capstone.pause.core.insights.TimeSpan
 import com.capstone.pause.core.insights.WeekCharts
 import com.capstone.pause.core.model.Profile
 import com.capstone.pause.core.model.ShortformSession
@@ -58,6 +62,7 @@ internal class DefaultWeekChartRepository @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val profileRepository: ProfileRepository,
     private val peerStatsRepository: PeerStatsRepository,
+    private val gapRepository: MonitoringGapRepository,
     private val clock: AppClock,
     private val log: AppLog,
     @Dispatcher(PauseDispatchers.DEFAULT) private val dispatcher: CoroutineDispatcher,
@@ -87,8 +92,10 @@ internal class DefaultWeekChartRepository @Inject constructor(
             settingsRepository.settings,
             profileRepository.profile,
             peerStatsRepository.stats,
-        ) { sessions, settings, profile, peerStats ->
-            compute(sessions, today, now, settings.demoMode, profile, peerStats)
+            gapRepository.gaps,
+        ) { sessions, settings, profile, peerStats, gaps ->
+            val off = if (settings.demoMode) emptyList() else gaps.toSpans(now)
+            compute(sessions, today, now, settings.demoMode, profile, peerStats, off)
         }
     }.flowOn(dispatcher)
 
@@ -99,6 +106,7 @@ internal class DefaultWeekChartRepository @Inject constructor(
         isDemo: Boolean,
         profile: Profile?,
         peerStats: PeerStats?,
+        off: List<TimeSpan>,
     ): WeekChartData? {
         val zone = clock.zone
         val dates = (WEEK - 1 downTo 0L).map { today.minusDays(it) }
@@ -145,14 +153,22 @@ internal class DefaultWeekChartRepository @Inject constructor(
             lengthShares = SessionStats.lengthDistribution(week, now).let { dist ->
                 LengthBucket.entries.map { dist[it] ?: 0.0 }
             },
-            peer = peer(avg, baseline(all, dates.first(), now), profile, isDemo, peerStats),
+            peer = peer(avg, baseline(all, dates.first(), now, off), profile, isDemo, peerStats),
         )
     }
 
     /** 리포트 주 앞 28일 중 처음 기록된 7일의 하루 평균. */
-    private fun baseline(all: List<ShortformSession>, weekStart: LocalDate, now: Instant): Double? {
-        val days = (BASELINE_LOOKBACK downTo 1L).map { weekStart.minusDays(it) }
-            .map { DayStat(it, ShortformMinutes.onDay(all, it, clock.zone, now), coverage = 1.0) }
+    private fun baseline(
+        all: List<ShortformSession>,
+        weekStart: LocalDate,
+        now: Instant,
+        off: List<TimeSpan>,
+    ): Double? {
+        val zone = clock.zone
+        val days = (BASELINE_LOOKBACK downTo 1L).map { weekStart.minusDays(it) }.map {
+            val span = TimeSpan(DayBoundary.startOf(it, zone), DayBoundary.endOf(it, zone))
+            DayStat(it, ShortformMinutes.onDay(all, it, zone, now), Coverage.ofDay(span, off, now))
+        }
         val first = days.indexOfFirst { it.minutes > 0 }
         return if (first < 0) null else Baseline.compute(days.drop(first))
     }

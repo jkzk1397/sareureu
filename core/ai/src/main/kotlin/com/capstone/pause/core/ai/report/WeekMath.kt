@@ -6,10 +6,12 @@ import com.capstone.pause.core.ai.engine.schema.PastHypothesis
 import com.capstone.pause.core.common.DayBoundary
 import com.capstone.pause.core.data.report.StoredHypothesis
 import com.capstone.pause.core.insights.Baseline
+import com.capstone.pause.core.insights.Coverage
 import com.capstone.pause.core.insights.DayStat
 import com.capstone.pause.core.insights.ObservedDays
 import com.capstone.pause.core.insights.RiskWindows
 import com.capstone.pause.core.insights.ShortformMinutes
+import com.capstone.pause.core.insights.TimeSpan
 import com.capstone.pause.core.insights.WeekInput
 import com.capstone.pause.core.insights.WeeklyObservations
 import com.capstone.pause.core.model.ContextSlot
@@ -47,7 +49,8 @@ data class WeekWindow(val today: LocalDate, val start: LocalDate, val endExclusi
 object WeekMath {
     /**
      * [sessions](기준선 탐색 범위부터 오늘까지)로 리포트 주 관찰을 계산한다.
-     * 기준선은 리포트 주 이전에 기록이 처음 생긴 날부터 7일. 기록률은 아직 측정하지 않으므로 null(관찰 o11 없음).
+     * 기준선은 리포트 주 이전에 기록이 처음 생긴 날부터 7일. 기록률은 감지를 꺼 둔 구간([off])이 이번 주에 있을 때만
+     * 넣는다(없으면 null이라 관찰 o11 없음).
      * 하루 평균은 기록이 시작된 날부터 센 날 수([ObservedDays])로 나눈다.
      */
     fun compute(
@@ -56,15 +59,21 @@ object WeekMath {
         nudges: List<NudgeEvent>,
         zone: ZoneId,
         now: Instant,
+        off: List<TimeSpan> = emptyList(),
     ): WeeklyObservations {
+        fun coverageOf(day: java.time.LocalDate) =
+            Coverage.ofDay(TimeSpan(DayBoundary.startOf(day, zone), DayBoundary.endOf(day, zone)), off, now)
         val weekStart = window.startInstant(zone)
         val weekEnd = window.endInstant(zone)
         val inWeek = sessions.filter { !it.start.isBefore(weekStart) && it.start.isBefore(weekEnd) }
         val weekNudges = nudges.filter { !it.at.isBefore(weekStart) && it.at.isBefore(weekEnd) }
         val pastDays = generateSequence(window.historyStart) { it.plusDays(1) }
             .takeWhile { it.isBefore(window.start) }
-            .map { DayStat(it, ShortformMinutes.onDay(sessions, it, zone, now), coverage = 1.0) }
+            .map { DayStat(it, ShortformMinutes.onDay(sessions, it, zone, now), coverageOf(it)) }
             .toList()
+        val weekCoverage = generateSequence(window.start) { it.plusDays(1) }
+            .takeWhile { it.isBefore(window.endExclusive) }
+            .map(::coverageOf).toList().average()
         val first = pastDays.indexOfFirst { it.minutes > 0 }
         val baseline = if (first < 0) null else Baseline.compute(pastDays.drop(first))
         val risks = RiskWindows.compute(sessions, window.today, zone, now)
@@ -76,7 +85,7 @@ object WeekMath {
                 days = days,
                 now = now,
                 baselineMinPerDay = baseline,
-                coverage = null,
+                coverage = weekCoverage.takeIf { it < 1.0 },
                 riskWindows = risks,
             ),
         )

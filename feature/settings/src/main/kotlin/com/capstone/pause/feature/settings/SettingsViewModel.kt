@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.capstone.pause.core.common.AppClock
 import com.capstone.pause.core.data.demo.DemoDataSeeder
 import com.capstone.pause.core.data.demo.DemoPattern
+import com.capstone.pause.core.data.monitoring.LiveSessionSource
 import com.capstone.pause.core.data.session.SessionRepository
 import com.capstone.pause.core.data.settings.DefaultThresholds
 import com.capstone.pause.core.data.settings.SettingsRepository
@@ -13,6 +14,7 @@ import com.capstone.pause.core.data.settings.ThresholdGroup
 import com.capstone.pause.core.intervention.reminder.ReminderScheduler
 import com.capstone.pause.core.intervention.service.MonitoringController
 import com.capstone.pause.core.model.ContextSlot
+import com.capstone.pause.core.model.DataSource
 import com.capstone.pause.core.model.ShortformSession
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Duration
@@ -41,6 +43,8 @@ data class SettingsUiState(
     val needsUsageAccess: Boolean = false,
     /** 예약 알림 시각(최대 3개). */
     val reminders: List<LocalTime> = emptyList(),
+    /** 숏폼을 보는 중에 감지를 끄려 해서 한 번 더 묻는 중. */
+    val confirmMonitoringOff: Boolean = false,
 )
 
 /** 설정 화면 동작. */
@@ -69,6 +73,12 @@ sealed interface SettingsAction {
     /** 감지 켜기·끄기(사용자 탭에서만 서비스를 시작한다). */
     data class SetMonitoring(val enabled: Boolean) : SettingsAction
 
+    /** 보는 중에 끄기 확인 창에서 '그래도 끌래'. */
+    data object ConfirmMonitoringOff : SettingsAction
+
+    /** 보는 중에 끄기 확인 창을 닫음(끄지 않음). */
+    data object CancelMonitoringOff : SettingsAction
+
     /** 사용 기록 안내를 닫음(설정 화면으로 갔거나 취소). */
     data object UsageAccessHandled : SettingsAction
 
@@ -89,12 +99,14 @@ class SettingsViewModel @Inject constructor(
     private val demoDataSeeder: DemoDataSeeder,
     private val monitoringController: MonitoringController,
     private val reminderScheduler: ReminderScheduler,
+    private val liveSessionSource: LiveSessionSource,
     sessionRepository: SessionRepository,
     clock: AppClock,
 ) : ViewModel() {
 
     private val seeding = MutableStateFlow(false)
     private val needsUsageAccess = MutableStateFlow(false)
+    private val confirmOff = MutableStateFlow(false)
 
     /** 화면 상태. */
     val uiState: StateFlow<SettingsUiState> = combine(
@@ -102,8 +114,10 @@ class SettingsViewModel @Inject constructor(
         seeding,
         sessionRepository.observeRecent(clock.now().minus(Duration.ofDays(RECENT_DAYS)), RECENT_LIMIT),
         combine(monitoringController.isMonitoring, needsUsageAccess, reminderScheduler.reminderTimes, ::Triple),
-    ) { s, busy, recent, (monitoring, needsAccess, reminders) ->
+        confirmOff,
+    ) { s, busy, recent, (monitoring, needsAccess, reminders), confirm ->
         SettingsUiState(
+            confirmMonitoringOff = confirm,
             monitoring = monitoring,
             needsUsageAccess = needsAccess,
             reminders = reminders,
@@ -144,9 +158,19 @@ class SettingsViewModel @Inject constructor(
 
                 is SettingsAction.SetMonitoring -> if (action.enabled) {
                     needsUsageAccess.value = !monitoringController.start()
+                } else if (watchingNow()) {
+                    // 끄는 것은 막지 않는다(ADR-0001). 보는 중이면 기록이 여기서 멈춘다는 것만 한 번 알린다.
+                    confirmOff.value = true
                 } else {
                     monitoringController.stop()
                 }
+
+                SettingsAction.ConfirmMonitoringOff -> {
+                    confirmOff.value = false
+                    monitoringController.stop()
+                }
+
+                SettingsAction.CancelMonitoringOff -> confirmOff.value = false
 
                 SettingsAction.UsageAccessHandled -> needsUsageAccess.value = false
 
@@ -182,6 +206,9 @@ class SettingsViewModel @Inject constructor(
             seeding.value = false
         }
     }
+
+    /** 지금 실제 숏폼 세션이 이어지는 중인지(숏폼을 떠난 지 60초 안 포함). */
+    private suspend fun watchingNow(): Boolean = liveSessionSource.current.first()?.source == DataSource.REAL
 
     private companion object {
         const val STOP_TIMEOUT_MS = 5_000L

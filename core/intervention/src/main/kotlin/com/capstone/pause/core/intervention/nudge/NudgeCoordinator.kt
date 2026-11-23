@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import com.capstone.pause.core.common.AppClock
 import com.capstone.pause.core.common.AppLog
+import com.capstone.pause.core.common.ApplicationScope
 import com.capstone.pause.core.common.DayBoundary
 import com.capstone.pause.core.data.copy.CopyPackRepository
 import com.capstone.pause.core.data.insight.InsightRepository
@@ -68,11 +69,16 @@ class NudgeCoordinator @Inject constructor(
     private val sessionRepository: SessionRepository,
     private val messageRepository: MessageRepository,
     private val insightRepository: InsightRepository,
+    private val stateStore: NudgeStateStore,
+    @ApplicationScope private val appScope: CoroutineScope,
     private val clock: AppClock,
     private val log: AppLog,
 ) {
     private val modeState = MutableStateFlow<NudgeMode?>(null)
     private var job: Job? = null
+
+    /** 지금 도는 엔진(멈출 때 상태를 저장하려고 잡아 둔다). */
+    private var engine: NudgeEngine? = null
 
     /** 지금 도는 모드(null이면 멈춤). */
     val mode: StateFlow<NudgeMode?> = modeState.asStateFlow()
@@ -87,12 +93,39 @@ class NudgeCoordinator @Inject constructor(
         job = scope.launch(Dispatchers.Main.immediate) { run(this, mode) }
     }
 
-    /** 멈춘다. 화면은 내린다. */
+    /**
+     * 멈춘다. 화면은 내린다. 실제 감지였으면 그때까지 본 세션과 개입 기록을 저장하고, 엔진 상태(단계·연장·오늘은 그만)를
+     * 남겨 다시 켰을 때 이어 가게 한다(감지를 껐다 켜서 1단계로 되돌리지 못하게).
+     */
     fun stop() {
+        val mode = modeState.value
+        val running = engine
         job?.cancel()
         job = null
-        pipeline.stop()
-        if (modeState.value != null) ui.render(NudgeCommand.Hide)
+        engine = null
+        if (mode == NudgeMode.REAL && running != null) {
+            val now = clock.now()
+            val snapshot = running.snapshot(now)
+            running.close(now)
+            val finished = running.drainFinished()
+            val sessions = pipeline.stopKeepingLive(now)
+            appScope.launch {
+                runCatching {
+                    stateStore.save(snapshot)
+                    val saved = sessions.map { it.start }.toSet()
+                    for (session in sessions) {
+                        val events = finished.filter { it.sessionStart == session.start }.flatMap { it.events }
+                        sessionRepository.insert(session, events)
+                    }
+                    for (f in finished.filter { it.sessionStart !in saved }) {
+                        sessionRepository.attachNudges(f.sessionStart, DataSource.REAL, f.events)
+                    }
+                }.onFailure { log.w(TAG, "state save on stop failed", it) }
+            }
+        } else {
+            pipeline.stop()
+        }
+        if (mode != null) ui.render(NudgeCommand.Hide)
         modeState.value = null
     }
 
@@ -149,6 +182,12 @@ class NudgeCoordinator @Inject constructor(
                 .count { it.response == NudgeResponse.EXTEND }
         }.getOrDefault(0)
         engine.seedToday(clock.now(), todayExtensions)
+        // 실제 감지만 이어 받는다. 시연은 발표용이라 매번 처음부터 돈다.
+        val persist = mode == NudgeMode.REAL
+        if (persist) stateStore.load()?.let { engine.restore(it, clock.now()) }
+        this.engine = engine
+        var savedKey: NudgeSnapshot? = null
+        var savedAt = Instant.EPOCH
 
         fun liveInput(): LiveInput? = pipeline.liveSession.value?.let { s ->
             LiveInput(
@@ -174,6 +213,17 @@ class NudgeCoordinator @Inject constructor(
             dispatch(engine.tick(now, liveInput()), source, pokes)
             engine.drainFinished().forEach { pending += it to now }
             flush(pending, source, now)
+            if (persist) {
+                // 바뀌었을 때와, 세션이 도는 동안 30초마다만 쓴다(강제 종료돼도 최근 상태가 남게).
+                val snapshot = engine.snapshot(now)
+                val key = snapshot.copy(session = snapshot.session?.copy(elapsedSec = 0, savedAt = Instant.EPOCH))
+                val stale = snapshot.session != null && Duration.between(savedAt, now) >= SAVE_EVERY
+                if (key != savedKey || stale) {
+                    savedKey = key
+                    savedAt = now
+                    runCatching { stateStore.save(snapshot) }.onFailure { log.w(TAG, "state save failed", it) }
+                }
+            }
             delay(tickMs)
         }
     }
@@ -269,6 +319,7 @@ class NudgeCoordinator @Inject constructor(
         private const val DEMO_TICK_MS = 250L
         private const val DEMO_PRAISE_MS = 3_000L
         private val PENDING_TTL: Duration = Duration.ofMinutes(10)
+        private val SAVE_EVERY: Duration = Duration.ofSeconds(30)
     }
 }
 

@@ -13,6 +13,8 @@ import com.capstone.pause.core.common.Dispatcher
 import com.capstone.pause.core.common.PauseDispatchers
 import com.capstone.pause.core.data.insight.DefaultInsightRepository
 import com.capstone.pause.core.data.insight.InsightRepository
+import com.capstone.pause.core.data.monitoring.DataStoreMonitoringGapRepository
+import com.capstone.pause.core.data.monitoring.MonitoringGapRepository
 import com.capstone.pause.core.data.plan.PlanRepository
 import com.capstone.pause.core.data.plan.PokeRepository
 import com.capstone.pause.core.data.plan.RoomPlanRepository
@@ -116,6 +118,9 @@ internal abstract class DataBindsModule {
 
     @Binds
     abstract fun insightRepository(impl: DefaultInsightRepository): InsightRepository
+
+    @Binds
+    abstract fun monitoringGapRepository(impl: DataStoreMonitoringGapRepository): MonitoringGapRepository
 }
 
 /** android.util.Log로 남기는 [AppLog]. 개인정보를 넣지 않는다. */

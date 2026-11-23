@@ -161,4 +161,21 @@ class SessionTrackerTest {
         t.onEvent(ScreenOff(at(200)))
         assertNull(t.liveSession.value)
     }
+
+    @Test
+    fun closeEndsTheLiveSessionSoWatchedTimeIsKept() {
+        // 보는 중에 감지를 끄면 그때까지 본 시간이 세션으로 남아야 한다(버리면 끄는 것이 기록을 지우는 꼼수가 된다).
+        val t = tracker()
+        assertTrue(t.close(at(0)).isEmpty())
+        t.onEvent(AppForeground(YOUTUBE, at(0)))
+        val closed = t.close(at(600)).single()
+        assertEquals(at(0), closed.start)
+        assertEquals(at(600), closed.end)
+        assertEquals(10, closed.minutes())
+        assertNull(t.liveSession.value)
+        assertNull(t.currentSession.value)
+        // 다시 켜면 새 세션으로 시작한다.
+        t.onEvent(AppForeground(YOUTUBE, at(630)))
+        assertEquals(at(630), assertNotNull(t.liveSession.value).start)
+    }
 }
