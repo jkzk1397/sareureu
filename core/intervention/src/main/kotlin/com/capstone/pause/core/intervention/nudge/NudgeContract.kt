@@ -10,7 +10,8 @@ import com.capstone.pause.core.model.MeltStage
  */
 sealed interface NudgeCommand {
     /**
-     * 플로팅 르르. 링은 '이번 구간'(처음 기준 시간, 또는 연장한 5분) 진행만 보여 준다. 연장하면 0부터 다시 찬다.
+     * 플로팅 르르. 르르가 '이번 구간'(처음 기준 시간, 또는 연장한 5분)이 지난 만큼 녹는다(ADR-0016).
+     * 연장하면 새 각설탕에서 다시 시작한다. 남은 분은 버블을 눌렀을 때 나오는 패널에 숫자로 보인다.
      * [elapsedSec]는 세션 전체 경과, [windowElapsedSec]/[windowSec]는 이번 구간 경과·길이.
      */
     data class ShowBubble(
@@ -23,6 +24,8 @@ sealed interface NudgeCommand {
         val appLabel: String = "",
         /** '오늘은 그만 알려 줘' 상태라 카드가 오지 않음. */
         val snoozed: Boolean = false,
+        /** 설정의 '녹는 각설탕 보기'가 켜져 있는지. */
+        val showMelt: Boolean = true,
         /** 세션 시작(실제 시각, 밀리초). 버블을 숨긴 세션을 구분하고 상단바 타이머가 센다. */
         val sessionStartMs: Long = 0,
         /** 다음 카드까지 실제로 남은 밀리초(시연 배속을 풀어 둔 값). 오늘은 그만이면 null. */
@@ -30,6 +33,12 @@ sealed interface NudgeCommand {
     ) : NudgeCommand {
         /** 이번 구간 진행(0~1). */
         val progress: Float get() = (windowElapsedSec.toFloat() / windowSec.coerceAtLeast(1)).coerceIn(0f, 1f)
+
+        /**
+         * 버블의 르르가 녹은 정도(0~1): 이번 구간 진행 그대로. 설정에서 녹는 표시를 껐거나([showMelt])
+         * '오늘은 그만 알려 줘'로 카드가 오지 않을 때는 녹지 않는다(0).
+         */
+        val meltFraction: Float get() = if (showMelt && !snoozed) progress else 0f
 
         /** 다음 카드까지 남은 분(올림). 이미 지났으면 0. */
         val minutesToNext: Int

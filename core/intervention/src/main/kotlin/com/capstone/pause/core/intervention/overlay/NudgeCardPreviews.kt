@@ -2,11 +2,18 @@ package com.capstone.pause.core.intervention.overlay
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.capstone.pause.core.designsystem.theme.PauseTheme
 import com.capstone.pause.core.intervention.nudge.CardContent
 import com.capstone.pause.core.intervention.nudge.NudgeCommand
@@ -85,7 +92,7 @@ private fun BubblePreview() = PreviewFrame {
 @Preview(name = "bubble panel light")
 @Preview(name = "bubble panel dark", uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun BubblePanelPreview() = PreviewFrame {
+internal fun BubblePanelPreview() = PreviewFrame {
     BubblePanel(sampleBubble, onStop = {}, onClose = {})
 }
 
@@ -97,3 +104,46 @@ private val sampleBubble = NudgeCommand.ShowBubble(
     expression = BuddyExpression.CALLING,
     appLabel = "유튜브",
 )
+
+/**
+ * 플로팅 버블이 한 구간 동안 0 → 100%로 녹는 모습을 흰 화면과 검은 화면 위에 나란히 놓은 판(ADR-0016).
+ * 다른 앱 위에 뜨는 것이라 우리 테마 바탕이 아니라 순수한 흰색·검은색 위에서 테두리가 보이는지 본다.
+ */
+@Preview(name = "bubble melt on white and black", widthDp = 360)
+@Composable
+internal fun BubbleMeltStripPreview() {
+    PauseTheme {
+        Column {
+            for (background in listOf(Color.White, Color.Black)) {
+                // 프레임 6장을 세 개씩 두 줄로(실제 크기 64dp).
+                for (steps in listOf(0..2, 3..MELT_STEPS)) {
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(background)
+                            .padding(vertical = PauseTheme.spacing.md),
+                    ) {
+                        for (step in steps) {
+                            FloatingBuddy(
+                                state = sampleBubble.copy(
+                                    windowElapsedSec = sampleBubble.windowSec * step / MELT_STEPS,
+                                    expression = if (step ==
+                                        MELT_STEPS
+                                    ) {
+                                        BuddyExpression.CALLING
+                                    } else {
+                                        BuddyExpression.WATCHING
+                                    },
+                                ),
+                                onTap = {},
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+private const val MELT_STEPS = 5

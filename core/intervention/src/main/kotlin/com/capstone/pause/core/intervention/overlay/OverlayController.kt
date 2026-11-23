@@ -148,8 +148,8 @@ class OverlayController @Inject constructor(
             width = WindowManager.LayoutParams.WRAP_CONTENT
             height = WindowManager.LayoutParams.WRAP_CONTENT
             gravity = Gravity.TOP or Gravity.START
-            // 화면 가장자리에 반쯤 숨어 빼꼼.
-            x = screenWidth() - size / 2
+            // 오른쪽 끝에서 조금 띄운다(끝에 붙어 반쯤 숨으면 각설탕 테두리가 안 보인다).
+            x = screenWidth() - size - px(OverlayDimens.bubbleSideMargin.value)
             y = (screenHeight() * BUBBLE_Y_RATIO).roundToInt()
         }
         val view = composeView {
@@ -198,7 +198,8 @@ class OverlayController @Inject constructor(
             return
         }
         val projectedCenter = params.x + size / 2 + velocity.x * FLING_PROJECTION_SEC
-        val edgeX = if (projectedCenter < screenWidth() / 2f) -size / 2 else screenWidth() - size / 2
+        val side = px(OverlayDimens.bubbleSideMargin.value)
+        val edgeX = if (projectedCenter < screenWidth() / 2f) side else screenWidth() - size - side
         val margin = px(OverlayDimens.bubbleEdgeMargin.value)
         val edgeY = (params.y + velocity.y * FLING_PROJECTION_SEC).roundToInt()
             .coerceIn(margin, (screenHeight() - size - margin).coerceAtLeast(margin))
