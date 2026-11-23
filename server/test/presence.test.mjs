@@ -105,7 +105,7 @@ test('6단계: 초대 QR 페이지는 로그인 없이 열리고, 앱을 열거�
     assert.equal(response.status, 200);
     assert.match(response.headers.get('Content-Type'), /^text\/html/);
     const html = await response.text();
-    const apk = 'https://github.com/jkzk1397/sareureu/releases/download/v0.12/sareureu-week12.apk';
+    const apk = 'https://github.com/jkzk1397/sareureu/releases/download/v0.13/sareureu-week13.apk';
     assert.ok(html.includes('K7P2QX'));
     assert.ok(html.includes('intent://invite/K7P2QX#Intent;scheme=sareureu;package=com.capstone.pause;'));
     assert.ok(html.includes(`S.browser_fallback_url=${encodeURIComponent(apk)}`));

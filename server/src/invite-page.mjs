@@ -7,7 +7,7 @@ import { codePattern } from './friends.mjs';
 export const invitePagePattern = /^\/invite\/([A-Za-z0-9]{1,16})$/;
 
 /** 앱이 없을 때 받을 설치 파일. wrangler.toml의 APK_URL로 바꿀 수 있다. */
-export const defaultApkUrl = 'https://github.com/jkzk1397/sareureu/releases/download/v0.12/sareureu-week12.apk';
+export const defaultApkUrl = 'https://github.com/jkzk1397/sareureu/releases/download/v0.13/sareureu-week13.apk';
 
 const appPackage = 'com.capstone.pause';
 const appScheme = 'sareureu';
